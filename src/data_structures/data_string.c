@@ -1,6 +1,6 @@
 /*
 ** Coder : nicolas.blin
-** Tester : 
+** Tester : nicolas.blin
 ** Reviewer : 
 ** Integrator : 
 **
@@ -9,21 +9,20 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "data_string.h"
 #include "../memory/memory.h"
-
-#define BASE_STR_CAPACITY 64
 
 /*
 ** init an empty, need to be freed later
 */
 struct string* init_string(void)
 {
-    struct string *s = my_malloc(sizeof(struct string));
+    struct string *s = xcalloc(1, sizeof(struct string));
     s->capacity = BASE_STR_CAPACITY;
     s->index = 0;
-    s->content = my_calloc(BASE_STR_CAPACITY, sizeof(char));
+    s->content = xcalloc(BASE_STR_CAPACITY, sizeof(char));
     return s;
 }
 
@@ -103,27 +102,29 @@ void append_char_string(struct string *str, char c)
 /*
 ** free string except it's content and returns it
 */
-char *get_content_string(struct string *str)
+char *get_content_string(struct string **ptr_str)
 {
+    assert(ptr_str != NULL);
+    struct string *str = *ptr_str;
     assert(str != NULL);
 
     char *content = str->content;
     str->content = NULL;
-    free_string(str);
+    free_string(ptr_str);
     return content;
 }
 
 /*
 ** free string completly
+** we use a ** to make the pointer point to null to be sure not used after
 */
-void free_string(struct string *str)
+void free_string(struct string **ptr_str)
 {
+    assert(ptr_str != NULL);
+    struct string *str = *ptr_str;
     assert(str != NULL);
 
-    char *content = str->content;
-    str->content = NULL;
-    free(content);
-    str->capacity = 0;
-    str->index = 0;
+    free(str->content);
     free(str);
+    *ptr_str = NULL;
 }

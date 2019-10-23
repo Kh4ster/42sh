@@ -8,10 +8,10 @@
 ** TO UPDATE DEPENDING ON SUBJET
 */
 
-#include "memory.h"
-
 #include <err.h>
 #include <stdlib.h>
+
+#include "memory.h"
 
 static inline void memory_exhausted(void)
 {

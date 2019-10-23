@@ -12,9 +12,7 @@
 #include <assert.h>
 
 #include "array_list.h"
-#include "memory.h"
-
-#define MAX_INIT_SIZE 64
+#include "../memory/memory.h"
 
 /*
 ** Init an empty array_list with a beginning size of MAX_INIT_SIZE
