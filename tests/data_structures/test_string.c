@@ -4,7 +4,7 @@
 
 #include "../../src/data_structures/data_string.h"
 
-Test(string, initstring)
+Test(string, init_string)
 {
     struct string *str = init_string();
     cr_assert_not_null(str);
