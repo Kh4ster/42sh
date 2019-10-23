@@ -5,7 +5,7 @@
 ** Integrator : 
 **
 ** wrapper on write to be sure eveything is written
-** NEED TO HANDLE SYSCALL INTERPUT
+** USE WRITE IMPLEM IN CHEWIE COURSE
 */
 
 #include <string.h>

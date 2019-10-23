@@ -37,7 +37,9 @@ struct array_list* init_array_list(void)
 void append_array_list(struct array_list *l, void *ptr)
 {
     assert(l != NULL);
+    assert(l->content != NULL);
     assert(ptr != NULL);
+
     if (l->nb_element + 1 > l->max_size)
     {
         l->max_size *= 2;
@@ -53,8 +55,15 @@ void append_array_list(struct array_list *l, void *ptr)
 void destroy_array_list(struct array_list *list)
 {
     assert(list != NULL);
+    assert(list->content != NULL);
+
+
     for (size_t i = 0; i < list->nb_element; i++)
         free(list->content[i]);
-    free(list->content);
+    void **content = list->content;
+    list->content = NULL;
+    free(content);
+    list->nb_element = -1;
+    list->max_size = 0;
     free(list);
 }
