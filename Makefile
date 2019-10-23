@@ -11,10 +11,15 @@ MAIN_OBJ = src/$(BIN).o
 
 # list of all objects needed in src
 OBJS = src/memory/memory.o\
-       src/data_structures/data_string.o
+       src/data_structures/data_string.o\
+       #src/data_structures/array_list.o\
+       src/input_output/read.o\
+       src/input_output/write.o\
+       src/commands/echo.o
 
 # list of tests files
-TESTS ?= tests/data_structures/test_string.c
+TESTS ?= tests/data_structures/test_string.c\
+         #tests/input_output/test_write.c
 
 all: $(BIN)
 
