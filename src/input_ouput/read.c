@@ -11,6 +11,7 @@
 #define CHUNK_READ_SIZE 64
 
 #include <unistd.h>
+#include <assert.h>
 
 #include "read.h"
 #include "../data_structures/data_string.h"
