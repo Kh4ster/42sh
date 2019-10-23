@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#define MAX_INIT_SIZE 64
+
 struct array_list
 {
     void **content;
