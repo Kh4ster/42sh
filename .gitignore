@@ -1,0 +1,8 @@
+*.swp
+*.o
+*.a
+*.so
+*.class
+*.log
+42sh
+.vscode/*
