@@ -12,12 +12,12 @@ struct string
     size_t capacity;
 };
 
-struct string* init_string(void);
-void append_string(struct string*, char*);
-void free_string(struct string**);
-void append_n_string(struct string*, const char*, size_t);
-void append_char_string(struct string*, char);
-char* get_content_string(struct string**);
-void empty_string_content(struct string*);
+struct string* string_init(void);
+void string_append(struct string*, char*);
+void string_free(struct string**);
+void string_append_n(struct string*, const char*, size_t);
+void string_append_char(struct string*, char);
+char* string_get_content(struct string**);
+void string_empty_content(struct string*);
 
 #endif /* ! DATA_STRING_H */

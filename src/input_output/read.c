@@ -1,8 +1,8 @@
 /*
 ** Coder : nicolas.blin
 ** Tester : nicolas.blin
-** Reviewer : 
-** Integrator : 
+** Reviewer :
+** Integrator :
 **
 ** wrapper on read to be sure eveything is written
 */
@@ -40,7 +40,7 @@ int xread(struct string *string, int fd_in)
         else if (res != 0)
         {
             buffer[res] = 0;
-            append_n_string(string, buffer, res + 1);
+            string_append_n(string, buffer, res + 1);
         }
     } while (res != 0);
     return 0;

@@ -4,100 +4,100 @@
 
 #include "../../src/data_structures/data_string.h"
 
-Test(string, init_string)
+Test(string, string_init)
 {
-    struct string *str = init_string();
+    struct string *str = string_init();
     cr_assert_not_null(str);
     cr_assert_eq(BASE_STR_CAPACITY, str->capacity);
     cr_assert_eq(0, str->index);
     cr_assert_not_null(str->content);
-    free_string(&str);
+    string_free(&str);
 }
 
 Test(string, basic_append)
 {
-    struct string *str = init_string();
-    append_string(str, "Hello ");
+    struct string *str = string_init();
+    string_append(str, "Hello ");
     cr_assert_eq(0, strcmp(str->content, "Hello "));
-    append_string(str, "World !");
+    string_append(str, "World !");
     cr_assert_eq(0, strcmp(str->content, "Hello World !"));
-    free_string(&str);
+    string_free(&str);
 }
 
 Test(string, append_greater_base_capacity)
 {
-    struct string *str = init_string();
+    struct string *str = string_init();
     char *test = malloc(BASE_STR_CAPACITY + 5);
     for (size_t i = 0; i < BASE_STR_CAPACITY + 4; i++)
         test[i] = 'a';
     test[str->capacity + 4] = 0;
-    append_string(str, test);
+    string_append(str, test);
     cr_assert_eq(BASE_STR_CAPACITY * 2, str->capacity);
     for (size_t i = 0; i < BASE_STR_CAPACITY + 5; i++)
         cr_assert_eq(test[i], str->content[i]);
-    free_string(&str);
+    string_free(&str);
     free(test);
 }
 
 Test(string, append_much_greater_base_capacity)
 {
-    struct string *str = init_string();
+    struct string *str = string_init();
     char *test = malloc(BASE_STR_CAPACITY * 5);
     for (size_t i = 0; i < BASE_STR_CAPACITY * 5 - 1; i++)
         test[i] = 'a';
     test[str->capacity * 5 - 1] = 0;
-    append_string(str, test);
+    string_append(str, test);
     cr_assert_eq((BASE_STR_CAPACITY << 3), str->capacity);
     for (size_t i = 0; i < BASE_STR_CAPACITY * 5 - 1; i++)
         cr_assert_eq(test[i], str->content[i]);
-    free_string(&str);
+    string_free(&str);
     free(test);
 }
 
 Test(string, basic_n_append)
 {
-    struct string *str = init_string();
-    append_n_string(str, "Hello @@@", 6);
+    struct string *str = string_init();
+    string_append_n(str, "Hello @@@", 6);
     cr_assert_eq(0, strcmp(str->content, "Hello "));
-    append_n_string(str, "World !@@@@", 7);
+    string_append_n(str, "World !@@@@", 7);
     cr_assert_eq(0, strcmp(str->content, "Hello World !"));
-    free_string(&str);
+    string_free(&str);
 }
 
 Test(string, basic_append_char)
 {
-    struct string *str = init_string();
+    struct string *str = string_init();
     for (size_t i = 0; i < 4; i++)
-        append_char_string(str, 'a');
+        string_append_char(str, 'a');
     cr_assert_eq(0, strcmp(str->content, "aaaa"));
-    free_string(&str);
+    string_free(&str);
 }
 
 Test(string, string_get_string_content)
 {
-    struct string *str = init_string();
-    append_string(str, "Hello");
-    char *content = get_content_string(&str);
+    struct string *str = string_init();
+    string_append(str, "Hello");
+    char *content = string_get_content(&str);
     cr_assert_eq(0, strcmp(content, "Hello"));
     cr_assert_null(str);
     free(content);
 }
 
-Test(string, empty_string_content)
+Test(string, string_empty_content)
 {
-    struct string *str = init_string();
-    append_string(str, "Hello");
-    empty_string_content(str);
+    struct string *str = string_init();
+    string_append(str, "Hello");
+    string_empty_content(str);
     cr_assert_eq(0, str->index);
     for (size_t i = 0; i < str->capacity; ++i)
         cr_assert_eq(0, str->content[i]);
-    free_string(&str);
+    string_free(&str);
 }
 
-Test(string, free_string)
+Test(string, string_free)
 {
-    struct string *str = init_string();
-    append_string(str, "Hello");
-    free_string(&str);
+    struct string *str = string_init();
+    string_append(str, "Hello");
+    string_free(&str);
     cr_assert_null(str);
 }

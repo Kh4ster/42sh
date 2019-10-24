@@ -17,7 +17,7 @@
 /*
 ** init an empty struct string, need to be freed later
 */
-struct string* init_string(void)
+struct string* string_init(void)
 {
     struct string *s = xcalloc(1, sizeof(struct string));
     s->capacity = BASE_STR_CAPACITY;
@@ -29,7 +29,7 @@ struct string* init_string(void)
 /*
 ** empty string content without freeing it
 */
-void empty_string_content(struct string *string)
+void string_empty_content(struct string *string)
 {
     assert(string != NULL);
     assert(string->content != NULL);
@@ -42,7 +42,7 @@ void empty_string_content(struct string *string)
 ** append to_happend at the end of str
 ** if needed, size will be ^2 more
 */
-void append_string(struct string *str, char *to_append)
+void string_append(struct string *str, char *to_append)
 {
     assert(str != NULL);
     assert(str->content != NULL);
@@ -62,7 +62,7 @@ void append_string(struct string *str, char *to_append)
 /*
 ** appends only n bytes to string
 */
-void append_n_string(struct string *str, const char *to_append, size_t n)
+void string_append_n(struct string *str, const char *to_append, size_t n)
 {
     assert(str != NULL);
     assert(str->content != NULL);
@@ -83,20 +83,20 @@ void append_n_string(struct string *str, const char *to_append, size_t n)
 /*
 ** appends one char to the string
 */
-void append_char_string(struct string *str, char c)
+void string_append_char(struct string *str, char c)
 {
     assert(str != NULL);
 
     char arr[2];
     arr[0] = c;
     arr[1] = 0;
-    append_string(str, arr);
+    string_append(str, arr);
 }
 
 /*
 ** free string except it's content and returns it
 */
-char* get_content_string(struct string **ptr_str)
+char* string_get_content(struct string **ptr_str)
 {
     assert(ptr_str != NULL);
     struct string *str = *ptr_str;
@@ -104,7 +104,7 @@ char* get_content_string(struct string **ptr_str)
 
     char *content = str->content;
     str->content = NULL;
-    free_string(ptr_str);
+    string_free(ptr_str);
     return content;
 }
 
@@ -112,7 +112,7 @@ char* get_content_string(struct string **ptr_str)
 ** free string completely
 ** we use a ** to make the pointer point to null to be sure not used after
 */
-void free_string(struct string **ptr_str)
+void string_free(struct string **ptr_str)
 {
     assert(ptr_str != NULL);
     struct string *str = *ptr_str;
