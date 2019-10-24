@@ -34,14 +34,13 @@ void empty_string_content(struct string *string)
     assert(string != NULL);
     assert(string->content != NULL);
 
-    for (size_t i = 0; i < string->capacity; i++)
-        string->content[i] = 0;
+    memset(string->content, 0, string->capacity);
     string->index = 0;
 }
 
 /*
 ** append to_happend at the end of str
-** if needed, size will be
+** if needed, size will be ^2 more
 */
 void append_string(struct string *str, char *to_append)
 {
@@ -52,15 +51,12 @@ void append_string(struct string *str, char *to_append)
     size_t new_size = strlen(to_append) + str->index;
     if (new_size >= str->capacity)
     {
-        str->capacity *= 2;
+        while (new_size >= str->capacity)
+            str->capacity <<= 1;
         str->content = xrealloc(str->content, str->capacity);
-        append_string(str, to_append); //recur call if new size still to small
     }
-    else
-    {
-        str->index += strlen(to_append);
-        strcat(str->content, to_append);
-    }
+    str->index += strlen(to_append);
+    strcat(str->content, to_append);
 }
 
 /*
@@ -75,15 +71,13 @@ void append_n_string(struct string *str, const char *to_append, size_t n)
     size_t new_size = n + str->index;
     if (new_size >= str->capacity)
     {
-        str->capacity *= 2;
+        while (new_size >= str->capacity)
+            str->capacity <<= 1;
         str->content = xrealloc(str->content, str->capacity);
-        append_n_string(str, to_append, n);
     }
-    else
-    {
-        str->index += strlen(to_append);
-        strncat(str->content, to_append, n);
-    }
+
+    str->index += strlen(to_append);
+    strncat(str->content, to_append, n);
 }
 
 /*
@@ -102,7 +96,7 @@ void append_char_string(struct string *str, char c)
 /*
 ** free string except it's content and returns it
 */
-char *get_content_string(struct string **ptr_str)
+char* get_content_string(struct string **ptr_str)
 {
     assert(ptr_str != NULL);
     struct string *str = *ptr_str;
