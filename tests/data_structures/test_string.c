@@ -39,6 +39,21 @@ Test(string, append_greater_base_capacity)
     free(test);
 }
 
+Test(string, append_much_greater_base_capacity)
+{
+    struct string *str = init_string();
+    char *test = malloc(BASE_STR_CAPACITY * 5);
+    for (size_t i = 0; i < BASE_STR_CAPACITY * 5 - 1; i++)
+        test[i] = 'a';
+    test[str->capacity * 5 - 1] = 0;
+    append_string(str, test);
+    cr_assert_eq((BASE_STR_CAPACITY << 3), str->capacity);
+    for (size_t i = 0; i < BASE_STR_CAPACITY * 5 - 1; i++)
+        cr_assert_eq(test[i], str->content[i]);
+    free_string(&str);
+    free(test);
+}
+
 Test(string, basic_n_append)
 {
     struct string *str = init_string();
