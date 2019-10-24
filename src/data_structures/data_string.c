@@ -34,14 +34,13 @@ void empty_string_content(struct string *string)
     assert(string != NULL);
     assert(string->content != NULL);
 
-    for (size_t i = 0; i < string->capacity; i++)
-        string->content[i] = 0;
+    memset(string->content, 0, string->capacity);
     string->index = 0;
 }
 
 /*
 ** append to_happend at the end of str
-** if needed, size will be
+** if needed, size will be doubled
 */
 void append_string(struct string *str, char *to_append)
 {
@@ -102,7 +101,7 @@ void append_char_string(struct string *str, char c)
 /*
 ** free string except it's content and returns it
 */
-char *get_content_string(struct string **ptr_str)
+char* get_content_string(struct string **ptr_str)
 {
     assert(ptr_str != NULL);
     struct string *str = *ptr_str;
