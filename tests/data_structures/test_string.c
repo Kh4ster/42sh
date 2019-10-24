@@ -90,7 +90,7 @@ Test(string, empty_string_content)
     empty_string_content(str);
     cr_assert_eq(0, str->index);
     for (size_t i = 0; i < str->capacity; ++i)
-        str->content[i] = 0;
+        cr_assert_eq(0, str->content[i]);
     free_string(&str);
 }
 
