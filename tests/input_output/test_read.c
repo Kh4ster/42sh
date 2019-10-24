@@ -15,6 +15,7 @@ Test(read, basic_read)
     struct string *str = init_string();
     xread(str, fd);
     cr_assert_eq(0, strcmp(str->content, "Hello"));
+    free_string(&str);
     close(fd);
     remove("./bin/f_test");
 }
@@ -27,6 +28,7 @@ Test(read, basic_long_read)
     struct string *str = init_string();
     xread(str, fd);
     cr_assert_eq(0, strcmp(str->content, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+    free_string(&str);
     close(fd);
     remove("./bin/f_test_big");
 }

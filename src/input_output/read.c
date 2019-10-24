@@ -30,7 +30,7 @@ int xread(struct string *string, int fd_in)
     char buffer[64];
     do
     {
-        res = read(fd_in, buffer, sizeof(buffer));
+        res = read(fd_in, buffer, sizeof(buffer) - 1); //for \0
         if (res < 0)
         {
             if (errno == EINTR)
@@ -38,8 +38,10 @@ int xread(struct string *string, int fd_in)
             return -1;
         }
         else if (res != 0)
-            append_n_string(string, buffer, res);
-
+        {
+            buffer[res] = 0;
+            append_n_string(string, buffer, res + 1);
+        }
     } while (res != 0);
     return 0;
 }
