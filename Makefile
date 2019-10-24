@@ -27,7 +27,7 @@ check: CFLAGS += -fsanitize=address
 check: clean $(OBJS)
 	@echo "------------------------- 42sh tests -------------------------"
 	@mkdir -p bin
-	for test in $(TESTS); do\
+	@for test in $(TESTS); do\
 	    echo "$$test";\
 	    bin_n=$$(echo "$$test" | rev | cut -d "/" -f1 | tr [/] [_] | rev\
 	    | cut -d "." -f1);\

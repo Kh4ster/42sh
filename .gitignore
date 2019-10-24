@@ -6,3 +6,4 @@
 *.log
 42sh
 .vscode/*
+bin/*
