@@ -6,7 +6,6 @@ CFLAGS = -Wall -Wextra -std=c99 -pedantic -Werror
 
 #VPATH = src
 BIN = 42sh
-TEST_BIN = 42sh_test
 MAIN_OBJ = src/$(BIN).o
 
 # list of all objects needed in src
@@ -27,10 +26,13 @@ check: CPPFLAGS += -DDEBUG -g
 check: CFLAGS += -fsanitize=address
 check: clean $(OBJS)
 	@echo "------------------------- 42sh tests -------------------------"
+	@mkdir -p bin
 	@for test in $(TESTS); do\
 	    echo "$$test";\
-	    $(CC) $(CFLAGS) -o $(TEST_BIN) $$test $(OBJS) -lcriterion;\
-	    ./$(TEST_BIN);\
+	    bin_n=$$(echo "$$test" | rev | cut -d "/" -f1 | tr [/] [_] | rev\
+	    | cut -d "." -f1);\
+	    $(CC) $(CFLAGS) -o bin/$(BIN)_$$bin_n $$test $(OBJS) -lcriterion;\
+	    ./bin/$(BIN)_$$bin_n;\
 	done
 	@echo "--------------------------------------------------------------"
 
@@ -41,4 +43,4 @@ $(BIN): $(MAIN_OBJ) $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	$(RM) $(BIN) $(OBJS) $(MAIN_OBJ) $(TEST_BIN)
+	rm -rf $(BIN) $(OBJS) $(MAIN_OBJ) bin
