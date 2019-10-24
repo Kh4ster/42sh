@@ -1,10 +1,10 @@
 /*
 ** Coder : nicolas.blin
 ** Tester : nicolas.blin
-** Reviewer : 
-** Integrator : 
+** Reviewer : pierrick.made
+** Integrator :
 **
-** Can hold a variable lenth array of char
+** Can hold a variable length array of char
 */
 
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #include "../memory/memory.h"
 
 /*
-** init an empty, need to be freed later
+** init an empty struct string, need to be freed later
 */
 struct string* init_string(void)
 {
@@ -114,7 +114,7 @@ char* get_content_string(struct string **ptr_str)
 }
 
 /*
-** free string completly
+** free string completely
 ** we use a ** to make the pointer point to null to be sure not used after
 */
 void free_string(struct string **ptr_str)
