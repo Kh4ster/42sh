@@ -1,7 +1,7 @@
 # Makefile 42sh #
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -pedantic -Werror
-# CPPFLAGS += -D_GNU_SOURCE
+CPPFLAGS += -D_GNU_SOURCE
 .PHONY: all check debug clean
 
 #VPATH = src
@@ -11,14 +11,14 @@ MAIN_OBJ = src/$(BIN).o
 # list of all objects needed in src
 OBJS = src/memory/memory.o\
        src/data_structures/data_string.o\
-       #src/data_structures/array_list.o\
        src/input_output/read.o\
        src/input_output/write.o\
+       #src/data_structures/array_list.o\
        src/commands/echo.o
 
 # list of tests files
 TESTS ?= tests/data_structures/test_string.c\
-         #tests/input_output/test_write.c
+         tests/input_output/test_read.c
 
 all: $(BIN)
 
@@ -27,7 +27,7 @@ check: CFLAGS += -fsanitize=address
 check: clean $(OBJS)
 	@echo "------------------------- 42sh tests -------------------------"
 	@mkdir -p bin
-	@for test in $(TESTS); do\
+	for test in $(TESTS); do\
 	    echo "$$test";\
 	    bin_n=$$(echo "$$test" | rev | cut -d "/" -f1 | tr [/] [_] | rev\
 	    | cut -d "." -f1);\
