@@ -36,6 +36,7 @@ Test(string, append_greater_base_capacity)
     for (size_t i = 0; i < BASE_STR_CAPACITY + 5; i++)
         cr_assert_eq(test[i], str->content[i]);
     free_string(&str);
+    free(test);
 }
 
 Test(string, basic_n_append)
