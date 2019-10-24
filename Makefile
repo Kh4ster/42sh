@@ -18,7 +18,8 @@ OBJS = src/memory/memory.o\
 
 # list of tests files
 TESTS ?= tests/data_structures/test_string.c\
-         tests/input_output/test_read.c
+         tests/input_output/test_read.c\
+		 tests/input_output/test_write.c
 
 all: $(BIN)
 
