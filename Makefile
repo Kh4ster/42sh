@@ -44,4 +44,9 @@ $(BIN): $(MAIN_OBJ) $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -rf $(BIN) $(OBJS) $(MAIN_OBJ) bin
+	@echo "clean :"
+	rm -f $(BIN)
+	rm -f bin/*
+	@rm -f $(OBJS)
+	@for o in $(OBJS); do echo "rm -f $$o";done
+	rm -f $(MAIN_OBJ)
