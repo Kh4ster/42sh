@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "command_container.h"
 #include "../memory/memory.h"
@@ -27,6 +28,11 @@ struct command_container* command_init(size_t nb_args, char *command, ...)
     command_container->command = command;
     command_container->params = xmalloc(sizeof(char*) * (nb_args + 2));
     command_container->params[0] = command;
+    char *end = command_container->params[0] + strlen(command_container->params[0]);
+    while (*end != '/')
+        end--;
+    end++;
+    command_container->params[0] = end;
     for (size_t i = 0; i < nb_args; ++i)
         command_container->params[i + 1] = va_arg(ap, char*);
     command_container->params[nb_args + 1] = NULL;

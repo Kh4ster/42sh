@@ -14,4 +14,5 @@ int main(void)
     char *str_buffer = string_get_content(&buffer);
     xwrite(str_buffer, 1);
     free(str_buffer);
+    return 0;
 }

@@ -14,4 +14,4 @@ int redirect_command_to_file(int fd_in,
                             struct command_container *command,
                             int fd_file);
 
-void save_stds(void);
+int save_stds(void);
