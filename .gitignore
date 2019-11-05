@@ -4,6 +4,7 @@
 *.so
 *.class
 *.log
+*.pdf
 42sh
 .vscode/*
 bin/*
