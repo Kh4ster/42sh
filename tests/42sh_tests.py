@@ -1,7 +1,9 @@
 from argparse import ArgumentParser
 from pathlib import Path
-import glob
 from difflib import unified_diff
+from termcolor import colored
+import yaml
+import os
 import subprocess as sp
 
 def run_shell(args, stdin):
@@ -45,20 +47,23 @@ def launch_tests(binary, categories, args):
     find all tests in directories (or using categories given by user)
     launch tests on binary taking into account arguments given
     """
+    tests_files=[]
     if not categories: # categories was not defined by the user
         # Find all test files
-        tests_files = glob.glob("tests.yml", recursive=True)
+        tests_files = Path(os.path.dirname(__file__)).rglob('tests.yml')
     else:
         # find test files corresponding to categories
         for category in categories:
-            tests_files.append(glob.glob(f"{category}*tests.yml", recursive=True))
+            tests_files.append(Path(category).rglob('tests.yml'))
 
+    print(tests_files)
 
     # launch all tests of each file
     for tests_file in tests_files:
         with open(tests_file, "r") as tf:
             print(f"{tests_file}\n")
-            test_list.append(yaml.safe_load(tf))
+            for test_case in yaml.safe_load(tf):
+                launch_test(binary, test_case)
 
 if __name__ == "__main__":
 
