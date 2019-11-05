@@ -37,10 +37,10 @@ def launch_test(binary, test_case):
     try:
         test(binary, test_case)
     except AssertionError as err:
-        print(f"[{colored('KO', 'red')}]", test_case)
+        print(f"[{colored('KO', 'red')}]", test_case.get("name"))
         print(err)
     else:
-        print(f"[{colored('OK', 'green')}]", test_case)
+        print(f"[{colored('OK', 'green')}]", test_case.get("name"))
 
 def launch_tests(binary, categories, args):
     """ Launch all tests found
