@@ -1,0 +1,11 @@
+- name: ls_simple
+  stdin: ls
+
+- name: ls_with_args
+  stdin: ls -la
+
+- name: pipe_missing_right
+  stdin: echo test |
+  checks:
+    - has_stderr
+    - returncode
