@@ -14,8 +14,7 @@ OBJS = src/memory/memory.o\
        src/input_output/read.o\
        src/input_output/write.o\
        src/execution_handling/command_container.o\
-       src/execution_handling/redirector.o\
-	   src/42sh.o
+       src/execution_handling/redirector.o
        #src/data_structures/array_list.o\
        src/commands/echo.o
 
@@ -23,7 +22,7 @@ OBJS = src/memory/memory.o\
 TESTS ?= tests/data_structures/test_string.c\
          tests/input_output/test_read.c\
          tests/input_output/test_write.c\
-         tests/bin/test_redirector.c\
+		 #tests/bin/test_redirector.c\
 		 tests/test_42sh.c
 
 
