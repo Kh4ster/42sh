@@ -1,7 +1,7 @@
 /*
 ** Coder : nicolas.blin
 ** Tester : nicolas.blin
-** Reviewer :
+** Reviewer : pierrick.made
 ** Integrator :
 **
 ** wrapper on read to be sure eveything is written
@@ -27,7 +27,7 @@ int xread(struct string *string, int fd_in)
     assert(fd_in >= 0);
 
     ssize_t res = 0;
-    char buffer[64];
+    char buffer[CHUNK_READ_SIZE];
     do
     {
         res = read(fd_in, buffer, sizeof(buffer) - 1); //for \0
