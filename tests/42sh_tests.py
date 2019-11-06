@@ -54,14 +54,13 @@ def launch_tests(binary, categories, args):
     else:
         # find test files corresponding to categories
         for category in categories:
-            tests_files.append(Path(category).rglob('tests.yml'))
-
-    print(tests_files)
+            for found_test in Path(category).rglob('tests.yml'):
+                tests_files.append(found_test)
 
     # launch all tests of each file
     for tests_file in tests_files:
         with open(tests_file, "r") as tf:
-            print(f"{tests_file}\n")
+            print(f"{tests_file}")
             for test_case in yaml.safe_load(tf):
                 launch_test(binary, test_case)
 
