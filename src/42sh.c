@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 
+#include "parameters_handling/parameters_handler.h"
 #include "parameters_handling/options.h"
 
 static void print_prompt(void)
@@ -16,8 +18,10 @@ static void handle_line(char *line)
 
 int main(int argc, char *argv[])
 {
-    (void)argc;
-    (void)argv;
+    struct boot_params options;
+    if (handle_parameters(&options, argc, argv) == -1)
+        return 2;
+
     char *line = NULL;
     size_t read = 0;
     print_prompt();
@@ -26,4 +30,5 @@ int main(int argc, char *argv[])
         handle_line(line);
         print_prompt();
     }
+    return 0;
 }

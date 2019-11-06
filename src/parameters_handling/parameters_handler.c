@@ -47,6 +47,8 @@ int handle_parameters(struct boot_params *options, int argc, char *argv[])
             options->option_c = true;
             options->command_option_c = optarg;
         }
+        else if (c == '?')
+            return -1;
     }
     return 1;
 }
