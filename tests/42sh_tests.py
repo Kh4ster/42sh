@@ -22,12 +22,17 @@ def diff(ref, student):
 
     return ''.join(unified_diff(ref, student, fromfile="ref", tofile="42sh"))
 
-def test(binary, test_case, timeout):
+def test(binary, test_case, timeout, args):
     """ run ref and student, check diff (return nothing or assertException) """
 
     try:
-        ref = run_shell(["bash", "--posix"], test_case["stdin"], timeout)
-        student = run_shell([binary], test_case["stdin"], timeout)
+        ref = test_case.get("expected", "")
+        if ref == "":
+            ref = run_shell(["bash", "--posix"], test_case["stdin"], timeout)
+        if args.sanity:
+            student = run_shell(["valgrind", binary], test_case["stdin"], timeout)
+        else:
+            student = run_shell([binary], test_case["stdin"], timeout)
     except sp.TimeoutExpired:
         raise AssertionError(f"Timeout after {timeout} seconds")
 
@@ -57,7 +62,7 @@ def launch_test(binary, test_case, args):
         timeout = args.timeout
 
     try:
-        test(binary, test_case, timeout)
+        test(binary, test_case, timeout, args)
     except AssertionError as err:
         print(f"[{colored('KO', 'red')}]", test_case.get("name"))
         print(err)
@@ -144,11 +149,9 @@ if __name__ == "__main__":
 
     binary = Path(args.bin).absolute()
 
-    # TODO if sanity is activated, add option to binary
-
     tests_files = get_tests_files(args.categories)
     if args.list: # if list is activated, just show name of categories
-        print("---- tests categories ----")
+        print(f" tests categories ".center(80, "-"))
         list_categories(tests_files)
     else:
         launch_tests(binary, tests_files, args)
