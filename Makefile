@@ -22,8 +22,8 @@ OBJS = src/memory/memory.o\
 TESTS ?= tests/data_structures/test_string.c\
          tests/input_output/test_read.c\
          tests/input_output/test_write.c\
-		 #tests/bin/test_redirector.c\
-		 tests/test_42sh.c
+		 tests/bin/test_redirector.c
+		 #tests/test_42sh.c
 
 
 all: $(BIN)
