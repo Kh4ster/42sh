@@ -7,15 +7,21 @@ import os
 import subprocess as sp
 
 def run_shell(args, stdin):
+    """ Run the given args with stdin and return captured output """
+
     return sp.run(args, capture_output=True, text=True, input=stdin)
 
 def diff(ref, student):
+    """ Return differences between input strings """
+
     ref = ref.splitlines(keepends=True)
     student = student.splitlines(keepends=True)
 
     return ''.join(unified_diff(ref, student, fromfile="ref", tofile="42sh"))
 
 def test(binary, test_case):
+    """ run ref and student, check diff (return nothing or assertException) """
+
     ref = run_shell(["bash", "--posix"], test_case["stdin"])
     student = run_shell([binary], test_case["stdin"])
 
@@ -34,6 +40,8 @@ def test(binary, test_case):
                 "The code should print an error message on stderr"
 
 def launch_test(binary, test_case):
+    """ Launch the test and print OK or KO (+diff) depending on the result """
+
     try:
         test(binary, test_case)
     except AssertionError as err:
@@ -42,20 +50,23 @@ def launch_test(binary, test_case):
     else:
         print(f"[{colored('OK', 'green')}]", test_case.get("name"))
 
-def launch_tests(binary, categories, args):
-    """ Launch all tests found
-    find all tests in directories (or using categories given by user)
-    launch tests on binary taking into account arguments given
-    """
+def get_tests_files(categories):
+    """ Find all tests in directories (or using categories given by user) """
+
     tests_files=[]
-    if not categories: # categories was not defined by the user
+    if not categories: # categories were not defined by the user
         # Find all test files
-        tests_files = Path(os.path.dirname(__file__)).rglob('tests.yml')
+        for found_test in Path(os.path.dirname(__file__)).rglob('tests.yml'):
+            tests_files.append(found_test)
     else:
         # find test files corresponding to categories
         for category in categories:
             for found_test in Path(category).rglob('tests.yml'):
                 tests_files.append(found_test)
+    return tests_files
+
+def launch_tests(binary, tests_files, args):
+    """ Launch all tests found in each test_file on binary """
 
     # launch all tests of each file
     for tests_file in tests_files:
@@ -64,7 +75,16 @@ def launch_tests(binary, categories, args):
             for test_case in yaml.safe_load(tf):
                 launch_test(binary, test_case)
 
+def list_categories(tests_files):
+    """ List all categories of tests """
+
+    category_list = []
+    for tests_file in tests_files:
+        print(tests_file.parent)
+
+
 if __name__ == "__main__":
+    """ This script launch automatically functional the testssuite"""
 
     # Set all arguments that can be used by the script
     parser = ArgumentParser(description="42sh Functional Testsuite")
@@ -86,8 +106,11 @@ if __name__ == "__main__":
 
     binary = Path(args.bin).absolute()
 
-    # if list is activated, just show name of folders (categories)
+    # TODO if sanity is activated, add option to binary
 
-    # if sanity is activated, add option to binary
-
-    launch_tests(binary, args.categories, args)
+    tests_files = get_tests_files(args.categories)
+    if args.list: # if list is activated, just show name of categories
+        print("---- tests categories ----")
+        list_categories(tests_files)
+    else:
+        launch_tests(binary, tests_files, args)
