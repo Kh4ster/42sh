@@ -9,3 +9,6 @@
   checks:
     - has_stderr
     - returncode
+
+- name: timeout_expected
+  stdin: tree /
