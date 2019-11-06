@@ -30,7 +30,8 @@ def test(binary, test_case, timeout, args):
         if ref == "":
             ref = run_shell(["bash", "--posix"], test_case["stdin"], timeout)
         if args.sanity:
-            student = run_shell(["valgrind", binary], test_case["stdin"], timeout)
+            student = run_shell(["valgrind", binary], test_case["stdin"],
+                timeout)
         else:
             student = run_shell([binary], test_case["stdin"], timeout)
     except sp.TimeoutExpired:
@@ -72,9 +73,9 @@ def launch_test(binary, test_case, args):
     return 1
 
 def pretty_print_synthesis(passed, failed):
-    print(f"[{colored('==', 'red' if failed else 'blue')}] Synthesis: ", end='')
+    print(f"[{colored('==', 'red' if failed else 'blue')}] Synthesis:", end='')
     color_tested = colored(f"{passed + failed:2d}", 'blue')
-    print(f"Tested: {color_tested} | ", end='')
+    print(f" Tested: {color_tested} | ", end='')
     color_passed = colored (f"{passed:2d}", 'green')
     print(f"Passing: {color_passed} | ", end='')
     color_failed = colored (f"{failed:2d}", 'red' if failed else 'blue')
@@ -135,8 +136,8 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--list", action="store_true",
             dest="list", default=False,
             help="Display the list of test categories")
-    parser.add_argument("-c", "--category", action="append", metavar="CATEGORY",
-            dest="categories", default=[],
+    parser.add_argument("-c", "--category", action="append",
+            metavar="CATEGORY", dest="categories", default=[],
             help="Execute the test suite on the categories passed in argument \
             only.")
     parser.add_argument("-s", "--sanity", action="store_true",
