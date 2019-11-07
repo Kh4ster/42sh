@@ -8,7 +8,6 @@ import subprocess as sp
 import xml.etree.ElementTree as ET
 
 DEFAULT_TIMEOUT = 2
-
 XML_DATA = ET.Element('synthesis')
 
 def run_shell(args, stdin, timeout):
@@ -72,6 +71,8 @@ def launch_test(binary, test_case, args, category_xml):
         test_result_xml = ET.SubElement(category_xml, "failed")
         test_result_xml.set('name', test_case.get("name"))
         test_result_xml.text = f"{err}"
+        if args.verbose:
+            print(f"{err}")
         return 0
 
     print(f"[{colored('OK', 'green')}]", test_case.get("name"))
@@ -159,8 +160,11 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--timeout", type=float,
             dest="timeout", default=0,
             help="Set time as a general timeout time (in seconds).")
+    parser.add_argument("-v", "--verbose", action="store_true",
+            dest="verbose", default=False,
+            help="Show all errors of tests")
     parser.add_argument("-o", "--output", action="store",
-            dest="output_file_name", default="tests_results.xml",
+            dest="output_file_name", default="",
             help="Set the name of the output xml file containing errors")
     args = parser.parse_args()
 
@@ -172,6 +176,7 @@ if __name__ == "__main__":
         list_categories(tests_files)
     else:
         launch_tests(binary, tests_files, args)
-        xml_data_str = f"{ET.tostring(XML_DATA)}"[2:-1]
-        with open(args.output_file_name, "w") as output_file:
-            output_file.write(xml_data_str)
+        if Path(args.output_file_name).suffix == "xml":
+            xml_data_str = f"{ET.tostring(XML_DATA)}"[2:-1]
+            with open(args.output_file_name, "w") as output_file:
+                output_file.write(xml_data_str)
