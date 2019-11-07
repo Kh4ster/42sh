@@ -10,5 +10,6 @@
     - has_stderr
     - returncode
 
-- name: timeout_expected
+- name: timeout_expected_tree_root
   stdin: tree /
+  timeout: 1
