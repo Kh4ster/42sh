@@ -5,8 +5,11 @@ from termcolor import colored
 import yaml
 import os
 import subprocess as sp
+import xml.etree.ElementTree as ET
 
 DEFAULT_TIMEOUT = 2
+
+XML_DATA = ET.Element('synthesis')
 
 def run_shell(args, stdin, timeout):
     """ Run the given args with stdin and return captured output """
@@ -51,7 +54,7 @@ def test(binary, test_case, timeout, args):
             assert student.stderr != "", \
                 "The code should print an error message on stderr"
 
-def launch_test(binary, test_case, args):
+def launch_test(binary, test_case, args, category_xml):
     """ Launch the test and print OK or KO (+diff) depending on the result
 
     return : 1 if test passed, 0 otherwise
@@ -66,10 +69,15 @@ def launch_test(binary, test_case, args):
         test(binary, test_case, timeout, args)
     except AssertionError as err:
         print(f"[{colored('KO', 'red')}]", test_case.get("name"))
-        print(err)
+        test_result_xml = ET.SubElement(category_xml, "failed")
+        test_result_xml.set('name', test_case.get("name"))
+        test_result_xml.text = f"{err}"
         return 0
 
     print(f"[{colored('OK', 'green')}]", test_case.get("name"))
+    test_result_xml = ET.SubElement(category_xml, "passed")
+    test_result_xml.set('name', test_case.get("name"))
+    test_result_xml.text = f"This test completed successfully."
     return 1
 
 def pretty_print_synthesis(passed, failed):
@@ -86,19 +94,24 @@ def launch_tests(binary, tests_files, args):
     """ Launch with binary all tests found in each test_file """
 
     total_passed, total_failed = 0, 0
+    global XML_DATA
 
     for tests_file in tests_files:
         with open(tests_file, "r") as tf:
             print("\n" + f" {tests_file} ".center(80, "-") + "\n")
+            category_xml = ET.SubElement(XML_DATA, "category")
+            category_xml.set('name', f"{tests_file.parent}")
             nb_passed, nb_failed = 0, 0
             for test_case in yaml.safe_load(tf):
-                if launch_test(binary, test_case, args):
+                if launch_test(binary, test_case, args, category_xml):
                     nb_passed += 1
                 else:
                     nb_failed += 1
         total_passed += nb_passed
         total_failed += nb_failed
         pretty_print_synthesis(nb_passed, nb_failed)
+        category_xml.set("passed", f"{nb_passed}")
+        category_xml.set("failed", f"{nb_failed}")
 
     print("\n" + " GLOBAL SYNTHESIS ".center(80, "-"))
     pretty_print_synthesis(total_passed, total_failed)
@@ -143,9 +156,12 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--sanity", action="store_true",
             dest="sanity", default=False,
             help="Execute the test suite with sanity checks enabled")
-    parser.add_argument("-t", "--timeout", type=int,
+    parser.add_argument("-t", "--timeout", type=float,
             dest="timeout", default=0,
             help="Set time as a general timeout time (in seconds).")
+    parser.add_argument("-o", "--output", action="store",
+            dest="output_file_name", default="tests_results.xml",
+            help="Set the name of the output xml file containing errors")
     args = parser.parse_args()
 
     binary = Path(args.bin).absolute()
@@ -156,3 +172,6 @@ if __name__ == "__main__":
         list_categories(tests_files)
     else:
         launch_tests(binary, tests_files, args)
+        xml_data_str = f"{ET.tostring(XML_DATA)}"[2:-1]
+        with open(args.output_file_name, "w") as output_file:
+            output_file.write(xml_data_str)
