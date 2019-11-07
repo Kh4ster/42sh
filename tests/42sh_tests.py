@@ -11,13 +11,13 @@ DEFAULT_TIMEOUT = 2
 XML_DATA = ET.Element('synthesis')
 
 def run_shell(args, stdin, timeout):
-    """ Run the given args with stdin and return captured output """
+    """ Run a process with given args and stdin. Return the captured output """
 
     return sp.run(args, capture_output=True, text=True, input=stdin,
         timeout=timeout)
 
 def diff(ref, student):
-    """ Return differences between input strings """
+    """ Return nice difference between two inputs strings """
 
     ref = ref.splitlines(keepends=True)
     student = student.splitlines(keepends=True)
@@ -25,7 +25,7 @@ def diff(ref, student):
     return ''.join(unified_diff(ref, student, fromfile="ref", tofile="42sh"))
 
 def test(binary, test_case, timeout, args):
-    """ run ref and student, check diff (return nothing or assertException) """
+    """ Run bash and binary, check diff (return nothing or assertException) """
 
     try:
         ref = test_case.get("expected", "")
@@ -82,6 +82,8 @@ def launch_test(binary, test_case, args, category_xml):
     return 1
 
 def pretty_print_synthesis(passed, failed):
+    """ Print on stdout the synthesis depending on nb failed/passed tests """
+
     print(f"[{colored('==', 'red' if failed else 'blue')}] Synthesis:", end='')
     color_tested = colored(f"{passed + failed:2d}", 'blue')
     print(f" Tested: {color_tested} | ", end='')
@@ -92,7 +94,7 @@ def pretty_print_synthesis(passed, failed):
 
 
 def launch_tests(binary, tests_files, args):
-    """ Launch with binary all tests found in each test_file """
+    """ Launch with binary all tests found in each tests_file """
 
     total_passed, total_failed = 0, 0
     global XML_DATA
