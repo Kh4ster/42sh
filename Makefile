@@ -13,13 +13,18 @@ OBJS = src/memory/memory.o\
        src/data_structures/data_string.o\
        src/input_output/read.o\
        src/input_output/write.o\
+       src/execution_handling/command_container.o\
+       src/execution_handling/redirector.o
        #src/data_structures/array_list.o\
        src/commands/echo.o
 
 # list of tests files
 TESTS ?= tests/data_structures/test_string.c\
          tests/input_output/test_read.c\
-		 tests/input_output/test_write.c
+         tests/input_output/test_write.c\
+		 #tests/bin/test_redirector.c\
+		 tests/test_42sh.c
+
 
 all: $(BIN)
 
