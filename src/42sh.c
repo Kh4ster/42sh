@@ -1,65 +1,69 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
+#include <readline/readline.h>
 #include <unistd.h>
-#include <string.h>
-#include <getopt.h>
-#include <stdbool.h>
+#include <readline/history.h>
 
-#include "data_structures/options.h"
 #include "42sh.h"
+#include "parameters_handling/parameters_handler.h"
+#include "parameters_handling/options.h"
 
-static void print_prompt(void)
+static int is_interactive(void)
 {
-    printf("42sh$ ");
+    int tty = rl_instream ? fileno(rl_instream) : fileno(stdin);
+
+    return isatty(tty);
+}
+
+static void prep_terminal(int meta_flag)
+{
+    if (is_interactive())
+        rl_prep_terminal(meta_flag);
+}
+
+static char *get_next_line(struct shell_environment *env, const char *prompt)
+{
+    /*
+    ** if option c, returns command given to c
+    ** set to null to exit loop at next iteration
+    */
+    if (env->options.option_c)
+    {
+        char *command = env->options.command_option_c;  
+        env->options.command_option_c = NULL;
+        return command;
+    }
+
+    rl_prep_term_function = prep_terminal;
+
+    if (!is_interactive())
+        prompt = NULL;
+
+    return readline(prompt);
+}
+
+static char *get_prompt(void)
+{
+    return "42sh$ ";
 }
 
 static void handle_line(char *line)
 {
-    (void)line;
+    printf("%s$\n", line);
     return;
-}
-
-int handle_parameters(struct boot_params *options, int argc, char *argv[])
-{
-    char c;
-    struct option long_opts[] =
-    {
-        {"ast-print", no_argument, NULL, 'A'},
-        {"norc", no_argument, NULL, 'N'}
-    };
-
-    while (optind < argc)
-    {
-        c = getopt_long(argc, argv, "NAOc:", long_opts, NULL);
-        if (c  == -1)
-            return -1;
-        else if (c == 'N')
-            options->option_n = true;
-        else if (c == 'A')
-            options->option_a = true;
-        else if (c == 'O')
-            options->option_o = true;
-        else if (c == 'c')
-        {
-            if (optarg == NULL)
-                return -1;
-            options->option_c = true;
-            options->command_option_c = optarg;
-        }
-    }
-    return 1;
 }
 
 int main(int argc, char *argv[])
 {
-    (void)argc;
-    (void)argv;
+    struct shell_environment env = {0};
+    if (handle_parameters(&env.options, argc, argv) == -1)
+        return 2;
+
     char *line = NULL;
-    size_t read = 0;
-    print_prompt();
-    while (getline(&line, &read, stdin) != -1)
+    while ((line = get_next_line(&env, get_prompt())) != NULL)
     {
         handle_line(line);
-        print_prompt();
     }
+    return 0;
 }

@@ -1,3 +1,11 @@
 #pragma once
 
-int handle_parameters(struct boot_params *options, int argc, char *argv[]);
+#include <stdbool.h>
+
+#include "parameters_handling/options.h"
+
+struct shell_environment
+{
+    char *pwd;
+    struct boot_params options;
+};
