@@ -1,0 +1,15 @@
+- name: ls_simple
+  stdin: ls
+
+- name: ls_with_args
+  stdin: ls -la
+
+- name: pipe_missing_right
+  stdin: echo test |
+  checks:
+    - has_stderr
+    - returncode
+
+- name: timeout_expected_tree_root
+  stdin: tree /
+  timeout: 1
