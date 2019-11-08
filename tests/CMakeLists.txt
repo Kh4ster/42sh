@@ -12,16 +12,16 @@ FOREACH(f IN LISTS SRC_FILES)
 ENDFOREACH(f)
 SET(SRC_FOR_TESTS "${listVar}")
 
-enable_testing()
+add_library(SRC_FOR_TESTS_OBJ ${SRC_FOR_TESTS})
+
 foreach(f IN LISTS TESTS_FILES)
     string(REGEX REPLACE "\\.[^.]*$" "" F_WITHOUT_EXT ${f})
     string(REGEX REPLACE "[^/]*/" "" TEST_NAME ${F_WITHOUT_EXT})
-    add_executable(${TEST_NAME} ${f}
-        ${SRC_FOR_TESTS}
-    )
+    add_executable(${TEST_NAME} ${f})
     target_link_libraries(${TEST_NAME} PRIVATE
         ${CRITERION_LIB}
         common_options
+        SRC_FOR_TESTS_OBJ
     )
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach(f)

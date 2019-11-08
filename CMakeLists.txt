@@ -27,5 +27,6 @@ set(SRC_FILES
     src/data_structures/array_list.c
 )
 
+enable_testing()
 add_subdirectory(src)
 add_subdirectory(tests)
