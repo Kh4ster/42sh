@@ -29,6 +29,3 @@ set(SRC_FILES
 
 add_subdirectory(src)
 add_subdirectory(tests)
-
-enable_testing()
-add_test(NAME test_string COMMAND test_string)
