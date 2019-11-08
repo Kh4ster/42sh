@@ -56,7 +56,7 @@ static void handle_line(char *line)
 
 int main(int argc, char *argv[])
 {
-    struct shell_environment env;
+    struct shell_environment env = {0};
     if (handle_parameters(&env.options, argc, argv) == -1)
         return 2;
 
