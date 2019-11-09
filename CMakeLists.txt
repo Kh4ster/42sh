@@ -27,6 +27,20 @@ set(SRC_FILES
     src/data_structures/array_list.c
 )
 
+set(CHECK_FILE "${CMAKE_BINARY_DIR}/check.log")
+file(WRITE "${CMAKE_BINARY_DIR}/tmp/check.sh" "make; ctest")
+file(
+    COPY "${CMAKE_BINARY_DIR}/tmp/check.sh"
+    DESTINATION "${CMAKE_BINARY_DIR}"
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
+add_custom_command(OUTPUT ${CHECK_FILE}
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    COMMAND "${CMAKE_BINARY_DIR}/check.sh"
+)
+add_custom_target(check DEPENDS ${CHECK_FILE})
+
 enable_testing()
 add_subdirectory(src)
 add_subdirectory(tests)
