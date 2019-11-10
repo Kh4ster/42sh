@@ -25,5 +25,5 @@ foreach(f IN LISTS TESTS_FILES)
     # Add the executable created to the test list of ctest
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
     # Set timeout of the test to 3 seconds
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 3)
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1)
 endforeach(f)

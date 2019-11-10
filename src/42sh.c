@@ -22,17 +22,21 @@ static void prep_terminal(int meta_flag)
         rl_prep_terminal(meta_flag);
 }
 
+static void handle_line(char *line)
+{
+    printf("%s$\n", line);
+    return;
+}
+
 static char *get_next_line(struct shell_environment *env, const char *prompt)
 {
-    /*
-    ** if option c, returns command given to c
-    ** set to null to exit loop at next iteration
-    */
+    // if option c, returns NULL to exit the execution loop
     if (env->options.option_c)
     {
-        char *command = env->options.command_option_c;  
+        char *command = env->options.command_option_c;
         env->options.command_option_c = NULL;
-        return command;
+        handle_line(command);
+        return NULL;
     }
 
     rl_prep_term_function = prep_terminal;
@@ -46,12 +50,6 @@ static char *get_next_line(struct shell_environment *env, const char *prompt)
 static char *get_prompt(void)
 {
     return "42sh$ ";
-}
-
-static void handle_line(char *line)
-{
-    printf("%s$\n", line);
-    return;
 }
 
 int main(int argc, char *argv[])
