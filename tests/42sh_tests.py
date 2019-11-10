@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from argparse import RawDescriptionHelpFormatter
 from pathlib import Path
 from difflib import unified_diff
 from termcolor import colored
@@ -9,6 +10,36 @@ import xml.etree.ElementTree as ET
 
 DEFAULT_TIMEOUT = 2
 XML_DATA = ET.Element('synthesis')
+EPILOG = """tests.yml description :
+  The folder in which the tests.yml is found is considered as its category.
+  In each tests.yml you can have many tests in the format :
+
+\"\"\"tests/example/tests.yml
+- name: ls simple       # Name of the test
+  stdin: ls             # Stdin given to bash --posix and binary
+
+- name: ls with args
+  stdin: ls -la
+
+- name: pipe missing right
+  stdin: echo test |
+  checks:               # it overwrite default checks on stdout, stderr, return
+    - has_stderr        # check only if binary have an stderr
+    - returncode        # check if binary have same returncode has bash --posix
+
+- name: timeout expected tree root
+  stdin: tree /
+  timeout: 1            # Change default timeout for the test
+
+- name: pass options c instead of stdin
+  options:              # add options to binary and bash --posix
+    - "-c"
+    - "echo hello world"
+\"\"\"
+"""
+
+DESCRIPTION = """42sh Functional Testsuite :
+  It launches all tests.yml found in subdirectories"""
 
 def run_shell(args, stdin, timeout):
     """ Run a process with given args and stdin. Return the captured output """
@@ -144,8 +175,10 @@ if __name__ == "__main__":
     """ This script launch automatically the functional testssuite """
 
     # Set all arguments that can be used by the script
-    parser = ArgumentParser(description="42sh Functional Testsuite")
-    parser.add_argument("bin", metavar="BIN")
+    parser = ArgumentParser(description= DESCRIPTION,
+            formatter_class = RawDescriptionHelpFormatter,
+            epilog = EPILOG)
+    parser.add_argument("bin", metavar="BINARY")
     parser.add_argument("-l", "--list", action="store_true",
             dest="list", default=False,
             help="Display the list of test categories")
