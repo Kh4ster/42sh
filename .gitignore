@@ -9,4 +9,4 @@
 .vscode/*
 bin/*
 build*
-docs
+doc
