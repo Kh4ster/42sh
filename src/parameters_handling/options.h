@@ -1,3 +1,7 @@
+/** @file
+* @author Coder : nicolas.blin
+*/
+
 #pragma once
 
 #include <stdbool.h>
