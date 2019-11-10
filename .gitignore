@@ -8,3 +8,4 @@
 42sh
 .vscode/*
 bin/*
+build*
