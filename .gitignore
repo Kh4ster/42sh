@@ -7,6 +7,6 @@
 *.pdf
 42sh
 .vscode/*
-bin/*
+bin*
 build*
-doc
+42sh_manual_doxygen
