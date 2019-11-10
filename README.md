@@ -6,7 +6,7 @@ Recreation of a shell from nothing using C
 
 ### Prerequisites
 
-This project do not use any librairies, you only need :
+To run this project, the requirements are :
 
 ```
  gcc
@@ -21,9 +21,12 @@ git clone URL
 cd 42sh
 ```
 
-Then you can generate the executable using
+Then you can generate the executable using cmake
 
 ```
+mkdir build
+cd build
+cmake ..
 make
 ```
 
@@ -31,7 +34,7 @@ An executable called 42sh is now available !
 
 ### Usage
 
-You can launch the shell using the executable :
+You can launch the shell using the executable at the root of the project:
 
 ```
 ./42sh
@@ -39,14 +42,22 @@ You can launch the shell using the executable :
 
 ## Run tests of 42sh
 
-You can run testsuite of 42sh after cloning the repository
+You can also run the unit testsuite of 42sh
 
 ```
+cd build
 make check
+```
+
+To run the fonctional testsuite you need to launch the python script in tests
+
+```
+python tests/42sh_tests.py --help
 ```
 
 ## AUTHORS
 
 - cloé.lacombe
 - nicolas.blin
+- zakaria.ben-allal
 - pierrick.made

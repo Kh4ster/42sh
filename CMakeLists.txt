@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
+find_program(CMAKE_C_COMPILER
+    NAMES $ENV{CC} gcc
+    PATHS ENV PATH NO_DEFAULT_PATH
+)
 project(42sh VERSION 1.0.0 LANGUAGES C)
 
 #[[
@@ -46,6 +50,12 @@ set(TESTS_FILES
     tests/parameters_handling/test_parameters_handler.c
 )
 
+# Set default BUILD_TYPE
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+      "Choose the type of build, options are: Debug Release"
+      FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
 
 # Create an interface containing options needed by compiler and linker
 add_library(common_options INTERFACE)
@@ -75,7 +85,9 @@ add_library(SRC_FILES_OBJ ${SRC_FILES_FROM_SUBDIR})
 
 
 # Create a check.sh to launch custom target "check"
-file(WRITE "${CMAKE_BINARY_DIR}/tmp/check.sh" "make; ctest")
+file(WRITE "${CMAKE_BINARY_DIR}/tmp/check.sh"
+    "make; python3 ${CMAKE_SOURCE_DIR}/tests/42sh_tests.py ${CMAKE_SOURCE_DIR}/42sh; ctest"
+)
 file(
     COPY "${CMAKE_BINARY_DIR}/tmp/check.sh"
     DESTINATION "${CMAKE_BINARY_DIR}"
