@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     while ((line = get_next_line(&env, get_prompt())) != NULL)
     {
         handle_line(line);
+        free(line);
     }
     return 0;
 }
