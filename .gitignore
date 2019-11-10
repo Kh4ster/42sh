@@ -1,0 +1,12 @@
+*.swp
+*.o
+*.a
+*.so
+*.class
+*.log
+*.pdf
+42sh
+.vscode/*
+bin*
+build*
+42sh_manual_doxygen
