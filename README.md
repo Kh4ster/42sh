@@ -17,7 +17,7 @@ To run this project, the requirements are :
 You can clone this repository and jump inside it
 
 ```
-git clone URL
+git clone git@git.assistants.epita.fr:p/2022/42sh/pierrick.made-42sh.git 42sh
 cd 42sh
 ```
 
