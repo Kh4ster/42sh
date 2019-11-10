@@ -1,12 +1,3 @@
-/*
-** Coder : nicolas.blin
-** Tester : nicolas.blin
-** Reviewer : pierrick.made
-** Integrator :
-**
-** Can hold a variable length array of char
-*/
-
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>

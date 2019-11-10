@@ -4,7 +4,7 @@
 
 #include "parameters_handling/options.h"
 
-/** @struct name_struct
+/** @struct shell_environment
 * @brief Holds information about the shell execution environnement
 */
 struct shell_environment

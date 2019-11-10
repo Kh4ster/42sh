@@ -1,3 +1,11 @@
+/** @file
+* @brief Handle entry parameters given to 42sh binary
+* @author Coder : nicolas.blin
+* @author Tester :
+* @author Reviewer :
+* @author Integrator :
+*/
+
 #pragma once
 
 #include "options.h"

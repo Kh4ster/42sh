@@ -1,5 +1,9 @@
-#ifndef MEMORY_H
-# define MEMORY_H
+/** @file
+* @brief Wrapper of memory calls to handle no memory case or other
+* @author Coder : nicolas.blin
+*/
+
+#pragma once
 
 # include <stddef.h>
 
@@ -25,5 +29,3 @@ void *xcalloc(size_t nmemb, size_t size);
 * @return void* : success, errx : fail
 */
 void *xrealloc(void *ptr, size_t size);
-
-#endif /* ! MEMORY_H */

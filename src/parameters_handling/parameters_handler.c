@@ -1,12 +1,3 @@
-/*
-** Coder : nicolas.blin
-** Tester :
-** Reviewer :
-** Integrator :
-**
-** Handle entry parameters given to 42sh binary
-*/
-
 #include <getopt.h>
 #include <stddef.h>
 
