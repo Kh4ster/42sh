@@ -44,8 +44,11 @@ DESCRIPTION = """42sh Functional Testsuite :
 def run_shell(args, stdin, timeout):
     """ Run a process with given args and stdin. Return the captured output """
 
-    return sp.run(args, capture_output=True, text=True, input=stdin,
-        timeout=timeout)
+    args = ["timeout", "--signal=KILL", f"{timeout}"] + args
+    res = sp.run(args, capture_output=True, text=True, input=stdin)
+    if (res.returncode == -9):
+        raise TimeoutError
+    return res
 
 def diff(ref, student):
     """ Return nice difference between two inputs strings """
@@ -64,7 +67,7 @@ def test(binary, test_case, timeout, args):
         binary = ["valgrind"] if args.sanity else [] + [binary]
         student = run_shell(binary + test_case.get("options", []),\
             test_case.get("stdin", ""), timeout)
-    except sp.TimeoutExpired:
+    except TimeoutError:
         raise AssertionError(f"Timeout after {timeout} seconds")
 
     for check in test_case.get("checks", ["stdout", "stderr", "returncode"]):
