@@ -28,14 +28,11 @@ def test(binary, test_case, timeout, args):
     """ Run bash and binary, check diff (return nothing or assertException) """
 
     try:
-        ref = test_case.get("expected", "")
-        if ref == "":
-            ref = run_shell(["bash", "--posix"], test_case["stdin"], timeout)
-        if args.sanity:
-            student = run_shell(["valgrind", binary], test_case["stdin"],
-                timeout)
-        else:
-            student = run_shell([binary], test_case["stdin"], timeout)
+        ref = run_shell(["bash", "--posix"] + test_case.get("options", []),\
+            test_case.get("stdin", ""), timeout)
+        binary = ["valgrind"] if args.sanity else [] + [binary]
+        student = run_shell(binary + test_case.get("options", []),\
+            test_case.get("stdin", ""), timeout)
     except sp.TimeoutExpired:
         raise AssertionError(f"Timeout after {timeout} seconds")
 

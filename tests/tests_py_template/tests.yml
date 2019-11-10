@@ -1,15 +1,20 @@
-- name: ls_simple
+- name: ls simple
   stdin: ls
 
-- name: ls_with_args
+- name: ls with args
   stdin: ls -la
 
-- name: pipe_missing_right
+- name: pipe missing right
   stdin: echo test |
   checks:
     - has_stderr
     - returncode
 
-- name: timeout_expected_tree_root
-  stdin: tree /
-  timeout: 1
+#- name: timeout expected tree root
+#  stdin: tree /
+#  timeout: 1
+
+- name: pass options c instead of stdin
+  options:
+    - "-c"
+    - "echo hello world"
