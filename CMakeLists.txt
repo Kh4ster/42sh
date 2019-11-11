@@ -33,10 +33,11 @@ project(42sh VERSION 1.0.0 LANGUAGES C)
 set(SRC_FILES
     src/memory/memory.c
     src/data_structures/data_string.c
+    #src/data_structures/queue.c
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
-    src/execution_handling/redirector.c
+    #src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
 )
@@ -46,8 +47,9 @@ set(TESTS_FILES
     tests/data_structures/test_string.c
     tests/input_output/test_read.c
     tests/input_output/test_write.c
-    tests/builtins/test_redirector.c
+    #tests/builtins/test_redirector.c
     tests/parameters_handling/test_parameters_handler.c
+    #tests/data_structures/test_queue.c
 )
 
 # Set default BUILD_TYPE
@@ -82,6 +84,9 @@ endforeach(f)
 set(SRC_FILES_FROM_SUBDIR "${listVar}")
 # Create a library containing all src files
 add_library(SRC_FILES_OBJ ${SRC_FILES_FROM_SUBDIR})
+target_link_libraries(SRC_FILES_OBJ PRIVATE
+    common_options
+)
 
 
 # Create a check.sh to launch custom target "check"
