@@ -12,9 +12,8 @@ Test(cmd_exec, echo_toto)
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "echo"));
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
-    int exec = exec_cmd(cmd);
-    cr_assert_eq(0, exec);
-    free(cmd);
+    cr_assert_eq(0, exec_cmd(cmd));
+    command_destroy(&cmd);
 }
 
 Test(cmd_exec, cmd_notfound_toto)
@@ -25,7 +24,7 @@ Test(cmd_exec, cmd_notfound_toto)
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
     int exec = exec_cmd(cmd);
     cr_assert_eq(127, exec);
-    free(cmd);
+    command_destroy(&cmd);
 }
 
 Test(cmd_exec, not_executable_toto)
@@ -36,7 +35,7 @@ Test(cmd_exec, not_executable_toto)
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
     int exec = exec_cmd(cmd);
     cr_assert_eq(126, exec);
-    free(cmd);
+    command_destroy(&cmd);
 }
 
 Test(cmd_exec, ls_dir_notfound)
@@ -47,7 +46,7 @@ Test(cmd_exec, ls_dir_notfound)
     cr_assert_eq(0, strcmp(cmd->params[1], "dir_notfound"));
     int exec = exec_cmd(cmd);
     cr_assert_eq(2, exec);
-    free(cmd);
+    command_destroy(&cmd);
 }
 
 Test(cmd_exec, tree_dir_notfound)
@@ -58,5 +57,5 @@ Test(cmd_exec, tree_dir_notfound)
     cr_assert_eq(0, strcmp(cmd->params[1], "dir_notfound"));
     int exec = exec_cmd(cmd);
     cr_assert_eq(0, exec);
-    free(cmd);
+    command_destroy(&cmd);
 }
