@@ -40,6 +40,7 @@ set(SRC_FILES
     #src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
+    src/execution_handling/command_execution.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -50,6 +51,7 @@ set(TESTS_FILES
     #tests/builtins/test_redirector.c
     tests/parameters_handling/test_parameters_handler.c
     #tests/data_structures/test_queue.c
+    tests/commands_handling/test_exec.c
 )
 
 # Set default BUILD_TYPE
