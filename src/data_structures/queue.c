@@ -46,7 +46,7 @@ void *queue_pop(struct queue *queue)
         queue->size -= 1;
         return elt_popped;
     }
-    struct queue *tmp = queue->head->next;
+    struct list *tmp = queue->head->next;
     free(queue->head);
     queue->head = tmp;
     queue->size -= 1;
