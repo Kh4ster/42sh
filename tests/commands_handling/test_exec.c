@@ -6,7 +6,7 @@
 #include "../../src/execution_handling/command_execution.h"
 #include "../../src/memory/memory.h"
 
-Test(cmd_exec, echo toto)
+Test(cmd_exec, echo_toto)
 {
     struct command_container *cmd = command_init(1, "echo", "toto");
     cr_assert_not_null(cmd);
@@ -17,7 +17,7 @@ Test(cmd_exec, echo toto)
     free(cmd);
 }
 
-Test(cmd_exec, cmd_notfound toto)
+Test(cmd_exec, cmd_notfound_toto)
 {
     struct command_container *cmd = command_init(1, "cmd_notfound", "toto");
     cr_assert_not_null(cmd);
@@ -28,7 +28,7 @@ Test(cmd_exec, cmd_notfound toto)
     free(cmd);
 }
 
-Test(cmd_exec, ./not_executable toto)
+Test(cmd_exec, not_executable_toto)
 {
     struct command_container *cmd = command_init(1, "./not_executable", "toto");
     cr_assert_not_null(cmd);
@@ -39,7 +39,7 @@ Test(cmd_exec, ./not_executable toto)
     free(cmd);
 }
 
-Test(cmd_exec, ls dir_notfound)
+Test(cmd_exec, ls_dir_notfound)
 {
     struct command_container *cmd = command_init(1, "ls", "dir_notfound");
     cr_assert_not_null(cmd);
@@ -50,7 +50,7 @@ Test(cmd_exec, ls dir_notfound)
     free(cmd);
 }
 
-Test(cmd_exec, tree dir_notfound)
+Test(cmd_exec, tree_dir_notfound)
 {
     struct command_container *cmd = command_init(1, "tree", "dir_notfound");
     cr_assert_not_null(cmd);

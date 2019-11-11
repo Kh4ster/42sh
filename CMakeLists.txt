@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 find_program(CMAKE_C_COMPILER
     NAMES $ENV{CC} gcc
     PATHS ENV PATH NO_DEFAULT_PATH
