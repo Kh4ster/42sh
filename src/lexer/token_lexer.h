@@ -8,12 +8,14 @@
 
 #pragma once
 
-enum token_lexer_type{
+enum token_lexer_type
+{
     TOKEN_END_OF_INSTRUCTION,
     TOKEN_OTHER
 };
 
-struct token_lexer{
+struct token_lexer
+{
     char *data;
     enum token_lexer_type type;
 };
