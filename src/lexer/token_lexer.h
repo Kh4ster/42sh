@@ -11,6 +11,7 @@
 enum token_lexer_type
 {
     TOKEN_END_OF_INSTRUCTION,
+    TOKEN_END_OF_LINE,
     TOKEN_OTHER
 };
 
@@ -19,3 +20,5 @@ struct token_lexer
     char *data;
     enum token_lexer_type type;
 };
+
+struct queue *lexer(char *line);
