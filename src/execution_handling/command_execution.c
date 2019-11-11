@@ -9,6 +9,7 @@
 #include <err.h>
 #include <errno.h>
 
+#include "command_container.h"
 #include "command_execution.h"
 
 int exec_cmd(struct command_container *cmd)
@@ -27,16 +28,4 @@ int exec_cmd(struct command_container *cmd)
     int wstatus;
     waitpid(pid, &wstatus, 0);
     return WEXITSTATUS(wstatus);
-}
-
-int main(int argc, char **argv)
-{
-    if (argc < 1)
-        exit(EXIT_FAILURE);
-    char *cmd_name = "./toto";
-    struct command_container *cmd = malloc(sizeof(struct command_container));
-    cmd->command = cmd_name;
-    cmd->params = argv;
-    int exec = exec_cmd(cmd);
-    return exec;
 }

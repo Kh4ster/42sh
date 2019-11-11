@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "command_container.h"
-
 /**
 * @brief Handle parameters given to 42sh binary
 * @param struct command_container
