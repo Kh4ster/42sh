@@ -24,9 +24,7 @@ struct queue
 };
 
 struct queue *queue_init(void);
-size_t queue_size(struct queue *queue);
 void queue_push(struct queue *queue, void *elt);
-void* queue_head(struct queue *queue);
 void* queue_pop(struct queue *queue);
 void queue_clear(struct queue *queue);
 void queue_destroy(struct queue **queue);
