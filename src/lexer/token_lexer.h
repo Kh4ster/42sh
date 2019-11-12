@@ -15,6 +15,7 @@ enum token_lexer_type
 {
     TOKEN_END_OF_INSTRUCTION, /**< @brief end of an instruction ";", "EOF" */
     TOKEN_END_OF_LINE, /**< @brief end of line "\n" */
+    TOKEN_OPERATOR, /**< @brief operators defined in scl (&&, ||, ;;, ...) */
     TOKEN_OTHER /**< @brief any words without delimiters */
 };
 
@@ -40,4 +41,4 @@ struct queue *lexer(char *line);
 * @param token the token you want to free
 * @relates token_lexer
 */
-void free_token(struct token_lexer **token);
+void token_lexer_free(struct token_lexer **token);
