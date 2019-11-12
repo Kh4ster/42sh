@@ -51,6 +51,7 @@ set(TESTS_FILES
     #tests/builtins/test_redirector.c
     tests/parameters_handling/test_parameters_handler.c
     tests/data_structures/test_queue.c
+    tests/lexer/test_token_lexer.c
 )
 
 # Set default BUILD_TYPE
