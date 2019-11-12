@@ -30,11 +30,14 @@ Test(cmd_exec, cmd_notfound_toto, .timeout = 0)
 
 Test(cmd_exec, not_executable_toto, .timeout = 0)
 {
+    FILE *fd;
+    fd = fopen("not_executable", "w+");
     struct command_container *cmd = command_init(1, "./not_executable", "toto");
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "./not_executable"));
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
     cr_assert_eq(126, exec_cmd(cmd));
+    fclose(fd);
     command_destroy(&cmd);
 }
 
