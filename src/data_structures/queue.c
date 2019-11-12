@@ -18,7 +18,7 @@ void queue_push(struct queue *queue, void *elt)
 {
     if (queue == NULL)
         queue = queue_init();
-    struct list *new_l = xmalloc(sizeof(struct list));
+    struct queue_item *new_l = xmalloc(sizeof(struct queue_item));
 
     new_l->data = elt;
     new_l->next = NULL;
@@ -46,7 +46,7 @@ void *queue_pop(struct queue *queue)
         queue->size -= 1;
         return elt_popped;
     }
-    struct list *tmp = queue->head->next;
+    struct queue_item *tmp = queue->head->next;
     free(queue->head);
     queue->head = tmp;
     queue->size -= 1;
