@@ -1,5 +1,6 @@
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "../data_structures/queue.h"
 #include "../memory/memory.h"
@@ -11,6 +12,13 @@ void skip_class(int (*classifier)(int c), char **cursor)
 {
     while (classifier(**cursor))
         (*cursor)++;
+}
+
+void free_token(struct token_lexer **token)
+{
+    free((*token)->data);
+    free(*token);
+    *token = NULL;
 }
 
 char *get_delimiter(char *line)
