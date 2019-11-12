@@ -19,9 +19,11 @@ int exec_cmd(struct command_container *cmd)
     {
         execvp(cmd->command, cmd->params);
         if (errno == ENOENT)
-            return 127;
-        if (errno == EACCES)
-            return 126;
+            errx(127, "127");
+        else if (errno == EACCES)
+            errx(126, "126");
+        else
+            errx(-1, "-1");
     }
     int wstatus;
     waitpid(pid, &wstatus, 0);

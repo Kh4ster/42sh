@@ -18,7 +18,7 @@ Test(cmd_exec, echo_toto, .exit_code = 0)
     command_destroy(&cmd);
 }
 
-Test(cmd_exec, cmd_notfound_toto, .timeout = 0, .exit_code = 126)
+Test(cmd_exec, cmd_notfound_toto, .timeout = 0)
 {
     struct command_container *cmd = command_init(1, "cmd_notfound", "toto");
     cr_assert_not_null(cmd);
@@ -28,7 +28,7 @@ Test(cmd_exec, cmd_notfound_toto, .timeout = 0, .exit_code = 126)
     command_destroy(&cmd);
 }
 
-Test(cmd_exec, not_executable_toto, .timeout = 0, .exit_code = 126)
+Test(cmd_exec, not_executable_toto, .timeout = 0)
 {
     struct command_container *cmd = command_init(1, "./not_executable", "toto");
     cr_assert_not_null(cmd);
@@ -38,25 +38,18 @@ Test(cmd_exec, not_executable_toto, .timeout = 0, .exit_code = 126)
     command_destroy(&cmd);
 }
 
-Test(cmd_exec, ls_dir_notfound, .timeout = 0, .exit_code = 0)
+Test(cmd_exec, ls_dir_notfound, .timeout = 0)
 {
     struct command_container *cmd = command_init(1, "ls", "dir_notfound");
-    struct command_container *returned_val = command_init(1, "echo", "$?");
     cr_assert_not_null(cmd);
-    cr_assert_not_null(returned_val);
     cr_assert_eq(0, strcmp(cmd->command, "ls"));
     cr_assert_eq(0, strcmp(cmd->params[1], "dir_notfound"));
-    exec_cmd(cmd);
-    int val = exec_cmd(returned_val);
-    //cr_assert_eq(2, val);
-    char tmp[10];
-    sprintf(tmp, "%d", val);
-    cr_assert_stdout_eq_str(tmp);
+    int exec = exec_cmd(cmd);
+    cr_assert_eq(2, exec);
     command_destroy(&cmd);
-    command_destroy(&returned_val);
 }
 
-Test(cmd_exec, tree_dir_notfound, .timeout = 0, .exit_code = 0)
+Test(cmd_exec, tree_dir_notfound, .timeout = 0)
 {
     struct command_container *cmd = command_init(1, "tree", "dir_notfound");
     cr_assert_not_null(cmd);
