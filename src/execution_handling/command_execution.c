@@ -19,9 +19,9 @@ int exec_cmd(struct command_container *cmd)
     {
         execvp(cmd->command, cmd->params);
         if (errno == ENOENT)
-            errx(127, "127");
+            errx(127, "command not found");
         else if (errno == EACCES)
-            errx(126, "126");
+            errx(126, "cannot execute command");
         else
             errx(-1, "-1");
     }
@@ -29,15 +29,13 @@ int exec_cmd(struct command_container *cmd)
     waitpid(pid, &wstatus, 0);
     return WEXITSTATUS(wstatus);
 }
-
-/**might replace criterion unitary testing
-
+/*
 int main()
 {
-    struct command_container *cmd = command_init(1, "toto", "toto");
+    struct command_container *cmd = command_init(1, "./toto", "toto");
     int exec = exec_cmd(cmd);
     command_destroy(&cmd);
     return exec;
 }
-
 */
+
