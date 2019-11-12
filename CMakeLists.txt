@@ -40,6 +40,7 @@ set(SRC_FILES
     #src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
+    src/lexer/token_lexer.c
 )
 
 # ---- List of test files (unit tests) ----
