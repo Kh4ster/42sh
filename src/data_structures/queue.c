@@ -30,6 +30,14 @@ void queue_push(struct queue *queue, void *elt)
     queue->size += 1;
 }
 
+void *queue_head(struct queue *queue)
+{
+    assert(queue != NULL);
+    if (queue->head == NULL)
+        return NULL;
+    return queue->head->data;
+}
+
 void *queue_pop(struct queue *queue)
 {
     assert(queue != NULL);

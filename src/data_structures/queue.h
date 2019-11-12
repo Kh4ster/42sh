@@ -45,6 +45,14 @@ struct queue *queue_init(void);
 void queue_push(struct queue *queue, void *elt);
 
 /**
+* @brief Return the content of the first item from queue
+* @param queue Your queue struct
+* @return success : pointer to the data contained in first item, fail : NULL
+* @relates queue
+*/
+void* queue_head(struct queue *queue);
+
+/**
 * @brief Take out (pop) the first item of the queue
 * @param queue Your queue struct
 * @return success : pointer to the data contained in first item, fail : NULL
@@ -59,7 +67,6 @@ void* queue_pop(struct queue *queue);
 * @relates queue
 */
 void queue_clear(struct queue *queue);
-
 
 /**
 * @brief Destroy the queue struct after clearing items (queue_clear)
