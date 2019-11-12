@@ -62,6 +62,9 @@ if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "Build type : ${CMAKE_BUILD_TYPE}")
 endif(NOT CMAKE_BUILD_TYPE)
 
+# Find Readline library
+find_library(READLINE_LIB readline)
+
 # Create an interface containing options needed by compiler and linker
 add_library(common_options INTERFACE)
 target_compile_options(common_options INTERFACE
@@ -75,7 +78,7 @@ target_compile_options(common_options INTERFACE
 )
 target_link_libraries(common_options INTERFACE
     $<$<NOT:$<CONFIG:Release>>:-fsanitize=address>
-    "-lreadline"
+    ${READLINE_LIB}
 )
 
 
