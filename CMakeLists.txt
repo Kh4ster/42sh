@@ -56,9 +56,12 @@ set(TESTS_FILES
 
 # Set default BUILD_TYPE
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-      "Choose the type of build, options are: Debug Release"
-      FORCE)
+    string(REGEX REPLACE ".*/build_" "" BUILD_NAME ${CMAKE_BINARY_DIR})
+    set(CMAKE_BUILD_TYPE Release)
+    if(${BUILD_NAME} STREQUAL "Debug" OR ${BUILD_NAME} STREQUAL "debug")
+        set(CMAKE_BUILD_TYPE Debug)
+    endif (${BUILD_NAME} STREQUAL "Debug" OR ${BUILD_NAME} STREQUAL "debug")
+    message(STATUS "Build type : ${CMAKE_BUILD_TYPE}")
 endif(NOT CMAKE_BUILD_TYPE)
 
 # Create an interface containing options needed by compiler and linker
