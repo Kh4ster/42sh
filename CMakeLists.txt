@@ -33,7 +33,7 @@ project(42sh VERSION 1.0.0 LANGUAGES C)
 set(SRC_FILES
     src/memory/memory.c
     src/data_structures/data_string.c
-    #src/data_structures/queue.c
+    src/data_structures/queue.c
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
@@ -41,6 +41,7 @@ set(SRC_FILES
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
     src/execution_handling/command_execution.c
+    src/lexer/token_lexer.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -50,9 +51,10 @@ set(TESTS_FILES
     tests/input_output/test_write.c
     #tests/builtins/test_redirector.c
     tests/parameters_handling/test_parameters_handler.c
-    #tests/data_structures/test_queue.c
     tests/commands_handling/test_exec.c
     tests/commands_handling/test_create.c
+    tests/data_structures/test_queue.c
+    tests/lexer/test_token_lexer.c
 )
 
 # Set default BUILD_TYPE
