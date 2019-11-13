@@ -91,18 +91,26 @@ static struct command_container* build_simple_command(char *simple_command,
 }
 
 //simplified version of the grammar
+//only handles >
 static struct instruction* parse_simple_command(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_pop(lexer);
-    char *simple_command = token->data;
+    char *simple_command_str = token->data;
 
     struct array_list *parameters = array_list_init();
 
     while (!next_is_end_of_instruction(lexer))
-        array_list_append(parameters, token_lexer_pop(lexer));
+    {
+        token = token_lexer_pop(lexer);
+        array_list_append(parameters, token->data);
+    }
 
-    return build_instruction(TOKEN_COMMAND, build_simple_command(simple_command,
-                                                                parameters));
+    struct command_container *command_container =  build_simple_command(
+                                                            simple_command_str,
+                                                            parameters);
+
+    //if (!next_is(lexer, ">"))
+    return build_instruction(TOKEN_COMMAND, command_container);
 }
 
 //only handle shell command and simple command
