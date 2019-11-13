@@ -40,6 +40,7 @@ set(SRC_FILES
     #src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
+    src/execution_handling/command_execution.c
     src/lexer/token_lexer.c
 )
 
@@ -50,6 +51,8 @@ set(TESTS_FILES
     tests/input_output/test_write.c
     #tests/builtins/test_redirector.c
     tests/parameters_handling/test_parameters_handler.c
+    tests/commands_handling/test_exec.c
+    tests/commands_handling/test_create.c
     tests/data_structures/test_queue.c
     tests/lexer/test_token_lexer.c
 )
