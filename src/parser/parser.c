@@ -1,16 +1,16 @@
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "parser.h"
 #include "../lexer/token_lexer.h"
-#include "../data_structures/queue.h"
 #include "../memory/memory.h"
 #include "../execution_handling/command_container.h"
 #include "../data_structures/array_list.h"
 
-static int next_is(struct queue *lexer, char *to_match)
+static int next_is(struct queue *lexer, const char *to_match)
 {
-    struct token_lexer *token = queue_head(lexer);
+    struct token_lexer *token = token_lexer_head(lexer);
     if (token == NULL)
         return 0;
     return strcmp(token->data, to_match) == 0;
@@ -19,10 +19,10 @@ static int next_is(struct queue *lexer, char *to_match)
 //just need to free last token if there is one
 static void skip_newline(struct queue *lexer)
 {
-    struct token_lexer *token = queue_head(lexer);
+    struct token_lexer *token = token_lexer_head(lexer);
     if (token != NULL && token->type == TOKEN_END_OF_LINE)
     {
-        free_token(token);
+        token_lexer_free(&token);
     }
 }
 
@@ -46,31 +46,13 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
     return and_or;
 }
 
-//for now just call to and_or
-static struct instruction* parse_compound_list_break(struct queue *lexer)
-{
-    return parse_and_or(lexer);
-}
-
-//pour l'instant gère pas les else et elif
-static struct instruction* parse_if(struct queue *lexer)
-{
-    struct instruction *conditions = NULL;
-    struct instruction *to_execute = NULL;
-    struct instruction *elif_container = NULL;
-    struct instruction *else_container = NULL;
-    queue_pop(lexer); //pop if
-    conditions = parse_compound_list_break(lexer);
-    queue_pop(lexer); //pop then
-    to_execute = parse_compound_list_break(lexer);
-    queue_pop(lexer); //pop fi
-}
+static struct instruction* parse_if(struct queue *lexer);
 
 // à voir comment ça marche exactement
 static struct instruction* parse_shell_command(struct queue *lexer)
 {
     if (next_is(lexer, "if"))
-        return pase_if(lexer);
+        return parse_if(lexer);
     assert(0 && "not yet implented");
     return NULL;
 }
@@ -93,27 +75,34 @@ static bool is_shell_command(struct queue *lexer)
 
 static bool next_is_end_of_instruction(struct queue *lexer)
 {
-    struct token_lexer *token = queue_head(lexer);
+    struct token_lexer *token = token_lexer_head(lexer);
     if (token == NULL)
-        return false;
+        return true;
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_END_OF_LINE
             || token->type == TOKEN_OPERATOR;
 }
 
-static struct command_container* build_simple_command(struct queue *lexer)
+static struct command_container* build_simple_command(char *simple_command,
+                                                struct array_list *parameters
+)
 {
-    char *simple_command = queue_pop(lexer);
-    struct array_list *parameters = init_array_list();
-    while (!next_is_end_of_instruction(lexer))
-        array_list_append(parameters, queue_pop(lexer));
-    return command_container_init(simple_command, parameters);
+    return command_create(simple_command, parameters);
 }
 
 //simplified version of the grammar
 static struct instruction* parse_simple_command(struct queue *lexer)
 {
-    return build_instruction(TOKEN_COMMAND, build_simple_command(lexer));
+    struct token_lexer *token = token_lexer_pop(lexer);
+    char *simple_command = token->data;
+
+    struct array_list *parameters = array_list_init();
+
+    while (!next_is_end_of_instruction(lexer))
+        array_list_append(parameters, token_lexer_pop(lexer));
+
+    return build_instruction(TOKEN_COMMAND, build_simple_command(simple_command,
+                                                                parameters));
 }
 
 //only handle shell command and simple command
@@ -138,18 +127,18 @@ static struct instruction* parse_pipeline(struct queue *lexer)
 
 static struct instruction* parse_and_or(struct queue *lexer)
 {
-    struct instruction *left = parse_pipline();
+    struct instruction *left = parse_pipeline(lexer);
     struct instruction *right = NULL;
 
     if (next_is(lexer, "||"))
     {
-        queue_pop(lexer);
+        token_lexer_pop(lexer);
         right = parse_and_or(lexer);
         return build_instruction(TOKEN_OR, build_and_or(left, right));
     }
     else if (next_is(lexer, "&&"))
     {
-        queue_pop(lexer);
+        token_lexer_pop(lexer);
         right = parse_and_or(lexer);
         return build_instruction(TOKEN_AND, build_and_or(left, right));
     }
@@ -157,8 +146,48 @@ static struct instruction* parse_and_or(struct queue *lexer)
         return left;
 }
 
+//for now just call to and_or
+static struct instruction* parse_compound_list_break(struct queue *lexer)
+{
+    return parse_and_or(lexer);
+}
+
+static struct if_instruction* build_if_instruction(
+                                        struct instruction *conditions,
+                                        struct instruction *to_execute,
+                                        struct instruction *elif_container,
+                                        struct instruction *else_container
+)
+{
+    struct if_instruction *if_instruction = xmalloc(sizeof(*if_instruction));
+    if_instruction->conditions = conditions;
+    if_instruction->to_execute = to_execute;
+    if_instruction->elif_container = elif_container;
+    if_instruction->else_container = else_container;
+    return if_instruction;
+}
+
+//pour l'instant gère pas les else et elif
+static struct instruction* parse_if(struct queue *lexer)
+{
+    struct instruction *conditions = NULL;
+    struct instruction *to_execute = NULL;
+    struct instruction *elif_container = NULL;
+    struct instruction *else_container = NULL;
+    token_lexer_pop(lexer); //pop if
+    conditions = parse_compound_list_break(lexer);
+    token_lexer_pop(lexer); //pop ; ou \n
+    token_lexer_pop(lexer); //pop then  to verify
+    to_execute = parse_compound_list_break(lexer);
+    token_lexer_pop(lexer); //pop fi
+    return build_instruction(TOKEN_IF, build_if_instruction(conditions,
+                                                        to_execute,
+                                                        elif_container,
+                                                        else_container));
+}
+
 //for now doens't handle comand;command
-static struct instruction* parse_instruction(struct queue *lexer)
+static struct instruction* parse_list(struct queue *lexer)
 {
     struct instruction *and_or = parse_and_or(lexer);
 
@@ -167,7 +196,7 @@ static struct instruction* parse_instruction(struct queue *lexer)
 
 struct instruction* parse_input(struct queue *lexer)
 {
-    struct instruction *ast = parse_instruction(lexer);
-    skip_newline(lexer);
+    struct instruction *ast = parse_list(lexer);
+    //skip_newline(lexer);
     return ast;
 }
