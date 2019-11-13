@@ -36,6 +36,11 @@ struct token_lexer
 */
 struct queue *lexer(char *line);
 
+//TODO
+struct token_lexer *token_lexer_pop(struct queue *token_queue);
+
+struct token_lexer *token_lexer_head(struct queue *token_queue);
+
 /**
 * @brief Free the token struct and contained string (set token to NULL)
 * @param token the token you want to free
