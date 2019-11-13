@@ -41,6 +41,7 @@ set(SRC_FILES
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
     src/lexer/token_lexer.c
+    src/execution_handling/command_execution.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -52,6 +53,7 @@ set(TESTS_FILES
     tests/parameters_handling/test_parameters_handler.c
     tests/data_structures/test_queue.c
     tests/lexer/test_token_lexer.c
+    tests/commands_handling/test_exec.c
 )
 
 # Set default BUILD_TYPE
@@ -63,6 +65,9 @@ if(NOT CMAKE_BUILD_TYPE)
     endif (${BUILD_NAME} STREQUAL "Debug" OR ${BUILD_NAME} STREQUAL "debug")
     message(STATUS "Build type : ${CMAKE_BUILD_TYPE}")
 endif(NOT CMAKE_BUILD_TYPE)
+
+# Find Readline library
+find_library(READLINE_LIB readline)
 
 # Create an interface containing options needed by compiler and linker
 add_library(common_options INTERFACE)
@@ -77,7 +82,7 @@ target_compile_options(common_options INTERFACE
 )
 target_link_libraries(common_options INTERFACE
     $<$<NOT:$<CONFIG:Release>>:-fsanitize=address>
-    "-lreadline"
+    ${READLINE_LIB}
 )
 
 

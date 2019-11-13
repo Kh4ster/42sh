@@ -1,8 +1,8 @@
 /*
 ** Coder : nicolas.blin
-** Tester : 
-** Reviewer : 
-** Integrator : 
+** Tester :
+** Reviewer :
+** Integrator :
 **
 ** Variable length array data_structure
 ** TO TEST IF NEEDED BY THE PROJECT
