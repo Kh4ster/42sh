@@ -29,13 +29,3 @@ int exec_cmd(struct command_container *cmd)
     waitpid(pid, &wstatus, 0);
     return WEXITSTATUS(wstatus);
 }
-/*
-int main()
-{
-    struct command_container *cmd = command_init(1, "./toto", "toto");
-    int exec = exec_cmd(cmd);
-    command_destroy(&cmd);
-    return exec;
-}
-*/
-
