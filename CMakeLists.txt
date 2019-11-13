@@ -42,6 +42,8 @@ set(SRC_FILES
     src/parameters_handling/parameters_handler.c
     src/lexer/token_lexer.c
     src/execution_handling/command_execution.c
+    src/parser/parser.c
+    src/parser/ast/ast.c
 )
 
 # ---- List of test files (unit tests) ----
