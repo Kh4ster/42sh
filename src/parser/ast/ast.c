@@ -1,10 +1,21 @@
 #include "ast.h"
 #include "../parser.h"
 #include "../parser.h"
+#include "../../execution_handling/command_execution.c"
 
-static int (struct if_instruction *if_struct)
+static int handle_if(struct instruction *ast)
 {
-    
+    struct if_instruction *if_struct = ast->data;
+    if (execute_ast(if_struct->condition))
+    {
+        execut_ast(if_struct->to_execute);
+        return 1;
+    }
+
+    else if (execute_ast(if_struct->elif_container))
+            return 1;
+    else
+        return execute_ast(if_struct->else_container);
 }
 
 
@@ -22,12 +33,16 @@ static int handle_and_or_instruction(struct instruction *ast)
 static int handle_commands(struct instructions *ast)
 {
     /* execute commande with zak function */
-    return 1;
+    struct command_container *command = ast->data;
+    return exec_cmd(command);
 }
 
 
 extern int execute_ast(struct instruction *ast)
 {
+    if (!ast)
+        return 1;
+
     switch (ast->type)
     {
         case TOKEN_OR:
@@ -36,6 +51,9 @@ extern int execute_ast(struct instruction *ast)
             break;
         case TOKEN_COMMAND:
             return handle_commands(ast);
+            break;
+        case TOKEN_IF:
+            return handle_if(ast);
             break;
     }
     return 1;
