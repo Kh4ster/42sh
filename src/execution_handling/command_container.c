@@ -1,6 +1,6 @@
 /*
-** Coder : nicolas.blin
-** Tester :
+** Coder : nicolas.blin & zakaria.ben-allal
+** Tester : zakaria.ben-allal
 ** Reviewer :
 ** Integrator :
 **
@@ -79,18 +79,4 @@ struct command_container *command_create(char *cmd, struct array_list *list)
     }
     save->params[j] = NULL;
     return save;
-}
-
-/* do not delete yet
-int main()
-{
-    char *cmd = strdup("echo");
-    struct array_list *list = init_array_list();
-    append_array_list(list, strdup("toto"));
-    struct command_container *c = cmd_store(cmd, list);
-    int exec = exec_cmd(c);
-    free(c->command);
-    command_destroy(&c);
-    destroy_array_list(list);
-    return exec;
 }

@@ -52,6 +52,7 @@ set(TESTS_FILES
     tests/parameters_handling/test_parameters_handler.c
     #tests/data_structures/test_queue.c
     tests/commands_handling/test_exec.c
+    tests/commands_handling/test_create.c
 )
 
 # Set default BUILD_TYPE
