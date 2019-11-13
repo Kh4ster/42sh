@@ -14,7 +14,7 @@ Test(cmd_exec, echo_toto, .exit_code = 0)
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "echo"));
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
-    cr_assert_eq(0 ,exec_cmd(cmd));
+    cr_assert_eq(0,exec_cmd(cmd));
     command_destroy(&cmd);
 }
 

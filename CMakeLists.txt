@@ -51,9 +51,10 @@ set(TESTS_FILES
     tests/input_output/test_write.c
     #tests/builtins/test_redirector.c
     tests/parameters_handling/test_parameters_handler.c
+    tests/commands_handling/test_exec.c
+    tests/commands_handling/test_create.c
     tests/data_structures/test_queue.c
     tests/lexer/test_token_lexer.c
-    tests/commands_handling/test_exec.c
 )
 
 # Set default BUILD_TYPE

@@ -10,7 +10,8 @@
 
 #define BASE_STR_CAPACITY 64
 
-/** @struct string
+/**
+* @struct string
 * @brief Variable length char*
 */
 struct string
