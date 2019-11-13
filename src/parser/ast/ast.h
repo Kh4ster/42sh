@@ -9,13 +9,19 @@
 * @author Integrator :
 */
 
+struct data_ast {
+    enum token_parser_type type;
+    char *test;
+}
+
+
 struct ast {
-    enum type_value type;
+    struct data_ast *data;
     struct ast *left_child;
     struct ast *right_child;
-    char *test;
 };
 
 
+extern struct ast *build_ast(struct stack *input);
 
 #endif
