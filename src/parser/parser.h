@@ -6,6 +6,8 @@
 * @author Integrator :
 */
 
+#include "../data_structures/queue.h"
+
 #pragma once
 
 enum token_parser_type
@@ -16,27 +18,28 @@ enum token_parser_type
     TOKEN_REDIRECT_LEFT,
     TOKEN_REDIRECT_RIGHT,
     TOKEN_REDIRECT_APPEND_LEFT,
-    TOKEN_INSTRUCTION,
+    TOKEN_COMMAND,
     TOKEN_ELSE
 };
 
-enum token_lexer_to_ast_type
+struct and_or_instruction
 {
-    TOKEN_LEFT_PARENTHESIS,
-    TOKEN_RIGHT_PARENTHESIS,
-    TOKEN_OPERATOR,
-    TOKEN_PARAM
+    struct instruction *left;
+    struct instruction *right;
 };
 
-struct token_lexer_to_ast
+struct if_instruction
 {
-    enum token_lexer_to_ast_type type;
-    char *value;
+    struct instruction *conditions; /**< @brief conditions to test */
+    struct instruction *to_execute; /**< @brief commands to execute */
+    struct instruction *elif_container; /**< @brief elif (can be null)*/
+    struct instruction *else_container; /**< @brief else (can be null) */
 };
 
-struct compound_list_break
+struct instruction
 {
-    struct ast *root;
+    void *data;
+    enum token_parser_type type;
 };
 
-struct tree* parse(struct queue *queue);
+struct instruction* parse_input(struct queue *lexer);
