@@ -7,7 +7,7 @@
 #include "../memory/memory.h"
 #include "token_lexer.h"
 
-#define DELIMITERS " \\\n\t&|<>$\"$();"
+#define DELIMITERS " \\\n\t&|<>$\"\'`$();"
 
 void skip_class(int (*classifier)(int c), char **cursor)
 {
@@ -125,4 +125,20 @@ struct queue *lexer(char *line)
     }
 
     return token_queue;
+}
+
+struct token_lexer *token_lexer_head(struct queue *token_queue)
+{
+    struct token_lexer *current_token = queue_head(token_queue);
+    if (current_token != NULL)
+        return current_token;
+    //readline / get line ?
+    return current_token;
+}
+
+struct token_lexer *token_lexer_pop(struct queue *token_queue)
+{
+    struct token_lexer *current_token = token_lexer_head(token_queue);
+    queue_pop(token_queue);
+    return current_token;
 }
