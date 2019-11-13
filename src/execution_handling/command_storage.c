@@ -43,10 +43,10 @@ struct command_container *cmd_store(char *line)
     free(tmp);
     return save;
 }
-
+/*
 int main()
 {
-    char *line = strdup("lsfdf toto papa");
+    char *line = strdup("echo toto papa");
     struct command_container *save = cmd_store(line);
     printf("%s\n", save->command);
     printf("%s\n", save->params[0]);
@@ -58,4 +58,4 @@ int main()
     command_destroy(&save);
     return exec;
 }
-
+*/
