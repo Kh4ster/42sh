@@ -6,7 +6,11 @@
 #pragma once
 
 # include <stddef.h>
-# include <stdlib.h>
+
+/**
+* @brief Handle error message in case of memory exhausted
+*/
+void memory_exhausted(void);
 
 /**
 * @brief malloc wrapper

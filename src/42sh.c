@@ -32,7 +32,7 @@ static void handle_line(char *line)
 static char *get_next_line(struct shell_environment *env, const char *prompt)
 {
     // if option c, returns NULL to exit the execution loop
-    if (env->options.option_c)
+    if (env != NULL && env->options.option_c)
     {
         char *command = env->options.command_option_c;
         env->options.command_option_c = NULL;
