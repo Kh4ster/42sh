@@ -4,6 +4,7 @@
 #include <readline/readline.h>
 #include <unistd.h>
 #include <readline/history.h>
+#include <signal.h>
 
 #include "42sh.h"
 #include "parameters_handling/parameters_handler.h"
@@ -25,7 +26,7 @@ static void prep_terminal(int meta_flag)
 static void handle_line(char *line)
 {
     printf("%s$\n", line);
-    return;
+    add_history(line);
 }
 
 static char *get_next_line(struct shell_environment *env, const char *prompt)
@@ -49,20 +50,38 @@ static char *get_next_line(struct shell_environment *env, const char *prompt)
 
 static char *get_prompt(void)
 {
-    return "42sh$ ";
+  //  if (is_line_finished(line))
+        return "42sh$ ";
+ //   else
+ //       return "> ";
 }
+
+
+static void sigint_handler(int signum)
+{
+    if (signum == SIGINT)
+        printf("\n42sh$ ");
+}
+
 
 int main(int argc, char *argv[])
 {
     struct shell_environment env = {0};
+
     if (handle_parameters(&env.options, argc, argv) == -1)
         return 2;
 
-    char *line = NULL;
-    while ((line = get_next_line(&env, get_prompt())) != NULL)
+    if (signal(SIGINT, sigint_handler) == SIG_ERR)
+        err(1, "an error occured while setting up a signal handler");
+
+    char *line = get_next_line(&env, get_prompt());
+
+    while (line)
     {
         handle_line(line);
         free(line);
+        line = get_next_line(&env, get_prompt());
     }
+    puts("");
     return 0;
 }
