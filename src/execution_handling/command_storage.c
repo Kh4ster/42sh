@@ -17,7 +17,6 @@ int word_count(char *s)
     return counter + 1;
 }
 
-
 struct command_container *cmd_store(char *line)
 {
     int n = word_count(line);
@@ -26,7 +25,6 @@ struct command_container *cmd_store(char *line)
     save->params = xcalloc(n + 1, sizeof(char *));
     save->command = xcalloc(2, sizeof(char *));
     char *tmp = xcalloc(1, sizeof(char *));
-    tmp = strtok(line, " ");
     int i = 0;
     for (; line[i] != ' ' && line[i] != '\n' && line[i]; i++)
     {
@@ -34,27 +32,13 @@ struct command_container *cmd_store(char *line)
     }
     save->command[i] = 0;
     int j = 0;
+    tmp = strtok(line, " ");
     while (tmp)
     {
         save->params[j] = tmp;
         tmp = strtok(NULL, " ");
         j++;
     }
-    /*
-    for (int j = 0; line[j]; j++)
-    {
-        k = 0;
-        while (line[j] != ' ')
-        {
-            tmp[l][k] = line[j];
-            k++;
-            j++;
-        }
-        tmp[k] = '\0';
-        save->params[l] = tmp[l];
-        l++;
-        //str_init(tmp);
-        }*/
     save->params[j] = NULL;
     free(tmp);
     return save;
@@ -62,13 +46,16 @@ struct command_container *cmd_store(char *line)
 
 int main()
 {
-    char *line = "echo toto papa";
+    char *line = strdup("lsfdf toto papa");
     struct command_container *save = cmd_store(line);
     printf("%s\n", save->command);
     printf("%s\n", save->params[0]);
-    //int exec = exec_cmd(save);
+    printf("%s\n", save->params[1]);
+    printf("%s\n", save->params[2]);
+    int exec = exec_cmd(save);
     free(save->command);
+    free(line);
     command_destroy(&save);
-    return 0;
+    return exec;
 }
 
