@@ -13,7 +13,7 @@ struct array_list
 };
 
 struct array_list* array_list_init(void);
-void array_list_appebd(struct array_list*, void*);
+void array_list_append(struct array_list*, void*);
 void array_list_destroy(struct array_list*);
 
 #endif /* ! ARRAY_LIST_H */
