@@ -23,7 +23,7 @@ int exec_cmd(struct command_container *cmd)
         else if (errno == EACCES)
             errx(126, "cannot execute command");
         else
-            errx(-1, "-1");
+            errx(-1, "execvp has failed");
     }
     int wstatus;
     waitpid(pid, &wstatus, 0);

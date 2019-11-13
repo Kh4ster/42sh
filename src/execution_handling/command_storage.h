@@ -9,17 +9,11 @@
 #pragma once
 
 #include "command_container.h"
+#include "../data_structures/array_list.h"
 
 /**
-* @brief counts the number of words in the command line
-* @param char* (command line)
-* @return number of words
+* @brief
+* @param
+* @return
 */
-int word_count(char *s);
-
-/**
-* @brief stores command line in command_container
-* @param char* (command line)
-* @return filled command_container structure
-*/
-struct command_container *cmd_store(char *line);
+struct command_container *command_create(char *cmd, struct array_list *list);
