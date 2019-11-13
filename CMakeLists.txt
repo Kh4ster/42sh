@@ -33,12 +33,15 @@ project(42sh VERSION 1.0.0 LANGUAGES C)
 set(SRC_FILES
     src/memory/memory.c
     src/data_structures/data_string.c
+    src/data_structures/queue.c
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
-    src/execution_handling/redirector.c
+    #src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
+    src/lexer/token_lexer.c
+    src/execution_handling/command_execution.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -46,16 +49,25 @@ set(TESTS_FILES
     tests/data_structures/test_string.c
     tests/input_output/test_read.c
     tests/input_output/test_write.c
-    tests/builtins/test_redirector.c
+    #tests/builtins/test_redirector.c
     tests/parameters_handling/test_parameters_handler.c
+    tests/data_structures/test_queue.c
+    tests/lexer/test_token_lexer.c
+    tests/commands_handling/test_exec.c
 )
 
 # Set default BUILD_TYPE
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-      "Choose the type of build, options are: Debug Release"
-      FORCE)
+    string(REGEX REPLACE ".*/build_" "" BUILD_NAME ${CMAKE_BINARY_DIR})
+    set(CMAKE_BUILD_TYPE Release)
+    if(${BUILD_NAME} STREQUAL "Debug" OR ${BUILD_NAME} STREQUAL "debug")
+        set(CMAKE_BUILD_TYPE Debug)
+    endif (${BUILD_NAME} STREQUAL "Debug" OR ${BUILD_NAME} STREQUAL "debug")
+    message(STATUS "Build type : ${CMAKE_BUILD_TYPE}")
 endif(NOT CMAKE_BUILD_TYPE)
+
+# Find Readline library
+find_library(READLINE_LIB readline)
 
 # Create an interface containing options needed by compiler and linker
 add_library(common_options INTERFACE)
@@ -70,7 +82,7 @@ target_compile_options(common_options INTERFACE
 )
 target_link_libraries(common_options INTERFACE
     $<$<NOT:$<CONFIG:Release>>:-fsanitize=address>
-    "-lreadline"
+    ${READLINE_LIB}
 )
 
 
@@ -82,6 +94,9 @@ endforeach(f)
 set(SRC_FILES_FROM_SUBDIR "${listVar}")
 # Create a library containing all src files
 add_library(SRC_FILES_OBJ ${SRC_FILES_FROM_SUBDIR})
+target_link_libraries(SRC_FILES_OBJ PRIVATE
+    common_options
+)
 
 
 # Create a check.sh to launch custom target "check"

@@ -8,6 +8,11 @@
 # include <stddef.h>
 
 /**
+* @brief Handle error message in case of memory exhausted
+*/
+void memory_exhausted(void);
+
+/**
 * @brief malloc wrapper
 * @param size size to allocate
 * @return void* : success, errx : fail
