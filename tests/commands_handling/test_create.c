@@ -12,8 +12,8 @@
 Test(cmd_exec, echo_toto, .timeout = 0)
 {
     char *c = strdup("echo");
-    struct array_list *list = init_array_list();
-    append_array_list(list, strdup("toto"));
+    struct array_list *list = array_list_init();
+    array_list_append(list, strdup("toto"));
     struct command_container *cmd = command_create(c, list);
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "echo"));
@@ -23,14 +23,14 @@ Test(cmd_exec, echo_toto, .timeout = 0)
     free(cmd->command);
     free(c);
     command_destroy(&cmd);
-    destroy_array_list(list);
+    array_list_destroy(list);
 }
 
 Test(cmd_exec, cmd_not_found_toto, .timeout = 0)
 {
     char *c = strdup("cmd_notfound");
-    struct array_list *list = init_array_list();
-    append_array_list(list, strdup("toto"));
+    struct array_list *list = array_list_init();
+    array_list_append(list, strdup("toto"));
     struct command_container *cmd = command_create(c, list);
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "cmd_notfound"));
@@ -40,7 +40,7 @@ Test(cmd_exec, cmd_not_found_toto, .timeout = 0)
     free(cmd->command);
     free(c);
     command_destroy(&cmd);
-    destroy_array_list(list);
+    array_list_destroy(list);
 }
 
 Test(cmd_exec, not_executable_toto, .timeout = 0)
@@ -48,8 +48,8 @@ Test(cmd_exec, not_executable_toto, .timeout = 0)
     FILE *fd;
     fd = fopen("not_executable", "w+");
     char *c = strdup("./not_executable");
-    struct array_list *list = init_array_list();
-    append_array_list(list, strdup("toto"));
+    struct array_list *list = array_list_init();
+    array_list_append(list, strdup("toto"));
     struct command_container *cmd = command_create(c, list);
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "./not_executable"));
@@ -60,14 +60,14 @@ Test(cmd_exec, not_executable_toto, .timeout = 0)
     free(c);
     fclose(fd);
     command_destroy(&cmd);
-    destroy_array_list(list);
+    array_list_destroy(list);
 }
 
 Test(cmd_exec, ls_dir_notfound, .timeout = 0)
 {
     char *c = strdup("ls");
-    struct array_list *list = init_array_list();
-    append_array_list(list, strdup("dir_notfound"));
+    struct array_list *list = array_list_init();
+    array_list_append(list, strdup("dir_notfound"));
     struct command_container *cmd = command_create(c, list);
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "ls"));
@@ -77,15 +77,15 @@ Test(cmd_exec, ls_dir_notfound, .timeout = 0)
     free(cmd->command);
     free(c);
     command_destroy(&cmd);
-    destroy_array_list(list);
+    array_list_destroy(list);
 }
 
 Test(cmd_exec, ls_prevdir_rootdir, .timeout = 0)
 {
     char *c = strdup("ls");
-    struct array_list *list = init_array_list();
-    append_array_list(list, strdup(".."));
-    append_array_list(list, strdup("."));
+    struct array_list *list = array_list_init();
+    array_list_append(list, strdup(".."));
+    array_list_append(list, strdup("."));
     struct command_container *cmd = command_create(c, list);
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "ls"));
@@ -96,14 +96,14 @@ Test(cmd_exec, ls_prevdir_rootdir, .timeout = 0)
     free(cmd->command);
     free(c);
     command_destroy(&cmd);
-    destroy_array_list(list);
+    array_list_destroy(list);
 }
 
 Test(cmd_exec, tree_dir_notfound, .timeout = 0)
 {
     char *c = strdup("tree");
-    struct array_list *list = init_array_list();
-    append_array_list(list, strdup("dir_notfound"));
+    struct array_list *list = array_list_init();
+    array_list_append(list, strdup("dir_notfound"));
     struct command_container *cmd = command_create(c, list);
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "tree"));
@@ -113,5 +113,5 @@ Test(cmd_exec, tree_dir_notfound, .timeout = 0)
     free(cmd->command);
     free(c);
     command_destroy(&cmd);
-    destroy_array_list(list);
+    array_list_destroy(list);
 }
