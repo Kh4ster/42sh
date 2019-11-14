@@ -1,5 +1,5 @@
 # Find Criterion library
-find_library(CRITERION_LIB critrion)
+find_library(CRITERION_LIB criterion)
 
 # Set good path for tests files
 set(listVar "")
