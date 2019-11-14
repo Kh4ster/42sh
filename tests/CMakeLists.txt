@@ -1,5 +1,5 @@
 # Find Criterion library
-find_library(CRITERION_LIB criterion)
+find_library(CRITERION_LIB critrion)
 
 # Set good path for tests files
 set(listVar "")
@@ -8,6 +8,7 @@ foreach(f IN LISTS TESTS_FILES)
 endforeach(f)
 set(TESTS_FILES "${listVar}")
 
+if (CRITERION_LIB)
 # For each test file create an executable of test. Launched using ctest
 foreach(f IN LISTS TESTS_FILES)
     # Find the test_name by deleting the extension and the parent_dir
@@ -27,3 +28,6 @@ foreach(f IN LISTS TESTS_FILES)
     # Set timeout of the test to 3 seconds
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1)
 endforeach(f)
+else ()
+    message(WARNING "Criterion was not found... You will not be able to launch tests")
+endif ()
