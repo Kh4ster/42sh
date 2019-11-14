@@ -6,6 +6,7 @@
 
 #include "parser.h"
 #include "ast/ast.h"
+#include "ast/destroy_tree.h"
 #include "../lexer/token_lexer.h"
 #include "../memory/memory.h"
 #include "../execution_handling/command_container.h"
@@ -24,7 +25,7 @@ static void* free_instructions(size_t nb_param, ...)
     for (size_t i = 0; i < nb_param; ++i)
     {
         struct instruction *to_free = va_arg(ap, struct instruction*);
-        free_ast(to_free);
+        destroy_tree(to_free);
     }
 
     va_end(ap);
@@ -81,7 +82,7 @@ static struct instruction* parse_if(struct queue *lexer);
 static struct instruction* parse_shell_command(struct queue *lexer)
 {
     if (NEXT_IS("if"))
-        return parse_if_elif(lexer);
+        return parse_if(lexer);
     assert(0 && "not yet implented");
     return NULL;
 }
@@ -280,7 +281,6 @@ static struct instruction* parse_else_clause(struct queue *lexer)
     }
 }
 
-//pour l'instant gère pas les else et elif
 static struct instruction* parse_if(struct queue *lexer)
 {
     struct instruction *conditions = NULL;
@@ -348,7 +348,7 @@ struct instruction* parse_input(struct queue *lexer)
 
     if (!NEXT_IS("\n") && !NEXT_IS_EOF())
     {
-        free_ast(ast);
+        destroy_tree(ast);
         return NULL;
     }
     return ast;
