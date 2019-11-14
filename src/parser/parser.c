@@ -76,13 +76,13 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
     return and_or;
 }
 
-static struct instruction* parse_if(struct queue *lexer);
+static struct instruction* parse_if_elif(struct queue *lexer);
 
 // à voir comment ça marche exactement
 static struct instruction* parse_shell_command(struct queue *lexer)
 {
     if (NEXT_IS("if"))
-        return parse_if(lexer);
+        return parse_if_elif(lexer);
     assert(0 && "not yet implented");
     return NULL;
 }
@@ -188,7 +188,7 @@ static struct instruction* parse_and_or(struct queue *lexer)
         while (NEXT_IS("\n"))
             EAT();
 
-        if ((right = parse_and_or(lexer) == NULL))
+        if ((right = parse_and_or(lexer)) == NULL)
             return free_instructions(1, left);
 
         return build_instruction(type, build_and_or(left, right));
@@ -206,7 +206,7 @@ static struct instruction* parse_compound_list_break(struct queue *lexer)
 
     struct instruction *and_or = NULL;
 
-    if ((and_or = parse_and_or(lexer) == NULL))
+    if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
     if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
@@ -263,12 +263,12 @@ static struct instruction* parse_else_clause(struct queue *lexer)
             return free_instructions(1, conditions);
         EAT();
 
-        if (to_execute = parse_compound_list_break(lexer) == NULL)
+        if ((to_execute = parse_compound_list_break(lexer)) == NULL)
             return free_instructions(1, conditions);
 
         if(NEXT_IS("else") || NEXT_IS("elif"))
         {
-            if ((another_else = parse_else_clause(lexer) == NULL))
+            if ((another_else = parse_else_clause(lexer)) == NULL)
                 return free_instructions(2, conditions, to_execute);
         }
 
@@ -295,7 +295,7 @@ static struct instruction* parse_if_elif(struct queue *lexer)
         return free_instructions(1, conditions);
     EAT();
 
-    if (to_execute = parse_compound_list_break(lexer) == NULL)
+    if ((to_execute = parse_compound_list_break(lexer)) == NULL)
         return free_instructions(1, conditions);
 
     if(NEXT_IS("else") || NEXT_IS("elif"))
