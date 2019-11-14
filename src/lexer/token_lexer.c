@@ -109,12 +109,14 @@ struct token_lexer *generate_token(char *cursor, char **delim)
     return new_token;
 }
 
-struct queue *lexer(char *line)
+struct queue *lexer(char *line /*void*/)
 {
     struct queue *token_queue = queue_init();
 
     char *cursor = line;
-
+    //set_end_of_instruction(line)
+    //struct token_lexer *current_token;
+    //while (1)
     while (*cursor != '\0')
     {
         char *delim = get_delimiter(cursor);
@@ -123,7 +125,10 @@ struct queue *lexer(char *line)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
-
+    //free(line);
+    //if (!strcmp(current_token->value, end_of_instruction))
+    //  break;
+    //line = shell_get_line(1);
     return token_queue;
 }
 
@@ -132,7 +137,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     struct token_lexer *current_token = queue_head(token_queue);
     if (current_token != NULL)
         return current_token;
-    //readline / get line ?
+    //readline / get line ? Non
     return current_token;
 }
 
