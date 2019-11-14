@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <readline/readline.h>
 
 #include "../data_structures/queue.h"
 #include "../memory/memory.h"
@@ -83,11 +84,6 @@ struct token_lexer *generate_token(char *cursor, char **delim)
         set_token(new_token, TOKEN_END_OF_INSTRUCTION, delim, 1);
     }
 
-    else if (*cursor == '\n')
-    {
-        set_token(new_token, TOKEN_END_OF_LINE, delim, 1);
-    }
-
     else if (*cursor == ' ' || *cursor == '\t')
     {
         skip_class(isblank, delim);
@@ -109,14 +105,12 @@ struct token_lexer *generate_token(char *cursor, char **delim)
     return new_token;
 }
 
-struct queue *lexer(char *line /*void*/)
+struct queue *lexer(char *line, struct queue *token_queue)
 {
-    struct queue *token_queue = queue_init();
+    if (token_queue == NULL)
+        token_queue = queue_init();
 
     char *cursor = line;
-    //set_end_of_instruction(line)
-    //struct token_lexer *current_token;
-    //while (1)
     while (*cursor != '\0')
     {
         char *delim = get_delimiter(cursor);
@@ -125,10 +119,6 @@ struct queue *lexer(char *line /*void*/)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
-    //free(line);
-    //if (!strcmp(current_token->value, end_of_instruction))
-    //  break;
-    //line = shell_get_line(1);
     return token_queue;
 }
 
@@ -137,7 +127,20 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     struct token_lexer *current_token = queue_head(token_queue);
     if (current_token != NULL)
         return current_token;
-    //readline / get line ? Non
+    char *next_line = readline("CHANGE_ME_IN_LEXER$"); // replace this
+    //TODO get_next_line(NULL, get_prompt());
+    if (next_line == NULL) // End Of File
+    {
+        struct token_lexer *current_token = xmalloc(sizeof(struct token_lexer));
+        current_token->type = TOKEN_EOF;
+        current_token->data = NULL;
+    }
+    else
+    {
+        token_queue = lexer(next_line, token_queue);
+        current_token = token_lexer_head(token_queue);
+        free(next_line);
+    }
     return current_token;
 }
 
@@ -146,4 +149,14 @@ struct token_lexer *token_lexer_pop(struct queue *token_queue)
     struct token_lexer *current_token = token_lexer_head(token_queue);
     queue_pop(token_queue);
     return current_token;
+}
+
+void token_queue_free(struct queue **token_queue)
+{
+    while((*token_queue)->size != 0)
+    {
+        struct token_lexer *to_free = token_lexer_pop(*token_queue);
+        token_lexer_free(&to_free);
+    }
+    queue_destroy(token_queue);
 }

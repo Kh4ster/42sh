@@ -11,7 +11,6 @@
 #include "../execution_handling/command_container.h"
 #include "../data_structures/array_list.h"
 
-#define EAT_IF(X) eat_if(lexer, X)
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)
 #define NEXT_IS_EOF() next_is_eof(lexer)
@@ -76,9 +75,9 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
     return and_or;
 }
 
-static struct instruction* parse_if_elif(struct queue *lexer);
+static struct instruction* parse_if(struct queue *lexer);
 
-// à voir comment ça marche exactement
+// see how it works exactly
 static struct instruction* parse_shell_command(struct queue *lexer)
 {
     if (NEXT_IS("if"))
@@ -123,7 +122,7 @@ static struct command_container* build_simple_command(char *simple_command,
 
 //simplified version of the grammar
 //doesn't handle redir
-//here doens't call eat cause we need the token data
+//here doesn't call eat cause we need the token data
 static struct instruction* parse_simple_command(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_pop(lexer);
@@ -169,13 +168,16 @@ static struct instruction* parse_pipeline(struct queue *lexer)
     return command;
 }
 
-//not exaclty grammar
-//for now handle the * recusrivley
+//not exactly grammar
+//for now handle the * recursively
 static struct instruction* parse_and_or(struct queue *lexer)
 {
-    struct instruction *left = parse_pipeline(lexer);
+    struct instruction *left = NULL;
+    if ((left = parse_pipeline(lexer)) == NULL)
+        return NULL;
+
     struct instruction *right = NULL;
-    
+
     if (NEXT_IS("||") || NEXT_IS("&&"))
     {
         enum token_parser_type type;
@@ -279,7 +281,7 @@ static struct instruction* parse_else_clause(struct queue *lexer)
 }
 
 //pour l'instant gère pas les else et elif
-static struct instruction* parse_if_elif(struct queue *lexer)
+static struct instruction* parse_if(struct queue *lexer)
 {
     struct instruction *conditions = NULL;
     struct instruction *to_execute = NULL;
@@ -306,7 +308,7 @@ static struct instruction* parse_if_elif(struct queue *lexer)
     }
 
     if (!NEXT_IS("fi"))
-        return free_instructions(2, conditions, to_execute);
+        return free_instructions(3, conditions, to_execute, else_container);
     EAT();
 
     return build_instruction(TOKEN_IF, build_if_instruction(conditions,
