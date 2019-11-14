@@ -7,3 +7,5 @@
 */
 
 #pragma once
+
+extern int redirections_handling(struct redirection *redirect);

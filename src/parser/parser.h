@@ -29,7 +29,8 @@ enum token_parser_type
 struct redirection
 {
     struct command_container *command;
-    char *redirection;
+    int redirection;
+    enum token_parser_type redirection_type;
     char *file;
 };
 
