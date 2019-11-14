@@ -1,21 +1,24 @@
 #include "ast.h"
 #include "../parser.h"
-#include "../parser.h"
-#include "../../execution_handling/command_execution.c"
+#include "../../execution_handling/command_container.h"
+#include "../../execution_handling/command_execution.h"
+
 
 static int handle_if(struct instruction *ast)
 {
     struct if_instruction *if_struct = ast->data;
-    if (execute_ast(if_struct->condition))
+
+    if (execute_ast(if_struct->conditions))
     {
-        execut_ast(if_struct->to_execute);
+        struct instruction *to_execute = if_struct->to_execute;
+
+        for (; to_execute; to_execute = to_execute->next)
+            execute_ast(to_execute);
+
         return 1;
     }
 
-    else if (execute_ast(if_struct->elif_container))
-            return 1;
-    else
-        return execute_ast(if_struct->else_container);
+    return execute_ast(if_struct->else_container);
 }
 
 
@@ -23,14 +26,14 @@ static int handle_and_or_instruction(struct instruction *ast)
 {
     struct and_or_instruction *node = ast->data;
 
-    if (ast->type == OR)
+    if (ast->type == TOKEN_OR)
         return execute_ast(node->left) || execute_ast(node->right);
 
     return execute_ast(node->left) && execute_ast(node->right);
 }
 
 
-static int handle_commands(struct instructions *ast)
+static int handle_commands(struct instruction *ast)
 {
     /* execute commande with zak function */
     struct command_container *command = ast->data;
@@ -55,6 +58,9 @@ extern int execute_ast(struct instruction *ast)
         case TOKEN_IF:
             return handle_if(ast);
             break;
+        default:
+            return 1;
     }
     return 1;
 }
+
