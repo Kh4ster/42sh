@@ -10,7 +10,7 @@ static int handle_if(struct instruction *ast)
 
     if (execute_ast(if_struct->conditions))
     {
-        struct instruction to_execute = if_struct->to_execute;
+        struct instruction *to_execute = if_struct->to_execute;
 
         for (; to_execute; to_execute = to_execute->next)
             execute_ast(to_execute);
