@@ -4,17 +4,20 @@
 #include "../../execution_handling/command_execution.h"
 #include "../../redirections_handling/redirect.h"
 
+
 static int handle_if(struct instruction *ast)
 {
     struct if_instruction *if_struct = ast->data;
+
     if (execute_ast(if_struct->conditions))
     {
-        execute_ast(if_struct->to_execute);
+        struct instruction *to_execute = if_struct->to_execute;
+
+        for (; to_execute; to_execute = to_execute->next)
+            execute_ast(to_execute);
+
         return 1;
     }
-
-    if (if_struct->elif_container)
-        return execute_ast(if_struct->elif_container);
 
     return execute_ast(if_struct->else_container);
 }
@@ -66,3 +69,4 @@ extern int execute_ast(struct instruction *ast)
     }
     return 1;
 }
+
