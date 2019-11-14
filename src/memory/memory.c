@@ -1,8 +1,9 @@
+#include <stdlib.h>
 #include <err.h>
 
 #include "memory.h"
 
-static inline void memory_exhausted(void)
+void memory_exhausted(void)
 {
     err(1, "Memory exhausted.");
 }
