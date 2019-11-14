@@ -44,6 +44,7 @@ set(SRC_FILES
     src/execution_handling/command_execution.c
     src/parser/parser.c
     src/parser/ast/ast.c
+    src/parser/ast/destroy_tree.c
 )
 
 # ---- List of test files (unit tests) ----

@@ -111,7 +111,6 @@ struct queue *lexer(char *line, struct queue *token_queue)
         token_queue = queue_init();
 
     char *cursor = line;
-
     while (*cursor != '\0')
     {
         char *delim = get_delimiter(cursor);
@@ -120,7 +119,6 @@ struct queue *lexer(char *line, struct queue *token_queue)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
-
     return token_queue;
 }
 
