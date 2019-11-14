@@ -10,6 +10,7 @@ static void free_if (struct if_instruction *if_container)
     destroy_tree(if_container->conditions);
     destroy_tree(if_container->to_execute);
     destroy_tree(if_container->else_container);
+    free(if_container);
 }
 
 
@@ -20,6 +21,7 @@ static void free_command(struct command_container *command)
     for (size_t i = 0; command->params[i]; i++)
         free(command->params[i]);
 
+    free(command->params);
     free(command);
 }
 

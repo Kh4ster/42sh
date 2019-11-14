@@ -27,5 +27,5 @@ int exec_cmd(struct command_container *cmd)
     }
     int wstatus;
     waitpid(pid, &wstatus, 0);
-    return WEXITSTATUS(wstatus);
+    return WEXITSTATUS(wstatus) == 0;
 }

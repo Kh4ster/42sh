@@ -109,6 +109,8 @@ static bool next_is_end_of_instruction(struct queue *lexer)
     struct token_lexer *token = token_lexer_head(lexer);
     if (token == NULL)
         return true;
+    if (strcmp(token->data, "\n") == 0)
+        return true;
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF
             || token->type == TOKEN_OPERATOR;
@@ -127,16 +129,16 @@ static struct command_container* build_simple_command(char *simple_command,
 static struct instruction* parse_simple_command(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_pop(lexer);
-    free(token);
     char *simple_command_str = token->data;
+    free(token);
 
     struct array_list *parameters = array_list_init();
 
-    while (!next_is_end_of_instruction(lexer))
+    while (!next_is_end_of_instruction(lexer) && !NEXT_IS("then"))
     {
         token = token_lexer_pop(lexer);
-        free(token);
         array_list_append(parameters, token->data);
+        free(token);
     }
 
     struct instruction *command = build_instruction(TOKEN_COMMAND,
@@ -144,6 +146,7 @@ static struct instruction* parse_simple_command(struct queue *lexer)
                                                             simple_command_str,
                                                             parameters));
 
+    free(parameters->content);
     free(parameters);//not destroy array_list cause we need it's content
     return command;
 
@@ -212,8 +215,9 @@ static struct instruction* parse_compound_list_break(struct queue *lexer)
     if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
-    if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
+    /*if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
     {
+        EAT();
         while (NEXT_IS("\n"))
             EAT();
 
@@ -226,8 +230,13 @@ static struct instruction* parse_compound_list_break(struct queue *lexer)
                 return free_instructions(1, and_or);
             tmp_ast = tmp_ast->next;
         }
-    }
+    }*/
 
+    if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
+        EAT();
+    else
+        return free_instructions(1, and_or);
+    
     while (NEXT_IS("\n"))
         EAT();
 
@@ -326,10 +335,13 @@ static struct instruction* parse_list(struct queue *lexer)
 
 //return null if only \n ?
 //for now doens't handle if end with ; or with &
-struct instruction* parse_input(struct queue *lexer)
+struct instruction* parse_input(struct queue *lexer, int *is_end)
 {
     if (NEXT_IS("\n") || NEXT_IS_EOF())
+    {
+        *is_end = 1;
         return NULL;
+    }
 
     struct instruction *ast = NULL;
 
@@ -351,5 +363,7 @@ struct instruction* parse_input(struct queue *lexer)
         destroy_tree(ast);
         return NULL;
     }
+    EAT();
+    *is_end = 1;
     return ast;
 }
