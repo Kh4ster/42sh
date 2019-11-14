@@ -141,6 +141,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     {
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
+        free(next_line);
     }
     return current_token;
 }
