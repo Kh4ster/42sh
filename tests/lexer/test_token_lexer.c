@@ -9,7 +9,7 @@ Test(token_lexer, lexer_simple)
 {
     struct string *need_lexing = string_init();
     string_append(need_lexing, "echo test");
-    struct queue *token_queue = lexer(need_lexing->content);
+    struct queue *token_queue = lexer(need_lexing->content, NULL);
 
     struct token_lexer *current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
@@ -31,7 +31,7 @@ Test(token_lexer, lexer_simple_and_newline)
 {
     struct string *need_lexing = string_init();
     string_append(need_lexing, "echo test\n");
-    struct queue *token_queue = lexer(need_lexing->content);
+    struct queue *token_queue = lexer(need_lexing->content, NULL);
 
     struct token_lexer *current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
@@ -47,7 +47,8 @@ Test(token_lexer, lexer_simple_and_newline)
 
     current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
-    cr_assert_eq(TOKEN_END_OF_LINE, current_token->type);
+    cr_assert_eq(0, strcmp(current_token->data, "\n"));
+    cr_assert_eq(TOKEN_OTHER, current_token->type);
     token_lexer_free(&current_token);
 
     string_free(&need_lexing);
@@ -58,7 +59,7 @@ Test(token_lexer, lexer_less_simple_multiple_tokens)
 {
     struct string *need_lexing = string_init();
     string_append(need_lexing, "echo test\nif ...; then wow;fi");
-    struct queue *token_queue = lexer(need_lexing->content);
+    struct queue *token_queue = lexer(need_lexing->content, NULL);
 
     struct token_lexer *current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
@@ -74,7 +75,8 @@ Test(token_lexer, lexer_less_simple_multiple_tokens)
 
     current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
-    cr_assert_eq(TOKEN_END_OF_LINE, current_token->type);
+    cr_assert_eq(0, strcmp(current_token->data, "\n"));
+    cr_assert_eq(TOKEN_OTHER, current_token->type);
     token_lexer_free(&current_token);
 
     current_token = queue_pop(token_queue);
@@ -127,7 +129,7 @@ Test(token_lexer, lexer_operators_simple)
 {
     struct string *need_lexing = string_init();
     string_append(need_lexing, "hey&&you&&&;");
-    struct queue *token_queue = lexer(need_lexing->content);
+    struct queue *token_queue = lexer(need_lexing->content, NULL);
 
     struct token_lexer *current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
