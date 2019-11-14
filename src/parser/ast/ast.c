@@ -60,3 +60,8 @@ extern int execute_ast(struct instruction *ast)
     }
     return 1;
 }
+
+
+extern void destroy_tree(struct instruction *ast)
+{
+
