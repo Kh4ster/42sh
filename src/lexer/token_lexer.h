@@ -14,7 +14,7 @@
 enum token_lexer_type
 {
     TOKEN_END_OF_INSTRUCTION, /**< @brief end of an instruction ";", "EOF" */
-    TOKEN_END_OF_LINE, /**< @brief end of line "\n" */
+    TOKEN_EOF, /**< @brief end of file "\n" */
     TOKEN_OPERATOR, /**< @brief operators defined in scl (&&, ||, ;;, ...) */
     TOKEN_OTHER /**< @brief any words without delimiters */
 };
@@ -31,10 +31,11 @@ struct token_lexer
 /**
 * @brief Add all token_lexer found in line to token_queue
 * @param line The line to be divided into tokens by the lexer
+* @param token_queue current token queue to fill with line's tokens
 * @return success : token_queue, fail : NULL
 * @relates token_lexer
 */
-struct queue *lexer(char *line);
+struct queue *lexer(char *line, struct queue *token_queue);
 
 struct token_lexer *token_lexer_head(struct queue *token_queue);
 
@@ -46,3 +47,10 @@ struct token_lexer *token_lexer_pop(struct queue *token_queue);
 * @relates token_lexer
 */
 void token_lexer_free(struct token_lexer **token);
+
+/**
+* @brief Free the queue struct and all its tokens
+* @param token the token queue you want to free
+* @relates token_lexer
+*/
+void token_queue_free(struct queue **token_queue);
