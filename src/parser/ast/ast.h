@@ -16,6 +16,8 @@
 * @return value : return the return code of the tree (0 if success, else errno is the return code)
 */
 
+#include "../parser.h"
+
 extern int execute_ast(struct instruction *ast);
 
 #endif
