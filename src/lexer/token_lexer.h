@@ -53,4 +53,4 @@ void token_lexer_free(struct token_lexer **token);
 * @param token the token queue you want to free
 * @relates token_lexer
 */
-void token_queue_free(struct queue *token_queue);
+void token_queue_free(struct queue **token_queue);

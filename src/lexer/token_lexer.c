@@ -153,12 +153,12 @@ struct token_lexer *token_lexer_pop(struct queue *token_queue)
     return current_token;
 }
 
-void token_queue_free(struct queue *token_queue)
+void token_queue_free(struct queue **token_queue)
 {
-    while(token_queue->size != 0)
+    while((*token_queue)->size != 0)
     {
-        struct token_lexer *to_free = token_lexer_pop(token_queue);
+        struct token_lexer *to_free = token_lexer_pop(*token_queue);
         token_lexer_free(&to_free);
     }
-    queue_destroy(&token_queue);
+    queue_destroy(token_queue);
 }
