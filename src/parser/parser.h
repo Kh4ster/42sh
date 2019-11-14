@@ -1,5 +1,5 @@
 /** @file
-* @brief 
+* @brief
 * @author Coder : nicolas.blin
 * @author Tester :
 * @author Reviewer :
