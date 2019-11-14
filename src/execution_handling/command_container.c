@@ -1,12 +1,3 @@
-/*
-** Coder : nicolas.blin & zakaria.ben-allal
-** Tester : zakaria.ben-allal
-** Reviewer : nicolas.blin
-** Integrator :
-**
-** Container for commands
-*/
-
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
