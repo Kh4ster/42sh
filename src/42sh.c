@@ -44,7 +44,6 @@ static char *get_next_line(struct shell_environment *env, const char *prompt)
 
     if (!is_interactive())
         prompt = NULL;
-
     return readline(prompt);
 }
 
@@ -68,11 +67,18 @@ int main(int argc, char *argv[])
 {
     struct shell_environment env = {0};
 
-    if (handle_parameters(&env.options, argc, argv) == -1)
-        return 2;
-
+    int fd = 0;
+    if (handle_parameters(&env.options, argc, argv, fd) == -1)
+    {
+        if (fd == -1)
+        {
+            close(fd);
+            errx(2, "invalid file");
+        }
+        errx(2, "invalid option");
+    }
     if (signal(SIGINT, sigint_handler) == SIG_ERR)
-        err(1, "an error occured while setting up a signal handler");
+        errx(1, "an error occured while setting up a signal handler");
 
     char *line = get_next_line(&env, get_prompt());
 
@@ -83,5 +89,6 @@ int main(int argc, char *argv[])
         line = get_next_line(&env, get_prompt());
     }
     puts("");
+    close(fd);
     return 0;
 }
