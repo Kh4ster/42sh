@@ -15,6 +15,7 @@
 #include "parser/ast/ast.h"
 #include "error/error.h"
 #include "parser/ast/destroy_tree.h"
+#include "parser/ast/ast_print.h"
 
 static void sigint_handler(int signum)
 {
@@ -48,6 +49,10 @@ int main(int argc, char *argv[])
         g_env.prompt = "42sh$ ";
         struct instruction *ast = parse_input(lexer, &is_end, &error);
         execute_ast(ast);
+
+        if (g_env.options.option_a)
+            print_ast(ast);
+
         destroy_tree(ast);
         if (is_end)
             break;

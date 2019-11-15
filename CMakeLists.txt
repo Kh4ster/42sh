@@ -47,6 +47,7 @@ set(SRC_FILES
     src/parser/ast/destroy_tree.c
     src/input_output/get_next_line.c
     src/error/error.c
+    src/parser/ast/ast_print.c
 )
 
 # ---- List of test files (unit tests) ----
