@@ -44,6 +44,40 @@ char *xstrndup(char *str, size_t n)
     return copy_str;
 }
 
+struct token_lexer *create_newline_token(struct token_lexer *new_token)
+{
+    if (new_token == NULL)
+        new_token = xmalloc(sizeof(struct token_lexer));
+    new_token->data = strdup("\n");
+    new_token->type = TOKEN_OTHER;
+    return new_token;
+}
+
+struct token_lexer *create_other_or_keyword_token(
+       struct token_lexer *new_token, char *cursor, char **delim)
+{
+    size_t token_length = *delim - cursor;
+    new_token->data = xstrndup(cursor, token_length);
+
+    // is word a keyword or something else
+    const char reserved_words[][16] = {
+        "!", "{", "}", "case", "do", "done", "elif", "else",
+        "esac", "fi", "for", "if", "in", "then", "until", "while"
+        };
+    int i = 0;
+    for (; i < 16; i++)
+    {
+        if (strcmp(reserved_words[i], new_token->data) == 0)
+        {
+            new_token->type = TOKEN_KEYWORD;
+            break;
+        }
+    }
+    if (i == 16)
+        new_token->type = TOKEN_OTHER;
+    return new_token;
+}
+
 void set_token(struct token_lexer *token, enum token_lexer_type token_type,
         char **cursor, size_t nb_char)
 {
@@ -52,15 +86,14 @@ void set_token(struct token_lexer *token, enum token_lexer_type token_type,
     *cursor += nb_char;
 }
 
+
 struct token_lexer *generate_token(char *cursor, char **delim)
 {
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
     if (cursor != *delim) // word pointed by cursor is not a delimiter
     {
-        size_t token_length = *delim - cursor;
-        new_token->data = xstrndup(cursor, token_length);
-        new_token->type = TOKEN_OTHER;
+        new_token = create_other_or_keyword_token(new_token, cursor, delim);
     }
     /*
     else if (*cursor == '\"' || *cursor == '\\' || *cursor == '\'')
@@ -81,10 +114,7 @@ struct token_lexer *generate_token(char *cursor, char **delim)
 
     else if (strncmp(cursor, "\\n", 2) == 0)
     {
-        char *newline_str = xcalloc(2, sizeof(char));
-        newline_str[0] = '\n';
-        new_token->data = newline_str;
-        new_token->type = TOKEN_OTHER;
+        new_token = create_newline_token(new_token);
         (*delim) += 2;
     }
 
@@ -138,7 +168,6 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
         return current_token;
     char *next_line = get_next_line(g_env.prompt);
     // TODO add_history(next_line);
-    g_env.prompt = ">";
     if (next_line == NULL) // End Of File
     {
         current_token = xmalloc(sizeof(struct token_lexer));
@@ -148,11 +177,15 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
+        if (g_env.not_first_line)
+            queue_push(token_queue, create_newline_token(NULL));
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
         if (g_env.options.option_c != 1)
             free(next_line);
     }
+    g_env.not_first_line = 1;
+    g_env.prompt = "> ";
     return current_token;
 }
 

@@ -15,6 +15,15 @@
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)
 #define NEXT_IS_EOF() next_is_eof(lexer)
+#define NEXT_IS_OTHER() next_is_other(lexer)
+
+static bool next_is_other(struct queue *lexer)
+{
+    struct token_lexer *token = token_lexer_head(lexer);
+    if (token == NULL)
+        return false;
+    return token->type == TOKEN_OTHER;
+}
 
 //free all instructions passed and returns NULL
 static void* free_instructions(size_t nb_param, ...)
@@ -128,13 +137,15 @@ static struct command_container* build_simple_command(char *simple_command,
 //here doesn't call eat cause we need the token data
 static struct instruction* parse_simple_command(struct queue *lexer)
 {
+    if (!NEXT_IS_OTHER())
+        return NULL;
     struct token_lexer *token = token_lexer_pop(lexer);
     char *simple_command_str = token->data;
     free(token);
 
     struct array_list *parameters = array_list_init();
 
-    while (!next_is_end_of_instruction(lexer) && !NEXT_IS("then"))
+    while (!next_is_end_of_instruction(lexer))
     {
         token = token_lexer_pop(lexer);
         array_list_append(parameters, token->data);
@@ -215,31 +226,14 @@ static struct instruction* parse_compound_list_break(struct queue *lexer)
     if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
-    /*if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
+    if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
     {
         EAT();
-        while (NEXT_IS("\n"))
-            EAT();
-
-        struct instruction *tmp_ast = and_or;
-
-        while (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
-        {
-            EAT();
-            if ((tmp_ast->next = parse_and_or(lexer)) == NULL)
-                return free_instructions(1, and_or);
-            tmp_ast = tmp_ast->next;
-        }
-    }*/
-
-    if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
-        EAT();
-    else
-        return free_instructions(1, and_or);
+        and_or->next = parse_compound_list_break(lexer);
+    }
 
     while (NEXT_IS("\n"))
         EAT();
-
     return and_or;
 }
 
@@ -265,6 +259,7 @@ static struct instruction* parse_else_clause(struct queue *lexer)
     }
     else
     {
+        EAT();
         struct instruction *conditions = NULL;
         struct instruction *to_execute = NULL;
         struct instruction *another_else = NULL;
@@ -333,12 +328,25 @@ static struct instruction* parse_list(struct queue *lexer)
     return and_or;
 }
 
-//return null if only \n ?
-//for now doens't handle if end with ; or with &
-struct instruction* parse_input(struct queue *lexer, int *is_end)
+static struct instruction* parser_error(struct instruction *ast, int *error)
 {
-    if (NEXT_IS("\n") || NEXT_IS_EOF())
+    *error = 1;
+    destroy_tree(ast);
+    return ast;
+}
+
+//for now doens't handle if end with ; or with &
+//TOO LONG 
+struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
+{
+    if (NEXT_IS("\n"))
     {
+        EAT();
+        return NULL;
+    }
+    if (NEXT_IS_EOF())
+    {
+        EAT();
         *is_end = 1;
         return NULL;
     }
@@ -346,7 +354,7 @@ struct instruction* parse_input(struct queue *lexer, int *is_end)
     struct instruction *ast = NULL;
 
     if ((ast = parse_list(lexer)) == NULL)
-        return NULL;
+        return parser_error(ast, error);
 
     struct instruction *tmp_ast = ast;
 
@@ -358,12 +366,17 @@ struct instruction* parse_input(struct queue *lexer, int *is_end)
         tmp_ast = tmp_ast->next;
     }
 
-    if (!NEXT_IS("\n") && !NEXT_IS_EOF())
+    if (NEXT_IS("\n"))
     {
-        destroy_tree(ast);
-        return NULL;
+        EAT();
+        return ast;
     }
-    EAT();
-    *is_end = 1;
-    return ast;
+    else if (NEXT_IS_EOF())
+    {
+        EAT();
+        *is_end = 1;
+        return ast;
+    }
+    else
+        return parser_error(ast, error);
 }

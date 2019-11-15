@@ -48,7 +48,7 @@ int handle_file(int fd, char *argv[])
 {
     if ((fd = open(argv[1], O_RDONLY)) == -1)
         return -1;
-    if (dup2(0, fd) == -1)
+    if (dup2(fd, 0) == -1)
         return -1;
     return 0;
 }
