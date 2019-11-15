@@ -43,4 +43,6 @@ char *get_next_line(const char *prompt)
         prompt = NULL;
 
     return readline(prompt);
+    //add_history(return_value);
+    //return return_value;
 }

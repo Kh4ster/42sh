@@ -137,7 +137,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     if (current_token != NULL)
         return current_token;
     char *next_line = get_next_line(g_env.prompt);
-    // TODO add_history(next_line);
+    // add_history(next_line);
     g_env.prompt = ">";
     if (next_line == NULL) // End Of File
     {
