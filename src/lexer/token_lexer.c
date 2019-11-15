@@ -8,7 +8,7 @@
 #include "token_lexer.h"
 #include "../input_output/get_next_line.h"
 
-#define DELIMITERS " \\\n\t&|<>$\"\'`$();"
+#define DELIMITERS " \\\n\t&|<>$\"\'`$();#"
 
 void skip_class(int (*classifier)(int c), char **cursor)
 {
@@ -86,8 +86,31 @@ void set_token(struct token_lexer *token, enum token_lexer_type token_type,
     *cursor += nb_char;
 }
 
+void handle_comments(struct queue *token_queue
+                                    , struct token_lexer *new_token
+                                    , char **cursor, int is_linestart)
+{
+    if (**cursor != '#')
+        return;
+    if (is_linestart || *(*cursor - 1) == ' ')
+    {
+        while (**cursor != '\0' && **cursor != '\n')
+            (*cursor)++;
+    }
+    else
+    {
+        char *delim = get_delimiter(*cursor + 1);
+        struct token_lexer *last_token = token_queue->tail->data;
+        last_token->data = realloc(last_token->data, delim - *cursor
+                                   + strlen(last_token->data) + 1);
+        last_token->data = strncat(last_token->data, *cursor, delim - *cursor);
+        *cursor = delim;
+    }
+    free(new_token);
+}
 
-struct token_lexer *generate_token(char *cursor, char **delim)
+struct token_lexer *generate_token(struct queue *token_queue, char *cursor
+                                   , char **delim)
 {
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
@@ -132,8 +155,8 @@ struct token_lexer *generate_token(char *cursor, char **delim)
 
     else if (*cursor == '#')
     {
-        while(**delim != '\n')
-            (*delim)++;
+        handle_comments(token_queue, new_token, delim, 0);
+        return NULL;
     }
 
     else // other delimiters not defined yet
@@ -150,10 +173,12 @@ struct queue *lexer(char *line, struct queue *token_queue)
         token_queue = queue_init();
 
     char *cursor = line;
+    handle_comments(token_queue, NULL, &cursor, 1);
     while (*cursor != '\0')
     {
         char *delim = get_delimiter(cursor);
-        struct token_lexer *token_found = generate_token(cursor, &delim);
+        struct token_lexer *token_found = generate_token(token_queue, cursor
+                                                         , &delim);
         if (token_found != NULL)
             queue_push(token_queue, token_found);
         cursor = delim;
