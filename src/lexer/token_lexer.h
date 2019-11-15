@@ -16,11 +16,12 @@
 */
 enum token_lexer_type
 {
-    TOKEN_END_OF_INSTRUCTION, /**< @brief end of an instruction ";" */
+    TOKEN_END_OF_INSTRUCTION = 1, /**< @brief end of an instruction ";" */
     TOKEN_EOF, /**< @brief end of file "\n" */
     TOKEN_OPERATOR, /**< @brief operators defined in scl (&&, ||, ;;, ...) */
     TOKEN_KEYWORD, /**< @brief reserved words like fi, then, ... */
-    TOKEN_OTHER /**< @brief any words without delimiters */
+    TOKEN_OTHER, /**< @brief any words without delimiters */
+    TOKEN_ASSIGNEMENT /**< @brief variable assignement */
 };
 
 /** @struct token_lexer

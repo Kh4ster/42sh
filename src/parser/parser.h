@@ -26,13 +26,6 @@ enum token_parser_type
     TOKEN_ELSE
 };
 
-struct redirection
-{
-    struct command_container *command;
-    char *redirection;
-    char *file;
-};
-
 /**
 * @struct and_or_instruction
 * @brief represent an "and" or "or" node in the ast
@@ -63,6 +56,13 @@ struct instruction
     void *data; /**< @brief contains a ast node */
     enum token_parser_type type; /**< @brief type of ast node */
     struct instruction *next; /**< @brief use for ; cases */
+};
+
+struct redirection
+{
+    int fd;
+    char *file;
+    struct instruction *to_redirect;
 };
 
 /**

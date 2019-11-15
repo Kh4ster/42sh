@@ -82,7 +82,7 @@ Test(token_lexer, lexer_less_simple_multiple_tokens)
     current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
     cr_assert_eq(0, strcmp(current_token->data, "if"));
-    cr_assert_eq(TOKEN_OTHER, current_token->type);
+    cr_assert_eq(TOKEN_KEYWORD, current_token->type);
     token_lexer_free(&current_token);
 
     current_token = queue_pop(token_queue);
@@ -100,7 +100,7 @@ Test(token_lexer, lexer_less_simple_multiple_tokens)
     current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
     cr_assert_eq(0, strcmp(current_token->data, "then"));
-    cr_assert_eq(TOKEN_OTHER, current_token->type);
+    cr_assert_eq(TOKEN_KEYWORD, current_token->type);
     token_lexer_free(&current_token);
 
     current_token = queue_pop(token_queue);
@@ -118,7 +118,7 @@ Test(token_lexer, lexer_less_simple_multiple_tokens)
     current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
     cr_assert_eq(0, strcmp(current_token->data, "fi"));
-    cr_assert_eq(TOKEN_OTHER, current_token->type);
+    cr_assert_eq(TOKEN_KEYWORD, current_token->type);
     token_lexer_free(&current_token);
 
     string_free(&need_lexing);
