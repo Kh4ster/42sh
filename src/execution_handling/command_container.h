@@ -2,7 +2,7 @@
 * @brief Handling command_container structure
 * @author Coder : nicolas.blin & zakaria.ben-allal
 * @author Tester : zakaria.ben-allal
-* @author Reviewer :
+* @author Reviewer : nicolas.blin
 * @author Integrator :
 */
 

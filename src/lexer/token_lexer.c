@@ -6,6 +6,7 @@
 #include "../data_structures/queue.h"
 #include "../memory/memory.h"
 #include "token_lexer.h"
+#include "../input_output/get_next_line.h"
 
 #define DELIMITERS " \\\n\t&|<>$\"\'`$();"
 
@@ -78,14 +79,18 @@ struct token_lexer *generate_token(char *cursor, char **delim)
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
 
+    else if (strncmp(cursor, "\\n", 2) == 0)
+    {
+        char *newline_str = xcalloc(2, sizeof(char));
+        newline_str[0] = '\n';
+        new_token->data = newline_str;
+        new_token->type = TOKEN_OTHER;
+        (*delim) += 2;
+    }
+
     else if (*cursor == ';')
     {
         set_token(new_token, TOKEN_END_OF_INSTRUCTION, delim, 1);
-    }
-
-    else if (*cursor == '\n')
-    {
-        set_token(new_token, TOKEN_END_OF_LINE, delim, 1);
     }
 
     else if (*cursor == ' ' || *cursor == '\t')
@@ -109,12 +114,12 @@ struct token_lexer *generate_token(char *cursor, char **delim)
     return new_token;
 }
 
-struct queue *lexer(char *line)
+struct queue *lexer(char *line, struct queue *token_queue)
 {
-    struct queue *token_queue = queue_init();
+    if (token_queue == NULL)
+        token_queue = queue_init();
 
     char *cursor = line;
-
     while (*cursor != '\0')
     {
         char *delim = get_delimiter(cursor);
@@ -123,7 +128,6 @@ struct queue *lexer(char *line)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
-
     return token_queue;
 }
 
@@ -132,7 +136,23 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     struct token_lexer *current_token = queue_head(token_queue);
     if (current_token != NULL)
         return current_token;
-    //readline / get line ?
+    char *next_line = get_next_line(g_env.prompt);
+    // TODO add_history(next_line);
+    g_env.prompt = ">";
+    if (next_line == NULL) // End Of File
+    {
+        current_token = xmalloc(sizeof(struct token_lexer));
+        current_token->type = TOKEN_EOF;
+        current_token->data = strdup("ouais");
+        queue_push(token_queue, current_token);
+    }
+    else
+    {
+        token_queue = lexer(next_line, token_queue);
+        current_token = token_lexer_head(token_queue);
+        if (g_env.options.option_c != 1)
+            free(next_line);
+    }
     return current_token;
 }
 
@@ -141,4 +161,14 @@ struct token_lexer *token_lexer_pop(struct queue *token_queue)
     struct token_lexer *current_token = token_lexer_head(token_queue);
     queue_pop(token_queue);
     return current_token;
+}
+
+void token_queue_free(struct queue **token_queue)
+{
+    while((*token_queue)->size != 0)
+    {
+        struct token_lexer *to_free = token_lexer_pop(*token_queue);
+        token_lexer_free(&to_free);
+    }
+    queue_destroy(token_queue);
 }

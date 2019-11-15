@@ -15,6 +15,7 @@
 * @return 127 if cmd not found
 * @return 126 if cmd not executable
 * @return 2 if cmd argument not valid
+* @return -1 if execvp fails
 */
 
 int exec_cmd(struct command_container *cmd);
