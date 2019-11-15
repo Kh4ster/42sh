@@ -26,6 +26,14 @@ enum token_parser_type
     TOKEN_ELSE
 };
 
+struct redirection
+{
+    struct command_container *command;
+    int redirection;
+    enum token_parser_type redirection_type;
+    char *file;
+};
+
 /**
 * @struct and_or_instruction
 * @brief represent an "and" or "or" node in the ast
@@ -70,4 +78,8 @@ struct redirection
 * @param lexer the lexer that we will use for our pop/peek
 * @return success : an ast, fail : NULL
 */
+<<<<<<< HEAD
 struct instruction* parse_input(struct queue *lexer, int *is_end, int *error);
+=======
+struct instruction* parse_input(struct queue *lexer);
+>>>>>>> f4f8733d70f3bbeff35a4611d128787b84c8cd45
