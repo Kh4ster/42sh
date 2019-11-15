@@ -8,13 +8,13 @@
 #include "../../src/execution_handling/command_execution.h"
 #include "../../src/memory/memory.h"
 
-Test(cmd_exec, echo_toto, .exit_code = 0)
+Test(cmd_exec, echo_toto, .timeout = 0)
 {
     struct command_container *cmd = command_init(1, "echo", "toto");
     cr_assert_not_null(cmd);
     cr_assert_eq(0, strcmp(cmd->command, "echo"));
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
-    cr_assert_eq(0,exec_cmd(cmd));
+    cr_assert_eq(0, exec_cmd(cmd));
     command_destroy(&cmd);
 }
 
