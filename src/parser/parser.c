@@ -335,10 +335,16 @@ static struct instruction* parse_list(struct queue *lexer)
 
 //return null if only \n ?
 //for now doens't handle if end with ; or with &
-struct instruction* parse_input(struct queue *lexer, int *is_end)
+struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
 {
-    if (NEXT_IS("\n") || NEXT_IS_EOF())
+    if (NEXT_IS("\n"))
     {
+        EAT();
+        return NULL;
+    }
+    if (NEXT_IS_EOF())
+    {
+        EAT();
         *is_end = 1;
         return NULL;
     }
@@ -346,7 +352,10 @@ struct instruction* parse_input(struct queue *lexer, int *is_end)
     struct instruction *ast = NULL;
 
     if ((ast = parse_list(lexer)) == NULL)
+    {
+        *error = 1;
         return NULL;
+    }
 
     struct instruction *tmp_ast = ast;
 
@@ -358,12 +367,21 @@ struct instruction* parse_input(struct queue *lexer, int *is_end)
         tmp_ast = tmp_ast->next;
     }
 
-    if (!NEXT_IS("\n") && !NEXT_IS_EOF())
+    if (NEXT_IS("\n"))
     {
+        EAT();
+        return ast;
+    }
+    else if (NEXT_IS_EOF())
+    {
+        EAT();
+        *is_end = 1;
+        return ast;
+    }
+    else
+    {
+        *error = 1;
         destroy_tree(ast);
         return NULL;
     }
-    EAT();
-    *is_end = 1;
-    return ast;
 }
