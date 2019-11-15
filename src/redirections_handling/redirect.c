@@ -54,9 +54,9 @@ static int redirect_stdout_append(struct redirection *redirection)
 }
 
 
-extern int redirection_handling(struct redirection *redirect)
+extern int redirection_handling(struct instruction *redirect)
 {
-    switch(redirect->redirection_type)
+    switch(redirect->type)
     {
         case TOKEN_REDIRECT_LEFT:
             return redict_stdout(redirect);

@@ -62,7 +62,7 @@ extern int execute_ast(struct instruction *ast)
         case TOKEN_REDIRECT_LEFT:
         case TOKEN_REDIRECT_RIGHT:
         case TOKEN_REDIRECT_APPEND_LEFT:
-            return redirections_handling(ast->data);
+            return redirections_handling(ast);
             break;
         default:
             return 1;
