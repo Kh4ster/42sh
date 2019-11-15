@@ -2,6 +2,7 @@
 #include "../parser.h"
 #include "../../execution_handling/command_container.h"
 #include "../../execution_handling/command_execution.h"
+#include "../../redirections_handling/redirect.h"
 
 
 static int handle_if(struct instruction *ast)
@@ -58,6 +59,11 @@ extern int execute_ast(struct instruction *ast)
             break;
         case TOKEN_IF:
             return handle_if(ast);
+            break;
+        case TOKEN_REDIRECT_LEFT:
+        case TOKEN_REDIRECT_RIGHT:
+        case TOKEN_REDIRECT_APPEND_LEFT:
+            return redirections_handling(ast);
             break;
         default:
             return 1;

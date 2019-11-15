@@ -8,7 +8,7 @@
 #include "token_lexer.h"
 #include "../input_output/get_next_line.h"
 
-#define DELIMITERS " \\\n\t&|<>$\"\'`$();"
+#define DELIMITERS " \\\n\t&|<>$\"\'`$();2"
 
 void skip_class(int (*classifier)(int c), char **cursor)
 {
@@ -60,12 +60,12 @@ struct token_lexer *create_other_or_keyword_token(
     new_token->data = xstrndup(cursor, token_length);
 
     // is word a keyword or something else
-    const char reserved_words[][16] = {
+    const char *reserved_words[16] = {
         "!", "{", "}", "case", "do", "done", "elif", "else",
         "esac", "fi", "for", "if", "in", "then", "until", "while"
         };
-    int i = 0;
-    for (; i < 16; i++)
+    size_t i = 0;
+    for (; i < sizeof(reserved_words) / sizeof(char*); i++)
     {
         if (strcmp(reserved_words[i], new_token->data) == 0)
         {
@@ -73,7 +73,7 @@ struct token_lexer *create_other_or_keyword_token(
             break;
         }
     }
-    if (i == 16)
+    if (i == sizeof(reserved_words) / sizeof(char*))
         new_token->type = TOKEN_OTHER;
     return new_token;
 }
@@ -107,7 +107,8 @@ struct token_lexer *generate_token(char *cursor, char **delim)
     }
     */
     else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
-            || strncmp(cursor, ";;", 2) == 0)
+            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
+            || strncmp(cursor, "2>", 2) == 0)
     {
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
