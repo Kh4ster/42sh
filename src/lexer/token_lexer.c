@@ -53,6 +53,31 @@ struct token_lexer *create_newline_token(struct token_lexer *new_token)
     return new_token;
 }
 
+struct token_lexer *create_other_or_keyword_token(
+       struct token_lexer *new_token, char *cursor, char **delim)
+{
+    size_t token_length = *delim - cursor;
+    new_token->data = xstrndup(cursor, token_length);
+
+    // is word a keyword or something else
+    const char reserved_words[][16] = {
+        "!", "{", "}", "case", "do", "done", "elif", "else",
+        "esac", "fi", "for", "if", "in", "then", "until", "while"
+        };
+    int i = 0;
+    for (; i < 16; i++)
+    {
+        if (strcmp(reserved_words[i], new_token->data) == 0)
+        {
+            new_token->type = TOKEN_KEYWORD;
+            break;
+        }
+    }
+    if (i == 16)
+        new_token->type = TOKEN_OTHER;
+    return new_token;
+}
+
 void set_token(struct token_lexer *token, enum token_lexer_type token_type,
         char **cursor, size_t nb_char)
 {
@@ -61,15 +86,14 @@ void set_token(struct token_lexer *token, enum token_lexer_type token_type,
     *cursor += nb_char;
 }
 
+
 struct token_lexer *generate_token(char *cursor, char **delim)
 {
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
     if (cursor != *delim) // word pointed by cursor is not a delimiter
     {
-        size_t token_length = *delim - cursor;
-        new_token->data = xstrndup(cursor, token_length);
-        new_token->type = TOKEN_OTHER;
+        new_token = create_other_or_keyword_token(new_token, cursor, delim);
     }
     /*
     else if (*cursor == '\"' || *cursor == '\\' || *cursor == '\'')
