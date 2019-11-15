@@ -33,6 +33,28 @@ static void* free_instructions(size_t nb_param, ...)
     return NULL;
 }
 
+static enum token_parser_type is_redirection(struct queue *lexer)
+{
+    struct token_lexer *token = token_lexer_head(lexer);
+    char *cpy = strdup(token->data);
+    enum token_parser_type type = -1;
+
+    if (*token->data >= '0' && *token->data <= 9)
+        cpy++;
+
+    if (! strcmp(cpy, ">"))
+        type = TOKEN_REDIRECT_LEFT;
+
+    if (! strcmp(cpy, "<"))
+        type = TOKEN_REDIRECT_RIGHT;
+
+    if (! strcmp(cpy, ">>"))
+        type = TOKEN_REDIRECT_APPEND_LEFT;
+
+    free(cpy);
+    return type;
+}
+
 static bool next_is_eof(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
@@ -54,6 +76,16 @@ static bool next_is(struct queue *lexer, const char *to_match)
         return false;
     return strcmp(token->data, to_match) == 0;
 }
+
+static struct redirection *build_redirection(int fd, char *file)
+{
+    struct redirection *redirect = xmalloc(sizeof(struct redirection));
+    redirect->to_redirect = NULL;
+    redirect->fd = fd;
+    redirect->file = file;
+    return redirect;
+}
+
 
 static struct instruction* build_instruction(enum token_parser_type type,
                                                             void *input_instr
@@ -104,6 +136,36 @@ static bool is_shell_command(struct queue *lexer)
     return false;
 }
 
+
+static struct instruction *parse_redirection(struct queue *lexer)
+{
+    enum token_parser_type type;
+
+    if ((type = is_redirection(lexer)) == -1)
+        return NULL;
+
+    struct token_lexer *token = token_lexer_head(lexer);
+    char *cpy = strdup(token->data);
+    int fd = 0;
+
+    if (*cpy >= 0 && *cpy <= 9)
+        fd = atoi(*cpy);
+
+    free(cpy);
+    EAT(); //eat le token redirection
+
+    struct token_lexer *token = token_lexer_head(lexer);
+
+    if (token->type != TOKEN_OTHER)
+        return NULL;
+
+    char *file = strdup(token->data);
+    EAT();
+
+    return build_instruction(type, build_redirection(fd, file));
+}
+
+
 static bool next_is_end_of_instruction(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
@@ -128,7 +190,8 @@ static struct command_container* build_simple_command(char *simple_command,
 //here doesn't call eat cause we need the token data
 static struct instruction* parse_simple_command(struct queue *lexer)
 {
-    struct token_lexer *token = token_lexer_pop(lexer);
+    struct token_lexer *token = token_lexer_
+            || token->type == TOKEN_EOFpop(lexer);
     char *simple_command_str = token->data;
     free(token);
 
@@ -160,6 +223,15 @@ static struct instruction* parse_command(struct queue *lexer)
         command = parse_shell_command(lexer);
     else
         command = parse_simple_command(lexer);
+
+    struct instruction *redirection = parse_redirection(lexer);
+
+    if (redirection)
+    {
+        struct redirection *redirect = redirection->data;
+        redirect->to_redirect = command;
+        return redirection;
+    }
 
     return command;
 }
@@ -245,6 +317,7 @@ static struct instruction* parse_compound_list_break(struct queue *lexer)
 
 static struct if_instruction* build_if_instruction(
                                         struct instruction *conditions,
+        free(cpy);
                                         struct instruction *to_execute,
                                         struct instruction *else_container
 )
