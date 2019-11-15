@@ -14,7 +14,7 @@
 
 struct shell_environment g_env = {0};
 
-static int is_interactive(void)
+int is_interactive(void)
 {
     int tty = rl_instream ? fileno(rl_instream) : fileno(stdin);
 
