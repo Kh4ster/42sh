@@ -53,17 +53,32 @@ struct token_lexer *create_newline_token(struct token_lexer *new_token)
     return new_token;
 }
 
+static int is_assignement(char *data)
+{
+    while (*data)
+    {
+        if (*data == '=')
+            return 1;
+        data++;
+    }
+    return 0;
+}
+
 struct token_lexer *create_other_or_keyword_token(
-       struct token_lexer *new_token, char *cursor, char **delim)
+       struct token_lexer *new_token,
+       char *cursor,
+       char **delim
+)
 {
     size_t token_length = *delim - cursor;
     new_token->data = xstrndup(cursor, token_length);
 
     // is word a keyword or something else
-    const char *reserved_words[16] = {
+    const char *reserved_words[] =
+    {
         "!", "{", "}", "case", "do", "done", "elif", "else",
         "esac", "fi", "for", "if", "in", "then", "until", "while"
-        };
+    };
     size_t i = 0;
     for (; i < sizeof(reserved_words) / sizeof(char*); i++)
     {
@@ -74,21 +89,31 @@ struct token_lexer *create_other_or_keyword_token(
         }
     }
     if (i == sizeof(reserved_words) / sizeof(char*))
-        new_token->type = TOKEN_OTHER;
+    {
+        if (is_assignement(new_token->data))
+            new_token->type = TOKEN_ASSIGNEMENT;
+        else
+            new_token->type = TOKEN_OTHER;
+    }
     return new_token;
 }
 
-void set_token(struct token_lexer *token, enum token_lexer_type token_type,
-        char **cursor, size_t nb_char)
+void set_token(struct token_lexer *token,
+                enum token_lexer_type token_type,
+                char **cursor,
+                size_t nb_char
+)
 {
     token->data = xstrndup(*cursor, nb_char);
     token->type = token_type;
     *cursor += nb_char;
 }
 
-void handle_comments(struct queue *token_queue
-                                    , struct token_lexer *new_token
-                                    , char **cursor, int is_linestart)
+void handle_comments(struct queue *token_queue,
+                    struct token_lexer *new_token,
+                    char **cursor,
+                    int is_linestart
+)
 {
     if (**cursor != '#')
         return;
@@ -109,8 +134,10 @@ void handle_comments(struct queue *token_queue
     free(new_token);
 }
 
-struct token_lexer *generate_token(struct queue *token_queue, char *cursor
-                                   , char **delim)
+struct token_lexer *generate_token(struct queue *token_queue,
+                                    char *cursor,
+                                    char **delim
+)
 {
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 

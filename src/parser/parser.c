@@ -16,6 +16,15 @@
 #define EAT() eat_token(lexer)
 #define NEXT_IS_EOF() next_is_eof(lexer)
 #define NEXT_IS_OTHER() next_is_other(lexer)
+#define NEXT_IS_ASSIGNEMENT() next_is_assignement(lexer)
+
+static bool next_is_assignement(struct queue *lexer)
+{struct token_lexer *token = token_lexer_head(lexer);
+    if (token == NULL)
+        return false;
+    return token->type == TOKEN_ASSIGNEMENT;
+    
+}
 
 static bool next_is_other(struct queue *lexer)
 {
@@ -198,12 +207,16 @@ static struct command_container* build_simple_command(char *simple_command,
 }
 
 //simplified version of the grammar
-//doesn't handle redir
 //here doesn't call eat cause we need the token data
 static struct instruction* parse_simple_command(struct queue *lexer)
 {
-    if (!NEXT_IS_OTHER())
+    if (!NEXT_IS_OTHER() && !NEXT_IS_ASSIGNEMENT())
         return NULL;
+    if (NEXT_IS_ASSIGNEMENT())
+    {
+        EAT();
+        return build_instruction(TOKEN_COMMAND, NULL);
+    }
     struct token_lexer *token = token_lexer_pop(lexer);
     char *simple_command_str = token->data;
     free(token);

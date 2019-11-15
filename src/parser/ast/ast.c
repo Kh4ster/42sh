@@ -45,7 +45,7 @@ static int handle_commands(struct instruction *ast)
 
 extern int execute_ast(struct instruction *ast)
 {
-    if (!ast)
+    if (!ast || ast->data == NULL)//for now to handle var assignement
         return 1;
 
     switch (ast->type)

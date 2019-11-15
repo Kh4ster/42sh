@@ -16,6 +16,8 @@ static void free_if (struct if_instruction *if_container)
 
 static void free_command(struct command_container *command)
 {
+    if (command == NULL) //FOR NOW FOR VAR ASSIGNEMENT, TO CHANGE
+        return;
     free(command->command);
 
     for (size_t i = 0; command->params[i]; i++)
