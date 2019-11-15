@@ -29,10 +29,9 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 static void print_command(struct command_container *cmd, FILE *file)
 {
     fprintf(file, "%s", cmd->command);
-/*
-    for (size_t i = 0; cmd->params[i]; i++)
-        fprintf(" %s", cmd->params[i], file);
-*/
+
+    for (size_t i = 1; cmd->params[i]; i++)
+        fprintf(file, "_%s", cmd->params[i]);
 }
 
 
@@ -100,7 +99,7 @@ extern void print_ast(struct instruction *ast)
     if (!dot_ast)
         warn("Could not open file ast.dot");
 
-    fprintf(dot_ast, "diagraph ast {\n");
+    fprintf(dot_ast, "digraph ast {\n");
     __print_ast(ast, dot_ast);
     fprintf(dot_ast, "}\n");
 }
