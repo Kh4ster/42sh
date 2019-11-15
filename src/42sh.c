@@ -41,20 +41,22 @@ int main(int argc, char *argv[])
 
     int is_end = 0;
     struct queue *lexer = queue_init();
+    int error = 0;
 
     while (42)
     {
         g_env.prompt = "42sh$ ";
-        struct instruction *ast = parse_input(lexer, &is_end);
+        struct instruction *ast = parse_input(lexer, &is_end, &error);
         execute_ast(ast);
         destroy_tree(ast);
         if (is_end)
             break;
-        else if (ast == NULL)
+        else if (error == 1)
             handle_parser_errors(lexer);
     }
     free(lexer);
-    close(fd);
+    if (fd != 0)
+        close(fd);
     //puts("");
     return 0;
 }

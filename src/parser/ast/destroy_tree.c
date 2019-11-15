@@ -49,5 +49,7 @@ extern void destroy_tree(struct instruction *ast)
         default:
             return;
     }
+    if (ast->next != NULL)
+        destroy_tree(ast->next);
     free(ast);
 }
