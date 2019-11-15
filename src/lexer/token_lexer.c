@@ -158,6 +158,8 @@ struct queue *lexer(char *line, struct queue *token_queue)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
+    if (is_interactive())
+        queue_push(token_queue, create_newline_token(NULL));
     return token_queue;
 }
 
