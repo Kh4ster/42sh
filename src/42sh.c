@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <readline/history.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include "parameters_handling/parameters_handler.h"
 #include "parameters_handling/options.h"
@@ -24,7 +25,6 @@ static void sigint_handler(int signum)
 
 int main(int argc, char *argv[])
 {
-
     int fd = 0;
     if (handle_parameters(&g_env.options, argc, argv, fd) == -1)
     {
@@ -58,6 +58,8 @@ int main(int argc, char *argv[])
     free(lexer);
     if (fd != 0)
         close(fd);
-    //puts("");
+
+    if (is_interactive())
+        puts("");
     return return_code;
 }
