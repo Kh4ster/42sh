@@ -8,4 +8,6 @@
 
 #pragma once
 
-extern int redirections_handling(struct redirection *redirect);
+#include "../parser/parser.h"
+
+extern int redirections_handling(struct instruction *redirection);

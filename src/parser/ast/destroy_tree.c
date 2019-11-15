@@ -26,6 +26,13 @@ static void free_command(struct command_container *command)
 }
 
 
+static void free_redirection(struct redirection *redirection)
+{
+    free(redirection->file);
+    destroy_tree(redirection->to_redirect);
+    free(redirection);
+}
+
 extern void destroy_tree(struct instruction *ast)
 {
     if (!ast)
@@ -45,6 +52,11 @@ extern void destroy_tree(struct instruction *ast)
             break;
         case TOKEN_IF:
             free_if(ast->data);
+            break;
+        case TOKEN_REDIRECT_APPEND_LEFT:
+        case TOKEN_REDIRECT_LEFT:
+        case TOKEN_REDIRECT_RIGHT:
+            free_redirection(ast->data);
             break;
         default:
             return;

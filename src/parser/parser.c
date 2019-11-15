@@ -46,9 +46,10 @@ static enum token_parser_type is_redirection(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
     char *cpy = strdup(token->data);
-    enum token_parser_type type = -1;
+    char *beg = cpy;
+    enum token_parser_type type = 0;
 
-    if (*token->data >= '0' && *token->data <= 9)
+    if (*cpy >= '0' && *cpy <= '9')
         cpy++;
 
     if (! strcmp(cpy, ">"))
@@ -60,7 +61,7 @@ static enum token_parser_type is_redirection(struct queue *lexer)
     if (! strcmp(cpy, ">>"))
         type = TOKEN_REDIRECT_APPEND_LEFT;
 
-    free(cpy);
+    free(beg);
     return type;
 }
 
@@ -150,26 +151,26 @@ static struct instruction *parse_redirection(struct queue *lexer)
 {
     enum token_parser_type type;
 
-    if ((type = is_redirection(lexer)) == -1)
+    if ((type = is_redirection(lexer)) == 0)
         return NULL;
 
     struct token_lexer *token = token_lexer_head(lexer);
     char *cpy = strdup(token->data);
-    int fd = 0;
-
-    if (*cpy >= 0 && *cpy <= 9)
-        fd = atoi(*cpy);
+    int fd = 1;
+    cpy[1] = '\0'; //to be able to use atoi
+    if (*cpy >= '0' && *cpy <= '9')
+        fd = atoi(cpy);
 
     free(cpy);
-    EAT(); //eat le token redirection
+    EAT(); //eat the redirection token 
 
-    struct token_lexer *token = token_lexer_head(lexer);
+    token = token_lexer_head(lexer);
 
     if (token->type != TOKEN_OTHER)
-        return NULL;
+        return build_instruction(type, build_redirection(fd, NULL));
 
     char *file = strdup(token->data);
-    EAT();
+    EAT(); //eat file token
 
     return build_instruction(type, build_redirection(fd, file));
 }
@@ -181,6 +182,8 @@ static bool next_is_end_of_instruction(struct queue *lexer)
     if (token == NULL)
         return true;
     if (strcmp(token->data, "\n") == 0)
+        return true;
+    if (is_redirection(lexer))
         return true;
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF
@@ -225,6 +228,12 @@ static struct instruction* parse_simple_command(struct queue *lexer)
 
 }
 
+static bool redirection_not_valid(struct instruction *redirection)
+{
+    struct redirection *redir = redirection->data;
+    return redir->file == NULL;
+}
+
 //only handle shell command and simple command
 static struct instruction* parse_command(struct queue *lexer)
 {
@@ -238,6 +247,9 @@ static struct instruction* parse_command(struct queue *lexer)
 
     if (redirection)
     {
+        //to make difference between no redirectoin and bad grammar
+        if (redirection_not_valid(redirection))
+            return free_instructions(2, command, redirection);
         struct redirection *redirect = redirection->data;
         redirect->to_redirect = command;
         return redirection;
@@ -310,7 +322,6 @@ static struct instruction* parse_compound_list_break(struct queue *lexer)
 
 static struct if_instruction* build_if_instruction(
                                         struct instruction *conditions,
-        free(cpy);
                                         struct instruction *to_execute,
                                         struct instruction *else_container
 )
@@ -404,7 +415,7 @@ static struct instruction* parser_error(struct instruction *ast, int *error)
 {
     *error = 1;
     destroy_tree(ast);
-    return ast;
+    return NULL;
 }
 
 //for now doens't handle if end with ; or with &
