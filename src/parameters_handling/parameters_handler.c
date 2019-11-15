@@ -3,8 +3,13 @@
 
 #include "parameters_handler.h"
 #include "options.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-int handle_parameters(struct boot_params *options, int argc, char *argv[])
+int handle_parameters(struct boot_params *options, int argc, char *argv[]
+                      , int fd)
 {
     char c;
     struct option long_opts[] =
@@ -17,7 +22,9 @@ int handle_parameters(struct boot_params *options, int argc, char *argv[])
     {
         c = getopt_long(argc, argv, "NAOc:", long_opts, NULL);
         if (c  == -1)
-            return -1;
+        {
+            return handle_file(fd, argv);
+        }
         else if (c == 'N')
             options->option_n = true;
         else if (c == 'A')
@@ -35,4 +42,13 @@ int handle_parameters(struct boot_params *options, int argc, char *argv[])
             return -1;
     }
     return 1;
+}
+
+int handle_file(int fd, char *argv[])
+{
+    if ((fd = open(argv[1], O_RDONLY)) == -1)
+        return -1;
+    if (dup2(0, fd) == -1)
+        return -1;
+    return 0;
 }

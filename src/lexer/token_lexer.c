@@ -2,11 +2,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <readline/readline.h>
 
 #include "../data_structures/queue.h"
 #include "../memory/memory.h"
 #include "token_lexer.h"
+#include "../input_output/get_next_line.h"
 
 #define DELIMITERS " \\\n\t&|<>$\"\'`$();"
 
@@ -79,6 +79,15 @@ struct token_lexer *generate_token(char *cursor, char **delim)
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
 
+    else if (strncmp(cursor, "\\n", 2) == 0)
+    {
+        char *newline_str = xcalloc(2, sizeof(char));
+        newline_str[0] = '\n';
+        new_token->data = newline_str;
+        new_token->type = TOKEN_OTHER;
+        (*delim) += 2;
+    }
+
     else if (*cursor == ';')
     {
         set_token(new_token, TOKEN_END_OF_INSTRUCTION, delim, 1);
@@ -127,19 +136,22 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     struct token_lexer *current_token = queue_head(token_queue);
     if (current_token != NULL)
         return current_token;
-    char *next_line = readline("CHANGE_ME_IN_LEXER$"); // replace this
-    //TODO get_next_line(NULL, get_prompt());
+    char *next_line = get_next_line(g_env.prompt);
+    // TODO add_history(next_line);
+    g_env.prompt = ">";
     if (next_line == NULL) // End Of File
     {
-        struct token_lexer *current_token = xmalloc(sizeof(struct token_lexer));
+        current_token = xmalloc(sizeof(struct token_lexer));
         current_token->type = TOKEN_EOF;
-        current_token->data = NULL;
+        current_token->data = strdup("ouais");
+        queue_push(token_queue, current_token);
     }
     else
     {
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
-        free(next_line);
+        if (g_env.options.option_c != 1)
+            free(next_line);
     }
     return current_token;
 }
