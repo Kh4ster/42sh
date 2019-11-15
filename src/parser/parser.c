@@ -236,7 +236,7 @@ static struct instruction* parse_compound_list_break(struct queue *lexer)
         EAT();
     else
         return free_instructions(1, and_or);
-    
+
     while (NEXT_IS("\n"))
         EAT();
 

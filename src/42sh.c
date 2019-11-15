@@ -25,11 +25,19 @@ static void sigint_handler(int signum)
 int main(int argc, char *argv[])
 {
 
-    if (handle_parameters(&g_env.options, argc, argv) == -1)
-        return 2;
+    int fd = 0;
+    if (handle_parameters(&g_env.options, argc, argv, fd) == -1)
+    {
+        if (fd == -1)
+        {
+            close(fd);
+            errx(2, "invalid file");
+        }
+        errx(2, "invalid option");
+    }
 
     if (signal(SIGINT, sigint_handler) == SIG_ERR)
-        err(1, "an error occured while setting up a signal handler");
+        errx(1, "an error occured while setting up a signal handler");
 
     int is_end = 0;
     struct queue *lexer = queue_init();
@@ -46,7 +54,7 @@ int main(int argc, char *argv[])
             handle_parser_errors(lexer);
     }
     free(lexer);
-
+    close(fd);
     //puts("");
     return 0;
 }
