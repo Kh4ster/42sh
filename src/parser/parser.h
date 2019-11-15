@@ -58,6 +58,13 @@ struct instruction
     struct instruction *next; /**< @brief use for ; cases */
 };
 
+struct redirection
+{
+    int fd;
+    char *file;
+    struct instruction *to_redirect;
+};
+
 /**
 * @brief apply the grammar rule on the input
 * @param lexer the lexer that we will use for our pop/peek
