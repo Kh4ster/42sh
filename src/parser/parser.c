@@ -265,6 +265,7 @@ static struct instruction* parse_else_clause(struct queue *lexer)
     }
     else
     {
+        EAT();
         struct instruction *conditions = NULL;
         struct instruction *to_execute = NULL;
         struct instruction *another_else = NULL;
@@ -333,8 +334,8 @@ static struct instruction* parse_list(struct queue *lexer)
     return and_or;
 }
 
-//return null if only \n ?
 //for now doens't handle if end with ; or with &
+//TOO LONG 
 struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
 {
     if (NEXT_IS("\n"))
