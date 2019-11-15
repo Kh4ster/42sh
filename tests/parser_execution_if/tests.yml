@@ -1,0 +1,22 @@
+- name: if echo then; then echo ok; echo ok; fi
+  stdin: if echo then; then echo ok; echo ok; fi
+
+- name: from script.sh - if echo ok \n then \n echo ok \n fi
+  options:
+    - ../tests/parser_execution_if/test1.sh
+
+- name: if in another if
+  options:
+    - ../tests/parser_execution_if/test2.sh
+
+- name: basic if elif else - elif true
+  options:
+    - ../tests/parser_execution_if/test3.sh
+
+- name: basic if elif else - else true
+  options:
+    - ../tests/parser_execution_if/test4.sh
+
+- name: test if with a lot of \n
+  options:
+    - ../tests/parser_execution_if/test4.sh
