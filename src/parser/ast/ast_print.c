@@ -2,11 +2,13 @@
 #include <err.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "ast.h"
 #include "../parser.h"
 #include "ast_print.h"
 #include "../../execution_handling/command_container.h"
+#include "../../memory/memory.h"
 
 struct env_ast
 {
@@ -27,11 +29,19 @@ static void env_ast_init(void)
 
 static void __print_ast(struct instruction *ast, FILE *file);
 
+static void xasprintf(char **strp, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    if (asprintf(strp, fmt, args) == -1)
+        memory_exhausted();
+    va_end(args);
+}
 
 static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 {
     char *format_if = NULL;
-    asprintf(&format_if, "if_%ld", g_env_ast.nb_if);
+    xasprintf(&format_if, "if_%ld", g_env_ast.nb_if);
     g_env_ast.nb_if++;
 
     fprintf(file, "%s -> ", format_if);
@@ -67,7 +77,7 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
         }
     }
 
-    asprintf(&g_env_ast.labels, "%s%s [label=\"if\"];\n",
+    xasprintf(&g_env_ast.labels, "%s%s [label=\"if\"];\n",
             g_env_ast.labels, format_if);
     free(format_if);
 }
@@ -76,17 +86,17 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 static void print_command(struct command_container *cmd, FILE *file)
 {
     char *format = NULL;
-    asprintf(&format, "%s_%ld",cmd->command, g_env_ast.nb_cmd);
+    xasprintf(&format, "%s_%ld",cmd->command, g_env_ast.nb_cmd);
     g_env_ast.nb_cmd++;
 
     char *label_cmd = NULL;
-    asprintf(&label_cmd, "%s", cmd->command);
+    xasprintf(&label_cmd, "%s", cmd->command);
 
     for (size_t i = 1; cmd->params[i]; i++)
-        asprintf(&label_cmd,"%s %s", label_cmd, cmd->params[i]);
+        xasprintf(&label_cmd,"%s %s", label_cmd, cmd->params[i]);
 
     fprintf(file, "%s", format);
-    asprintf(&g_env_ast.labels, "%s%s [label=\"%s\"];\n", g_env_ast.labels,
+    xasprintf(&g_env_ast.labels, "%s%s [label=\"%s\"];\n", g_env_ast.labels,
             format, label_cmd);
     free(format);
     free(label_cmd);
