@@ -1,0 +1,40 @@
+- name: command_notfound
+  stdin: ./abcd toto
+  checks:
+    - has_stderr
+    - returncode
+
+- name: -c command not found
+  options:
+    - "-c"
+    - ""
+  checks:
+    - has_stderr
+    - returncode
+
+- name: command_notexecutable
+  options:
+    - ../tests/week1_simplecommand_error/test1.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ./file_notexecutable then remove file
+  options:
+    - ../tests/week1_simplecommand_error/test2.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ls wrong_parameter
+  stdin: ls wrong_parameter
+  checks:
+    - has_stderr
+    - stderr
+    - returncode
+
+- name: cp missing_parameter
+  stdin: cp
+  checks:
+    - has_stderr
+    - returncode

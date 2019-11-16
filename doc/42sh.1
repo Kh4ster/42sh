@@ -1,9 +1,73 @@
-# 42SH MANUAL
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "42SH" "1" "November 2019" "" ""
+.
+.SH "NAME"
+\fB42sh\fR \- Interactive Shell coded in C
+.
+.SH "SYNOPSIS"
+\fB42sh\fR [\-c command] [\-+O] [\-\-norc] [\-\-ast\-print]
+.
+.SH "DESCRIPTION"
+\fB42sh is an interactive shell reproducing basic functionalities of bash\fR\. This executable is implemented in C and was created in the context of a student project at Epita school\.
+.
+.P
+EPITA being one of the leading Computer Science Engineering Schools in France\. \fB42sh\fR is a major project that taught us several skills\. The first aspect is human, because being four students (cf\. \fIAUTHORS\fR) working for the fist time together during four weeks can be difficult\. We had to work seriously on our communication in order to boost our efficiency and lower the risk of having personal arguments\. Furthermore, in the making of this project we were able to acquire some wisdom, patience and self\-mastery\. During this project we had to use every skill and experience we gained during the previous school projects, in order to achieve the best \fB42sh\fR we could\. The \fB42sh\fR was also a valuable mean to learn new languages and technologies\. We used CMake to build our project, Python to test our code and C as main language to compile and code\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-c <command>\fR
+Follow the bash behavior for this option\.
+.
+.TP
+\fB[\-+]O\fR
+Follow the bash behavior for this option\. Only shopt variables that are required by 42sh must be accepted\.
+.
+.TP
+\fB\-\-norc\fR
+This option deactivates the resource reader\.
+.
+.TP
+\fB\-\-ast\-print\fR
+This option activates the AST printer\.
+.
+.TP
+\fBFor further information on bash behavior check the following link\fR
+\fIhttps://pubs\.opengroup\.org/onlinepubs/009695399/utilities/xcu_chap02\.html\fR
+.
+.SH "EXAMPLES"
+.
+.nf
 
-## NAME
+$ \./42sh
+$ cat test\.sh | \./42sh
+$ \./42sh \-c "echo example"
+.
+.fi
+.
+.SH "TESTS"
+To launch tests, you can use the python script tests/42sh_script\.py
+.
+.IP "" 4
+.
+.nf
 
-## SYNOPSIS
-
-## DESCRIPTION
-
-## AUTHORS
+$ python tests/42sh\e_script\.py \.42sh \-\-help
+.
+.fi
+.
+.IP "" 0
+.
+.SH "AUTHORS"
+cloe\.lacombe \fIcloe\.lacombe@epita\.fr\fR
+.
+.P
+nicolas\.blin \fInicolas\.blin@epita\.fr\fR
+.
+.P
+pierrick\.made \fIpierrick\.made@epita\.fr\fR
+.
+.P
+zakaria\.ben\-allal \fIzakaria\.ben\-allal@epita\.fr\fR

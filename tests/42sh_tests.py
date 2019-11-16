@@ -64,13 +64,15 @@ def test(binary, test_case, timeout, args):
     try:
         ref = run_shell(["bash", "--posix"] + test_case.get("options", []),\
             test_case.get("stdin", ""), timeout)
-        binary = ["valgrind"] if args.sanity else [] + [binary]
+        binary = [binary]
+        if args.sanity:
+            binary = ["valgrind", "-q", "--error-exitcode=42"] + binary
         student = run_shell(binary + test_case.get("options", []),\
             test_case.get("stdin", ""), timeout)
     except TimeoutError:
         raise AssertionError(f"Timeout after {timeout} seconds")
 
-    for check in test_case.get("checks", ["stdout", "stderr", "returncode"]):
+    for check in test_case.get("checks", ["stderr", "stdout", "returncode"]):
         if check == "stdout":
             assert ref.stdout == student.stdout, \
                 f"stdout differs:\n{diff(ref.stdout, student.stdout)}"
@@ -83,6 +85,9 @@ def test(binary, test_case, timeout, args):
         elif check == "has_stderr":
             assert student.stderr != "", \
                 "The code should print an error message on stderr"
+        elif check == "has_stdout":
+            assert student.stdout != "", \
+                "The code should print a message on stdout"
 
 def launch_test(binary, test_case, args, category_xml):
     """ Launch the test and print OK or KO (+diff) depending on the result

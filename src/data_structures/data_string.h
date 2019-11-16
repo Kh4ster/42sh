@@ -10,7 +10,8 @@
 
 #define BASE_STR_CAPACITY 64
 
-/** @struct string
+/**
+* @struct string
 * @brief Variable length char*
 */
 struct string
@@ -23,7 +24,7 @@ struct string
 
 /**
 * @brief Init a string data structure
-* @return succes : initialized empty string , fail : errx
+* @return success : initialized empty string , fail : errx
 * @relates string
 */
 struct string* string_init(void);

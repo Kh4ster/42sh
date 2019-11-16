@@ -4,65 +4,132 @@
 #include <readline/readline.h>
 #include <unistd.h>
 #include <readline/history.h>
+#include <signal.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-#include "42sh.h"
 #include "parameters_handling/parameters_handler.h"
 #include "parameters_handling/options.h"
+#include "data_structures/queue.h"
+#include "parser/parser.h"
+#include "input_output/get_next_line.h"
+#include "lexer/token_lexer.h"
+#include "parser/ast/ast.h"
+#include "error/error.h"
+#include "parser/ast/destroy_tree.h"
+#include "parser/ast/ast_print.h"
+#include "memory/memory.h"
 
-static int is_interactive(void)
+static void sigint_handler(int signum)
 {
-    int tty = rl_instream ? fileno(rl_instream) : fileno(stdin);
-
-    return isatty(tty);
+    if (signum == SIGINT)
+        printf("\n42sh$ ");
 }
 
-static void prep_terminal(int meta_flag)
+//the duplicated stdin/out... need to be closed at the end
+static void destroy_saved_stds(void)
 {
-    if (is_interactive())
-        rl_prep_terminal(meta_flag);
+    close(10);
+    close(11);
+    close(12);
 }
 
-static void handle_line(char *line)
+static void execute_shell(void)
 {
-    printf("%s$\n", line);
-    return;
-}
+    int is_end = 0;
+    struct queue *lexer = queue_init();
+    int error = 0;
+    int return_code = 0;
 
-static char *get_next_line(struct shell_environment *env, const char *prompt)
-{
-    // if option c, returns NULL to exit the execution loop
-    if (env->options.option_c)
+    while (42)
     {
-        char *command = env->options.command_option_c;
-        env->options.command_option_c = NULL;
-        handle_line(command);
-        return NULL;
+        g_env.prompt = "42sh$ ";
+        struct instruction *ast = parse_input(lexer, &is_end, &error);
+        return_code = execute_ast(ast);
+        destroy_tree(ast);
+        if (is_end)
+            break;
+        else if (error)
+        {
+            handle_parser_errors(lexer);
+            error = 0; //set error back to 0 for interactive mode
+        }
     }
-
-    rl_prep_term_function = prep_terminal;
-
-    if (!is_interactive())
-        prompt = NULL;
-
-    return readline(prompt);
+    return_code++; //useless for now
+    free(lexer);
 }
 
-static char *get_prompt(void)
+static void execute_ressource_file(char *name)
 {
-    return "42sh$ ";
+    int fd = open(name, O_RDONLY);
+    if (fd != -1)
+    {
+        dup2(0, 10);
+        dup2(fd, 0);
+        close(fd);
+        execute_shell();
+        dup2(10, 0);
+    }
+}
+
+static void handle_ressource_files(void)
+{
+    if (!g_env.options.option_n)
+    {
+        g_env.is_parsing_ressource = 1;
+        execute_ressource_file("/etc/42shrc");
+        char *s = getenv("HOME");
+        char *full_path = xmalloc(strlen(s) + strlen("/.42shrc") + 1);
+        strcpy(full_path, s);
+        strcat(full_path, "/.42shrc");
+        execute_ressource_file(full_path);
+        free(full_path);
+        g_env.is_parsing_ressource = 0;
+    }
 }
 
 int main(int argc, char *argv[])
 {
-    struct shell_environment env = {0};
-    if (handle_parameters(&env.options, argc, argv) == -1)
-        return 2;
+    if (handle_parameters(&g_env.options, argc, argv) == -1)
+        errx(2, "invalid option or file");
 
-    char *line = NULL;
-    while ((line = get_next_line(&env, get_prompt())) != NULL)
+    if (signal(SIGINT, sigint_handler) == SIG_ERR)
+        errx(1, "an error occurred while setting up a signal handler");
+
+    handle_ressource_files();
+
+    int is_end = 0;
+    struct queue *lexer = queue_init();
+    int error = 0;
+    int return_code = 0;
+
+    while (42)
     {
-        handle_line(line);
-        free(line);
+        g_env.prompt = "42sh$ ";
+        struct instruction *ast = parse_input(lexer, &is_end, &error);
+
+        if (g_env.options.option_a)
+            print_ast(ast);
+
+        return_code = execute_ast(ast);
+
+        destroy_tree(ast);
+        if (is_end)
+            break;
+        else if (error)
+        {
+            handle_parser_errors(lexer);
+            error = 0; //set error back to 0 for interactive mode
+        }
     }
-    return 0;
+
+    free(lexer);
+    destroy_saved_stds();
+
+    if (is_interactive())
+        puts("");
+
+    return return_code;
 }

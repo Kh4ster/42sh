@@ -1,24 +1,10 @@
-/*
-** Coder : nicolas.blin
-** Tester : 
-** Reviewer : 
-** Integrator : 
-**
-** Variable length array data_structure
-** TO TEST IF NEEDED BY THE PROJECT
-*/
-
 #include <stdlib.h>
 #include <assert.h>
 
 #include "array_list.h"
 #include "../memory/memory.h"
 
-/*
-** Init an empty array_list with a beginning size of MAX_INIT_SIZE
-** Holds an array of void*
-*/
-struct array_list* init_array_list(void)
+struct array_list* array_list_init(void)
 {
     struct array_list *arr = xmalloc(sizeof(struct array_list));
     arr->max_size = MAX_INIT_SIZE;
@@ -28,11 +14,7 @@ struct array_list* init_array_list(void)
 }
 
 
-/*
-** Append an element at the end of the array_list
-** If it needs, will be resized
-*/
-void append_array_list(struct array_list *l, void *ptr)
+void array_list_append(struct array_list *l, void *ptr)
 {
     assert(l != NULL);
     assert(l->content != NULL);
@@ -46,11 +28,7 @@ void append_array_list(struct array_list *l, void *ptr)
     l->content[l->nb_element++] = ptr;
 }
 
-/*
-** Detroy the array_list and its content
-** Pointer in content NEED to be freeable (coming from malloc)
-*/
-void destroy_array_list(struct array_list *list)
+void array_list_destroy(struct array_list *list)
 {
     assert(list != NULL);
     assert(list->content != NULL);
