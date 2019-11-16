@@ -251,11 +251,23 @@ static bool redirection_not_valid(struct instruction *redirection)
 //only handle shell command and simple command
 static struct instruction* parse_command(struct queue *lexer)
 {
+    if (is_redirection(lexer))
+    {
+        struct instruction *redirection = parse_redirection(lexer);
+        struct redirection *redirect = redirection->data;
+        redirect->to_redirect = NULL;
+        return redirection;
+    }
+
     struct instruction *command = NULL;
     if (is_shell_command(lexer))
         command = parse_shell_command(lexer);
     else
+    {
+        if (!NEXT_IS_OTHER())
+            return NULL;
         command = parse_simple_command(lexer);
+    }
 
     struct instruction *redirection = parse_redirection(lexer);
 
