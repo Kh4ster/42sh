@@ -23,18 +23,17 @@ static void sigint_handler(int signum)
         printf("\n42sh$ ");
 }
 
+static void destroy_saved_stds(void)
+{
+    close(10);
+    close(11);
+    close(12);
+}
+
 int main(int argc, char *argv[])
 {
-    int fd = 0;
-    if (handle_parameters(&g_env.options, argc, argv, fd) == -1)
-    {
-        if (fd == -1)
-        {
-            close(fd);
-            errx(2, "invalid file");
-        }
-        errx(2, "invalid option");
-    }
+    if (handle_parameters(&g_env.options, argc, argv) == -1)
+        errx(2, "invalid option or file");
 
     if (signal(SIGINT, sigint_handler) == SIG_ERR)
         errx(1, "an error occured while setting up a signal handler");
@@ -55,9 +54,9 @@ int main(int argc, char *argv[])
         else if (error == 1)
             handle_parser_errors(lexer);
     }
+
     free(lexer);
-    if (fd != 0)
-        close(fd);
+    destroy_saved_stds();
 
     if (is_interactive())
         puts("");
