@@ -237,7 +237,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
             queue_push(token_queue, create_newline_token(NULL));
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
-        if (g_env.options.option_c != 1)
+        if (g_env.is_parsing_ressource || !g_env.options.option_c)
             free(next_line);
     }
     g_env.not_first_line = 1;

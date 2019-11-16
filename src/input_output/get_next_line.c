@@ -33,7 +33,7 @@ char *get_next_line(const char *prompt)
 {
     rl_prep_term_function = prep_terminal;
     // if option c, returns NULL to exit the execution loop
-    if (g_env.options.option_c)
+    if (g_env.options.option_c && !g_env.is_parsing_ressource)
     {
         char *command = g_env.options.command_option_c;
         g_env.options.command_option_c = NULL;
