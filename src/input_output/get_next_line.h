@@ -23,4 +23,6 @@ struct shell_environment
     int not_first_line;  /**< @brief used to know if it's first call to getline*/
 };
 
+int is_interactive(void);
+
 char *get_next_line(const char *prompt);

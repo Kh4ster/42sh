@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <readline/history.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include "parameters_handling/parameters_handler.h"
 #include "parameters_handling/options.h"
@@ -25,7 +26,6 @@ static void sigint_handler(int signum)
 
 int main(int argc, char *argv[])
 {
-
     int fd = 0;
     if (handle_parameters(&g_env.options, argc, argv, fd) == -1)
     {
@@ -43,16 +43,21 @@ int main(int argc, char *argv[])
     int is_end = 0;
     struct queue *lexer = queue_init();
     int error = 0;
+    int return_code = 0;
 
     while (42)
     {
         g_env.prompt = "42sh$ ";
         struct instruction *ast = parse_input(lexer, &is_end, &error);
+<<<<<<< HEAD
         execute_ast(ast);
 
         if (g_env.options.option_a)
             print_ast(ast);
 
+=======
+        return_code = execute_ast(ast);
+>>>>>>> b53eb6edf7a045848d2c59b774e44a4a20a0c2a9
         destroy_tree(ast);
         if (is_end)
             break;
@@ -62,6 +67,8 @@ int main(int argc, char *argv[])
     free(lexer);
     if (fd != 0)
         close(fd);
-    //puts("");
-    return 0;
+
+    if (is_interactive())
+        puts("");
+    return return_code;
 }

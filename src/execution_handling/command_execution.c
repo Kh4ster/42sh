@@ -19,7 +19,9 @@ int exec_cmd(struct command_container *cmd)
     {
         execvp(cmd->command, cmd->params);
         if (errno == ENOENT)
+        {
             errx(127, "command not found");
+        }
         else if (errno == EACCES)
             errx(126, "cannot execute command");
         else
@@ -27,5 +29,5 @@ int exec_cmd(struct command_container *cmd)
     }
     int wstatus;
     waitpid(pid, &wstatus, 0);
-    return WEXITSTATUS(wstatus) == 0;
+    return WEXITSTATUS(wstatus);
 }
