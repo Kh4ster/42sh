@@ -18,10 +18,3 @@
 * @return -1 : fail, 1: success
 */
 int handle_parameters(struct boot_params *options, int argc, char *argv[]);
-
-/**
-* @brief open file given in parameters and make it replace stdin
-* @param file file that will replace stdin
-* @return -1 : fail, 0: success
-*/
-int handle_file(char *file);

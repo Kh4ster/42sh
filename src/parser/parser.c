@@ -19,11 +19,11 @@
 #define NEXT_IS_ASSIGNEMENT() next_is_assignement(lexer)
 
 static bool next_is_assignement(struct queue *lexer)
-{struct token_lexer *token = token_lexer_head(lexer);
+{
+    struct token_lexer *token = token_lexer_head(lexer);
     if (token == NULL)
         return false;
     return token->type == TOKEN_ASSIGNEMENT;
-    
 }
 
 static bool next_is_other(struct queue *lexer)
@@ -61,13 +61,13 @@ static enum token_parser_type is_redirection(struct queue *lexer)
     if (*cpy >= '0' && *cpy <= '9')
         cpy++;
 
-    if (! strcmp(cpy, ">"))
+    if (!strcmp(cpy, ">"))
         type = TOKEN_REDIRECT_LEFT;
 
-    if (! strcmp(cpy, "<"))
+    if (!strcmp(cpy, "<"))
         type = TOKEN_REDIRECT_RIGHT;
 
-    if (! strcmp(cpy, ">>"))
+    if (!strcmp(cpy, ">>"))
         type = TOKEN_REDIRECT_APPEND_LEFT;
 
     free(beg);
@@ -141,15 +141,16 @@ static struct instruction* parse_shell_command(struct queue *lexer)
 //missing other shell command
 static bool is_shell_command(struct queue *lexer)
 {
-    static const char *builtins[] =
+    static const char *shell_command[] =
     {
         "if",
         "for"
     };
+    size_t size_array = sizeof(shell_command) / sizeof(char*);
 
-    for (size_t i = 0; i < sizeof(builtins) / sizeof(char*); ++i)
+    for (size_t i = 0; i < size_array; ++i)
     {
-        if(next_is(lexer, builtins[i]))
+        if (NEXT_IS(shell_command[i]))
             return true;
     }
     return false;
@@ -184,7 +185,7 @@ static struct instruction *parse_redirection(struct queue *lexer)
     return build_instruction(type, build_redirection(fd, file));
 }
 
-
+//maybe write it better ?
 static bool next_is_end_of_instruction(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
@@ -310,8 +311,8 @@ static struct instruction* parse_and_or(struct queue *lexer)
         return left;
 }
 
-//still not exactly grammar
-//maybe refactor while part (also in parse list)
+// grammar implemented recursivly
+// that's why there is no free there cause will return null before allocating
 static struct instruction* parse_compound_list_break(struct queue *lexer)
 {
     while (NEXT_IS("\n"))
@@ -369,7 +370,7 @@ static struct instruction* parse_else_clause(struct queue *lexer)
         if ((to_execute = parse_compound_list_break(lexer)) == NULL)
             return free_instructions(1, conditions);
 
-        if(NEXT_IS("else") || NEXT_IS("elif"))
+        if (NEXT_IS("else") || NEXT_IS("elif"))
         {
             if ((another_else = parse_else_clause(lexer)) == NULL)
                 return free_instructions(2, conditions, to_execute);
@@ -400,10 +401,9 @@ static struct instruction* parse_if(struct queue *lexer)
     if ((to_execute = parse_compound_list_break(lexer)) == NULL)
         return free_instructions(1, conditions);
 
-    if(NEXT_IS("else") || NEXT_IS("elif"))
+    if (NEXT_IS("else") || NEXT_IS("elif"))
     {
-        else_container = parse_else_clause(lexer);
-        if (else_container == NULL)
+        if ((else_container = parse_else_clause(lexer)) == NULL)
             return free_instructions(2, conditions, to_execute);
     }
 

@@ -23,6 +23,7 @@ static void sigint_handler(int signum)
         printf("\n42sh$ ");
 }
 
+//the duplicated stdin/out... need to be closed at the end
 static void destroy_saved_stds(void)
 {
     close(10);
