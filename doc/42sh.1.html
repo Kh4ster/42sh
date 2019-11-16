@@ -58,6 +58,7 @@
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#OPTIONS">OPTIONS</a>
     <a href="#EXAMPLES">EXAMPLES</a>
+    <a href="#TESTS">TESTS</a>
     <a href="#AUTHORS">AUTHORS</a>
   </div>
 
@@ -74,45 +75,35 @@
 
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
-<p><code>42sh</code> [<var>optional</var>...] <var>flags</var></p>
-
-<p><code>42sh</code> [<var>optional</var>...] <var>flags</var></p>
-
-<p><code>42sh</code> [<var>optional</var>...] <var>flags</var></p>
-
-<p><code>42sh</code> [<var>optional</var>...] <var>flags</var></p>
+<p><code>42sh</code> [-c command] [-+O] [--norc] [--ast-print]</p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
-<p><strong>42sh is an interactive shell reproducing basic functionalities of bash</strong>
-implemented in C at Epita school.
-<strong>EPITA</strong> being one of the leading Computer Science Engineering Schools in France.
-The 42sh is a <strong>big project</strong> that teached us several skills.
-The first aspect is human, because being <strong>four students</strong> (see AUTHORS) working
-for the fist time together during <strong>four weeks</strong>, we had to work seriously on our
-communication in order to boost our efficiency and lower the risk of having
-personal arguments. Furthermore, in the making of this project we were able to
-acquire some <strong>wisdom</strong>, <strong>patience</strong> and <strong>self-mastery</strong>.
-During this project we had to use every skill and experience we gained during the
-previous school projects, in order to achieve the best 42sh we could.
-The 42sh was also a valuable mean to learn new languages and technologies we
-had to use mainly for compiling and testing our code (Python, Cmake, Criterion...).</p>
+<p><strong>42sh is an interactive shell reproducing basic functionalities of bash</strong>.
+This executable is implemented in C and was created in the context of a
+student project at Epita school.</p>
+
+<p>EPITA being one of the leading Computer Science Engineering Schools in
+France. <strong>42sh</strong> is a major project that teached us several skills.
+The first aspect is human, because being four students (cf. AUTHORS)
+working for the fist time together during four weeks can be difficult.
+We had to work seriously on our communication in order to boost our efficiency
+and lower the risk of having personal arguments. Furthermore, in the making of
+this project we were able to acquire some wisdom, patience and self-mastery.
+During this project we had to use every skill and experience we gained during
+the previous school projects, in order to achieve the best <strong>42sh</strong> we could.
+The <strong>42sh</strong> was also a valuable mean to learn new languages and technologies.
+We used CMake to build our project, Python to test our code and C as main
+language to compile and code.</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
 <dl>
-<dt><code>-h</code>, <code>--help</code> </dt><dd><p> Displays the help screen.</p></dd>
-<dt><code>--version</code> </dt><dd><p> Displays version information.</p></dd>
-<dt><code>-c &lt;command></code> </dt><dd><p> Follow the bash behavior for this option.</p></dd>
-<dt class="flush"><code>[-+]O</code> </dt><dd><p> Follow the bash behavior for this option.
- Only shopt variables that are required by 42sh must be accepted.</p></dd>
+<dt><code>-c &lt;command></code> </dt><dd><p>  Follow the bash behavior for this option.</p></dd>
+<dt class="flush"><code>[-+]O</code> </dt><dd><p>  Follow the bash behavior for this option.
+  Only shopt variables that are required by 42sh must be accepted.</p></dd>
 <dt class="flush"><code>--norc</code> </dt><dd><p>  This option deactivates the resource reader.</p></dd>
 <dt><code>--ast-print</code> </dt><dd><p>  This option activates the AST printer.</p></dd>
-<dt><code>-l</code>, <code>--list</code> </dt><dd><p>  Display the list of test categories.</p></dd>
-<dt><code>-c &lt;category></code>, <code>--category &lt;category></code> </dt><dd><p>  Execute the test suite on the categories passed in argument only.</p></dd>
-<dt><code>-s</code>, <code>--sanity</code> </dt><dd><p>  Execute the test suite with sanity checks enabled: e.g. valgrind.
-  Any reported error must mark the test as failed.</p></dd>
-<dt><code>-t &lt;time></code>, <code>--timeout &lt;time></code> </dt><dd><p>  Set time as a general timeout time (in seconds).</p></dd>
 </dl>
 
 
@@ -127,15 +118,22 @@ $ cat test.sh | ./42sh
 $ ./42sh -c "echo example"
 </code></pre>
 
+<h2 id="TESTS">TESTS</h2>
+
+<p>To launch tests, you can use the python script tests/42sh_script.py</p>
+
+<pre><code>$ python tests/42sh\_script.py .42sh --help
+</code></pre>
+
 <h2 id="AUTHORS">AUTHORS</h2>
 
-<p>cloe.lacombe <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#111;&#58;&#x63;&#108;&#x6f;&#x65;&#46;&#x6c;&#x61;&#99;&#111;&#x6d;&#98;&#x65;&#64;&#101;&#112;&#x69;&#x74;&#97;&#x2e;&#x66;&#x72;" data-bare-link="true">&#99;&#108;&#x6f;&#x65;&#x2e;&#x6c;&#97;&#x63;&#111;&#x6d;&#98;&#101;&#64;&#101;&#112;&#x69;&#x74;&#x61;&#x2e;&#102;&#x72;</a></p>
+<p>cloe.lacombe <a href="&#109;&#x61;&#105;&#108;&#x74;&#x6f;&#x3a;&#x63;&#108;&#x6f;&#101;&#x2e;&#x6c;&#97;&#99;&#111;&#x6d;&#98;&#101;&#64;&#x65;&#x70;&#105;&#x74;&#97;&#46;&#x66;&#114;" data-bare-link="true">&#99;&#x6c;&#x6f;&#101;&#46;&#108;&#97;&#x63;&#x6f;&#109;&#98;&#101;&#x40;&#x65;&#x70;&#105;&#x74;&#97;&#x2e;&#102;&#114;</a></p>
 
-<p>nicolas.blin <a href="&#109;&#97;&#105;&#108;&#116;&#x6f;&#58;&#x6e;&#105;&#99;&#x6f;&#108;&#x61;&#x73;&#46;&#x62;&#x6c;&#x69;&#x6e;&#64;&#x65;&#x70;&#x69;&#x74;&#x61;&#46;&#102;&#114;" data-bare-link="true">&#110;&#x69;&#99;&#111;&#x6c;&#97;&#x73;&#x2e;&#x62;&#x6c;&#x69;&#110;&#x40;&#101;&#112;&#x69;&#x74;&#97;&#46;&#x66;&#x72;</a></p>
+<p>nicolas.blin <a href="&#x6d;&#x61;&#105;&#108;&#x74;&#x6f;&#58;&#x6e;&#105;&#x63;&#111;&#x6c;&#97;&#115;&#x2e;&#98;&#x6c;&#105;&#110;&#x40;&#x65;&#112;&#105;&#116;&#x61;&#46;&#x66;&#x72;" data-bare-link="true">&#x6e;&#105;&#99;&#111;&#x6c;&#97;&#115;&#46;&#x62;&#x6c;&#105;&#110;&#64;&#101;&#x70;&#105;&#116;&#x61;&#x2e;&#x66;&#x72;</a></p>
 
-<p>pierrick.made <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#111;&#x3a;&#x70;&#x69;&#101;&#x72;&#114;&#105;&#x63;&#x6b;&#46;&#109;&#x61;&#x64;&#101;&#64;&#x65;&#x70;&#105;&#116;&#97;&#46;&#102;&#114;" data-bare-link="true">&#x70;&#105;&#x65;&#114;&#x72;&#x69;&#x63;&#x6b;&#x2e;&#109;&#97;&#x64;&#x65;&#64;&#x65;&#112;&#105;&#x74;&#x61;&#x2e;&#102;&#x72;</a></p>
+<p>pierrick.made <a href="&#x6d;&#97;&#105;&#x6c;&#116;&#111;&#58;&#x70;&#105;&#101;&#114;&#114;&#105;&#x63;&#x6b;&#46;&#x6d;&#x61;&#x64;&#101;&#x40;&#x65;&#112;&#x69;&#x74;&#x61;&#46;&#102;&#114;" data-bare-link="true">&#x70;&#x69;&#x65;&#114;&#114;&#105;&#99;&#107;&#46;&#x6d;&#97;&#100;&#101;&#64;&#101;&#x70;&#x69;&#116;&#97;&#x2e;&#102;&#x72;</a></p>
 
-<p>zakaria.ben-allal <a href="&#x6d;&#97;&#105;&#x6c;&#116;&#x6f;&#x3a;&#122;&#x61;&#107;&#97;&#x72;&#x69;&#x61;&#46;&#98;&#x65;&#x6e;&#45;&#x61;&#108;&#x6c;&#97;&#x6c;&#x40;&#101;&#112;&#105;&#x74;&#x61;&#x2e;&#102;&#x72;" data-bare-link="true">&#122;&#x61;&#x6b;&#x61;&#x72;&#x69;&#97;&#x2e;&#98;&#x65;&#110;&#x2d;&#97;&#108;&#108;&#x61;&#108;&#64;&#101;&#x70;&#105;&#x74;&#x61;&#46;&#102;&#x72;</a></p>
+<p>zakaria.ben-allal <a href="&#109;&#x61;&#x69;&#108;&#116;&#111;&#58;&#122;&#97;&#x6b;&#97;&#x72;&#x69;&#97;&#x2e;&#98;&#101;&#110;&#x2d;&#x61;&#108;&#x6c;&#x61;&#x6c;&#64;&#x65;&#x70;&#x69;&#116;&#x61;&#46;&#102;&#x72;" data-bare-link="true">&#x7a;&#97;&#x6b;&#97;&#114;&#105;&#97;&#46;&#98;&#101;&#x6e;&#45;&#x61;&#x6c;&#108;&#x61;&#x6c;&#x40;&#101;&#112;&#x69;&#x74;&#x61;&#46;&#102;&#114;</a></p>
 
 
   <ol class='man-decor man-foot man foot'>
