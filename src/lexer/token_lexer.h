@@ -21,7 +21,8 @@ enum token_lexer_type
     TOKEN_OPERATOR, /**< @brief operators defined in scl (&&, ||, ;;, ...) */
     TOKEN_KEYWORD, /**< @brief reserved words like fi, then, ... */
     TOKEN_OTHER, /**< @brief any words without delimiters */
-    TOKEN_ASSIGNEMENT /**< @brief variable assignement */
+    TOKEN_ASSIGNEMENT, /**< @brief variable assignement */
+    TOKEN_IO_NUMBER /**< @brief io number for redirections */
 };
 
 /** @struct token_lexer

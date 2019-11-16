@@ -19,6 +19,7 @@
 #include "parser/ast/ast.h"
 #include "error/error.h"
 #include "parser/ast/destroy_tree.h"
+#include "parser/ast/ast_print.h"
 #include "memory/memory.h"
 
 static void sigint_handler(int signum)
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
         errx(2, "invalid option or file");
 
     if (signal(SIGINT, sigint_handler) == SIG_ERR)
-        errx(1, "an error occured while setting up a signal handler");
+        errx(1, "an error occurred while setting up a signal handler");
 
     handle_ressource_files();
 
@@ -108,7 +109,12 @@ int main(int argc, char *argv[])
     {
         g_env.prompt = "42sh$ ";
         struct instruction *ast = parse_input(lexer, &is_end, &error);
+
+        if (g_env.options.option_a)
+            print_ast(ast);
+
         return_code = execute_ast(ast);
+
         destroy_tree(ast);
         if (is_end)
             break;

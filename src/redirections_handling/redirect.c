@@ -28,7 +28,8 @@ static int redirect_stdout(struct redirection *redirection)
      if (save_stds() == -1)
          errx(1, "could not save stdout");
 
-    int filedes_file = open(redirection->file, O_WRONLY | O_CREAT | O_TRUNC, 00777);
+    int filedes_file = open(redirection->file, O_WRONLY | O_CREAT | O_TRUNC,
+                                                                    00666);
     if (filedes_file == -1)
         err(1, "could not open file");
     dup2(filedes_file, redirection->fd);
@@ -46,7 +47,7 @@ static int redirect_stdout_append(struct redirection *redirection)
          errx(1, "could not save stdout");
 
     int filedes_file = open(redirection->file, O_WRONLY | O_APPEND | O_CREAT,
-                                                                        00777);
+                                                                        00666);
     if (filedes_file == -1)
         err(1, "could not open file");
     dup2(filedes_file, redirection->fd);
