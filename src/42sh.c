@@ -52,8 +52,11 @@ int main(int argc, char *argv[])
         destroy_tree(ast);
         if (is_end)
             break;
-        else if (error == 1)
+        else if (error)
+        {
             handle_parser_errors(lexer);
+            error = 0; //set error back to 0 for interactive mode
+        }
     }
 
     free(lexer);
