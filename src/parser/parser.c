@@ -65,27 +65,28 @@ static void* free_instructions(size_t nb_param, ...)
     return NULL;
 }
 
+static enum token_parser_type token_is_redirection (struct token_lexer *token)
+{
+    enum token_parser_type type = 0;
+
+    if (!strcmp(token->data, ">"))
+        type = TOKEN_REDIRECT_LEFT;
+
+    if (!strcmp(token->data, "<"))
+        type = TOKEN_REDIRECT_RIGHT;
+
+    if (!strcmp(token->data, ">>"))
+        type = TOKEN_REDIRECT_APPEND_LEFT;
+
+    return type;
+
+}
+
 static enum token_parser_type is_redirection(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
-    char *cpy = strdup(token->data);
-    char *beg = cpy;
-    enum token_parser_type type = 0;
 
-    if (*cpy >= '0' && *cpy <= '9')
-        cpy++;
-
-    if (!strcmp(cpy, ">"))
-        type = TOKEN_REDIRECT_LEFT;
-
-    if (!strcmp(cpy, "<"))
-        type = TOKEN_REDIRECT_RIGHT;
-
-    if (!strcmp(cpy, ">>"))
-        type = TOKEN_REDIRECT_APPEND_LEFT;
-
-    free(beg);
-    return type;
+    return token_is_redirection(token);
 }
 
 static bool next_is_eof(struct queue *lexer)
@@ -222,8 +223,19 @@ static bool next_is_end_of_instruction(struct queue *lexer)
         return true;
     if (strcmp(token->data, "\n") == 0)
         return true;
-    if (is_redirection(lexer) || NEXT_IS_NUMBER())
+    if (is_redirection(lexer))
         return true;
+
+    if (NEXT_IS_NUMBER())
+    {
+        if (lexer->size > 1)
+        {
+            struct token_lexer *token = lexer->head->next->data;
+            if (token_is_redirection(token) != 0)
+                return true;
+        }
+    }
+
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF
             || token->type == TOKEN_OPERATOR;
