@@ -129,9 +129,10 @@ void set_token(struct token_lexer *token,
 void handle_comments(struct queue *token_queue,
                     struct token_lexer *new_token,
                     char **cursor,
-                    int is_linestart
-)
+                    int is_linestart)
 {
+    if (*cursor == NULL)
+        return;
     if (**cursor != '#')
         return;
     if (is_linestart || *(*cursor - 1) == ' ')
@@ -258,11 +259,11 @@ struct queue *lexer(char *line, struct queue *token_queue)
 
     char *cursor = line;
     handle_comments(token_queue, NULL, &cursor, 1);
-    while (*cursor != '\0')
+    while (cursor != NULL && *cursor != '\0')
     {
         char *delim = get_delimiter(cursor, DELIMITERS);
-        struct token_lexer *token_found = generate_token(token_queue, cursor
-                                                         , &delim);
+        struct token_lexer *token_found = generate_token(token_queue, cursor,
+                &delim);
         if (token_found != NULL)
             queue_push(token_queue, token_found);
         cursor = delim;
@@ -278,7 +279,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     if (current_token != NULL)
         return current_token;
     char *next_line = get_next_line(g_env.prompt);
-    if (next_line == NULL && !is_interactive()) // End Of File
+    if (next_line == NULL) // End Of File
     {
         current_token = xmalloc(sizeof(struct token_lexer));
         current_token->type = TOKEN_EOF;
@@ -291,7 +292,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
             queue_push(token_queue, create_newline_token(NULL));
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
-        if (g_env.options.option_c != 1)
+        if (g_env.is_parsing_ressource || !g_env.options.option_c)
             free(next_line);
     }
     g_env.not_first_line = 1;
@@ -308,10 +309,19 @@ struct token_lexer *token_lexer_pop(struct queue *token_queue)
 
 void token_queue_free(struct queue **token_queue)
 {
-    while((*token_queue)->size != 0)
+    while ((*token_queue)->size != 0)
     {
         struct token_lexer *to_free = token_lexer_pop(*token_queue);
         token_lexer_free(&to_free);
     }
     queue_destroy(token_queue);
+}
+
+void token_queue_empty(struct queue *token_queue)
+{
+    while (token_queue->size != 0)
+    {
+        struct token_lexer *to_free = token_lexer_pop(token_queue);
+        token_lexer_free(&to_free);
+    }
 }

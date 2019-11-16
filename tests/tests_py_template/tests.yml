@@ -16,5 +16,5 @@
 
 - name: pass options c instead of stdin
   options:
-    - "-c"
-    - "echo hello world"
+    - -c
+    - echo hello world

@@ -21,7 +21,7 @@ enum token_lexer_type
     TOKEN_OPERATOR, /**< @brief operators defined in scl (&&, ||, ;;, ...) */
     TOKEN_KEYWORD, /**< @brief reserved words like fi, then, ... */
     TOKEN_OTHER, /**< @brief any words without delimiters */
-    TOKEN_ASSIGNEMENT, /**< @brief vari able assignement */
+    TOKEN_ASSIGNEMENT, /**< @brief variable assignement */
     TOKEN_IO_NUMBER /**< @brief io number for redirections */
 };
 
@@ -56,7 +56,14 @@ void token_lexer_free(struct token_lexer **token);
 
 /**
 * @brief Free the queue struct and all its tokens
-* @param token the token queue you want to free
+* @param token_queue the queue you want to free
 * @relates token_lexer
 */
 void token_queue_free(struct queue **token_queue);
+
+/**
+* @brief Free all the tokens of the queue without freeing the queue
+* @param token_queue the queue you want to free
+* @relates token_lexer
+*/
+void token_queue_empty(struct queue *token_queue);
