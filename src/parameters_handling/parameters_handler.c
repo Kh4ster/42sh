@@ -1,15 +1,18 @@
 #include <getopt.h>
 #include <stddef.h>
-
-#include "parameters_handler.h"
-#include "options.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
-int handle_parameters(struct boot_params *options, int argc, char *argv[]
-                      , int fd)
+#include "parameters_handler.h"
+#include "options.h"
+
+int handle_parameters(struct boot_params *options,
+                        int argc,
+                        char *argv[]
+)
 {
     char c;
     struct option long_opts[] =
@@ -23,7 +26,15 @@ int handle_parameters(struct boot_params *options, int argc, char *argv[]
         c = getopt_long(argc, argv, "NAOc:", long_opts, NULL);
         if (c  == -1)
         {
-            return handle_file(fd, argv);
+            char *current_option = argv[optind];
+            if (strcmp(current_option, "+O") == 0)
+                options->option_o = true;
+            else
+            {
+                if (handle_file(current_option) == -1)
+                    return -1;
+            }
+            optind++;
         }
         else if (c == 'N')
             options->option_n = true;
@@ -44,11 +55,13 @@ int handle_parameters(struct boot_params *options, int argc, char *argv[]
     return 1;
 }
 
-int handle_file(int fd, char *argv[])
+int handle_file(char *file)
 {
-    if ((fd = open(argv[1], O_RDONLY)) == -1)
+    int fd = -1;
+    if ((fd = open(file, O_RDONLY)) == -1)
         return -1;
     if (dup2(fd, 0) == -1)
         return -1;
+    close(fd);
     return 0;
 }
