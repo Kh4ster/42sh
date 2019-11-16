@@ -1,0 +1,71 @@
+- name: if then if then else fi
+  options:
+    - ../tests/parser_execution_if/test1.sh
+    - has_stderr
+    - returncode
+
+- name: if then if then else \t fi
+  options:
+    - ../tests/parser_execution_if/test2.sh
+    - has_stderr
+    - returncode
+
+- name: if then if then else fi fi fi
+  options:
+    - ../tests/parser_execution_if/test3.sh
+    - has_stderr
+    - returncode
+
+- name: fi if then if then else fi fi
+  options:
+    - ../tests/parser_execution_if/test4.sh
+    - has_stderr
+    - returncode
+
+- name: if if then fi fi
+  options:
+    - ../tests/parser_execution_if/test5.sh
+    - has_stderr
+    - returncode
+
+- name: if then then fi
+  options:
+    - ../tests/parser_execution_if/test6.sh
+    - has_stderr
+    - returncode
+
+- name: if fi but no eoi before fi
+  options:
+    - ../tests/parser_execution_if/test7.sh
+    - has_stderr
+    - returncode
+
+- name: if no_command else fi
+  options:
+    - ../tests/parser_execution_if/test8.sh
+    - has_stderr
+    - returncode
+
+- name: only if fi
+  options:
+    - ../tests/parser_execution_if/test9.sh
+    - has_stderr
+    - returncode
+
+- name: if no_command fi
+  options:
+    - ../tests/parser_execution_if/test10.sh
+    - has_stderr
+    - returncode
+
+- name:  if invalid_condition then command fi
+  options:
+    - ../tests/parser_execution_if/test11.sh
+    - has_stderr
+    - returncode
+
+
+
+
+
+
