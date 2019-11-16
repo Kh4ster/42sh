@@ -23,10 +23,10 @@ void token_lexer_free(struct token_lexer **token)
     *token = NULL;
 }
 
-char *get_delimiter(char *line)
+char *get_delimiter(char *line, char *delimiters)
 {
     assert(line != NULL);
-    char *delim = strpbrk(line, DELIMITERS);
+    char *delim = strpbrk(line, delimiters);
     if (delim == NULL)
     { // find and return last char
         delim = line;
@@ -141,7 +141,7 @@ void handle_comments(struct queue *token_queue,
     }
     else
     {
-        char *delim = get_delimiter(*cursor + 1);
+        char *delim = get_delimiter(*cursor + 1, DELIMITERS);
         struct token_lexer *last_token = token_queue->tail->data;
         last_token->data = realloc(last_token->data, delim - *cursor
                                    + strlen(last_token->data) + 1);
@@ -149,6 +149,39 @@ void handle_comments(struct queue *token_queue,
         *cursor = delim;
     }
     free(new_token);
+}
+
+void handle_quoting(struct token_lexer *new_token,
+        char **cursor)
+{
+    if (**cursor == '\'')
+    {
+        char *end_quote = strchr(*cursor, '\'');
+        while (end_quote == NULL)
+        {
+            // TODO strcat get_next_line to the current str
+            // end_quote = strchr(*cursor, '\'');
+            // if EOF, error, expecting a closing '
+        }
+        set_token(new_token, TOKEN_OTHER, cursor, end_quote - *cursor);
+        *cursor = end_quote + 1;
+    }
+    else if (**cursor == '"')
+    {
+        char *end_quote = get_delimiter(*cursor, "\"\\\0");
+        while (*end_quote != '\"')
+        {
+            // Handle backslash
+            if (*end_quote == '\\' && *(end_quote + 1) != '\0')
+                end_quote += 2;
+            if (*end_quote == '\0')
+                break; // TODO strcat get_next_line to the current str
+            // if EOF : error, expecting a closing "
+            end_quote = get_delimiter(*cursor, "\"\\\0");
+        }
+        set_token(new_token, TOKEN_OTHER, cursor, end_quote - *cursor);
+        *cursor = end_quote + 1;
+    }
 }
 
 struct token_lexer *generate_token(struct queue *token_queue,
@@ -162,17 +195,24 @@ struct token_lexer *generate_token(struct queue *token_queue,
     {
         new_token = create_other_or_keyword_token(new_token, cursor, delim);
     }
-    /*
-    else if (*cursor == '\"' || *cursor == '\\' || *cursor == '\'')
+
+    else if (*cursor == '\"' || *cursor == '\'')
     {
-        // handle_quoting(delim);
+        handle_quoting(new_token, delim);
+    }
+
+    #if 0
+    else if (*cursor == '\\')
+    {
+        handle_escape(delim);
     }
 
     else if (*cursor == '$' || *cursor == '`')
     {
         // handle_sub_commands(delim);
     }
-    */
+    #endif /* 0 */
+
     else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
             || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
     {
@@ -220,7 +260,7 @@ struct queue *lexer(char *line, struct queue *token_queue)
     handle_comments(token_queue, NULL, &cursor, 1);
     while (*cursor != '\0')
     {
-        char *delim = get_delimiter(cursor);
+        char *delim = get_delimiter(cursor, DELIMITERS);
         struct token_lexer *token_found = generate_token(token_queue, cursor
                                                          , &delim);
         if (token_found != NULL)
@@ -238,7 +278,6 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     if (current_token != NULL)
         return current_token;
     char *next_line = get_next_line(g_env.prompt);
-    // TODO add_history(next_line);
     if (next_line == NULL && !is_interactive()) // End Of File
     {
         current_token = xmalloc(sizeof(struct token_lexer));
