@@ -17,7 +17,7 @@
 #define NEXT_IS_EOF() next_is_eof(lexer)
 #define NEXT_IS_OTHER() next_is_other(lexer)
 #define NEXT_IS_ASSIGNEMENT() next_is_assignement(lexer)
-#define NEXT_IS_NUMBER() next_is_number(lexer);
+#define NEXT_IS_NUMBER() next_is_number(lexer)
 
 static bool next_is_assignement(struct queue *lexer)
 {
@@ -222,7 +222,7 @@ static bool next_is_end_of_instruction(struct queue *lexer)
         return true;
     if (strcmp(token->data, "\n") == 0)
         return true;
-    if (is_redirection(lexer))
+    if (is_redirection(lexer) || NEXT_IS_NUMBER())
         return true;
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF

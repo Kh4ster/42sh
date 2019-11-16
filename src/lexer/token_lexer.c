@@ -8,7 +8,7 @@
 #include "token_lexer.h"
 #include "../input_output/get_next_line.h"
 
-#define DELIMITERS " \\\n\t&|<>$\"\'`$();2"
+#define DELIMITERS " \\\n\t&|<>$\"\'`$();"
 
 void skip_class(int (*classifier)(int c), char **cursor)
 {
@@ -64,6 +64,18 @@ static int is_assignement(char *data)
     return 0;
 }
 
+static int is_number(char *data)
+{
+    for (size_t i = 0; data[i]; i++)
+    {
+        if (data[i] < '0' || data[i] > '9')
+            return 0;
+    }
+
+    return 1;
+}
+
+
 struct token_lexer *create_other_or_keyword_token(
        struct token_lexer *new_token,
        char *cursor,
@@ -85,18 +97,23 @@ struct token_lexer *create_other_or_keyword_token(
         if (strcmp(reserved_words[i], new_token->data) == 0)
         {
             new_token->type = TOKEN_KEYWORD;
-            break;
+            return new_token;
         }
     }
-    if (i == sizeof(reserved_words) / sizeof(char*))
+    if (is_assignement(new_token->data))
+        new_token->type = TOKEN_ASSIGNEMENT;
+
+    else
     {
-        if (is_assignement(new_token->data))
-            new_token->type = TOKEN_ASSIGNEMENT;
+        if (is_number(new_token->data))
+            new_token->type = TOKEN_IO_NUMBER;
         else
             new_token->type = TOKEN_OTHER;
     }
+
     return new_token;
 }
+
 
 void set_token(struct token_lexer *token,
                 enum token_lexer_type token_type,
