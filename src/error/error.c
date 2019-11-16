@@ -7,6 +7,14 @@
 
 inline void handle_parser_errors(struct queue *lexer)
 {
-    token_queue_free(&lexer);
-    err(2, "Bad parsing");
+    if (g_env.is_parsing_ressource || is_interactive())
+    {
+        token_queue_empty(lexer);
+        warnx("Bad parsing");
+    }
+    else
+    {
+        token_queue_free(&lexer);
+        errx(2, "Bad parsing");
+    }
 }

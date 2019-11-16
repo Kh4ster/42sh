@@ -16,6 +16,8 @@ static void free_if (struct if_instruction *if_container)
 
 static void free_command(struct command_container *command)
 {
+    if (command == NULL) //FOR NOW FOR VAR ASSIGNEMENT, TO CHANGE
+        return;
     free(command->command);
 
     for (size_t i = 0; command->params[i]; i++)
@@ -25,6 +27,13 @@ static void free_command(struct command_container *command)
     free(command);
 }
 
+
+static void free_redirection(struct redirection *redirection)
+{
+    free(redirection->file);
+    destroy_tree(redirection->to_redirect);
+    free(redirection);
+}
 
 extern void destroy_tree(struct instruction *ast)
 {
@@ -46,8 +55,15 @@ extern void destroy_tree(struct instruction *ast)
         case TOKEN_IF:
             free_if(ast->data);
             break;
+        case TOKEN_REDIRECT_APPEND_LEFT:
+        case TOKEN_REDIRECT_LEFT:
+        case TOKEN_REDIRECT_RIGHT:
+            free_redirection(ast->data);
+            break;
         default:
             return;
     }
+    if (ast->next != NULL)
+        destroy_tree(ast->next);
     free(ast);
 }

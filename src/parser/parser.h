@@ -16,21 +16,14 @@
 */
 enum token_parser_type
 {
-    TOKEN_IF = 0,
-    TOKEN_OR,
-    TOKEN_AND,
-    TOKEN_REDIRECT_LEFT,
-    TOKEN_REDIRECT_RIGHT,
-    TOKEN_REDIRECT_APPEND_LEFT,
-    TOKEN_COMMAND,
-    TOKEN_ELSE
-};
-
-struct redirection
-{
-    struct command_container *command;
-    char *redirection;
-    char *file;
+    TOKEN_IF = 0, /**< @brief token if */
+    TOKEN_OR, /**< @brief token or */
+    TOKEN_AND, /**< @brief token and */
+    TOKEN_REDIRECT_LEFT, /**< @brief token redirect left */
+    TOKEN_REDIRECT_RIGHT, /**< @brief token redirect right */
+    TOKEN_REDIRECT_APPEND_LEFT, /**< @brief token append left */
+    TOKEN_COMMAND, /**< @brief token command */
+    TOKEN_ELSE /**< @brief token else */
 };
 
 /**
@@ -63,6 +56,17 @@ struct instruction
     void *data; /**< @brief contains a ast node */
     enum token_parser_type type; /**< @brief type of ast node */
     struct instruction *next; /**< @brief use for ; cases */
+};
+
+/**
+* @struct redirection
+* @brief represent a redirection node in the ast
+*/
+struct redirection
+{
+    int fd; /**< @brief io number */
+    char *file; /**< @brief file to use for redirection */
+    struct instruction *to_redirect; /**< @brief command to execute */
 };
 
 /**

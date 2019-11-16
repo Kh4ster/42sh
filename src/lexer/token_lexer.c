@@ -8,7 +8,7 @@
 #include "token_lexer.h"
 #include "../input_output/get_next_line.h"
 
-#define DELIMITERS " \\\n\t&|<>$\"\'`$();"
+#define DELIMITERS " \\\n\t&|<>$\"\'`$();2"
 
 void skip_class(int (*classifier)(int c), char **cursor)
 {
@@ -53,23 +53,99 @@ struct token_lexer *create_newline_token(struct token_lexer *new_token)
     return new_token;
 }
 
-void set_token(struct token_lexer *token, enum token_lexer_type token_type,
-        char **cursor, size_t nb_char)
+static int is_assignement(char *data)
+{
+    while (*data)
+    {
+        if (*data == '=')
+            return 1;
+        data++;
+    }
+    return 0;
+}
+
+struct token_lexer *create_other_or_keyword_token(
+       struct token_lexer *new_token,
+       char *cursor,
+       char **delim
+)
+{
+    size_t token_length = *delim - cursor;
+    new_token->data = xstrndup(cursor, token_length);
+
+    // is word a keyword or something else
+    const char *reserved_words[] =
+    {
+        "!", "{", "}", "case", "do", "done", "elif", "else",
+        "esac", "fi", "for", "if", "in", "then", "until", "while"
+    };
+    size_t i = 0;
+    for (; i < sizeof(reserved_words) / sizeof(char*); i++)
+    {
+        if (strcmp(reserved_words[i], new_token->data) == 0)
+        {
+            new_token->type = TOKEN_KEYWORD;
+            break;
+        }
+    }
+    if (i == sizeof(reserved_words) / sizeof(char*))
+    {
+        if (is_assignement(new_token->data))
+            new_token->type = TOKEN_ASSIGNEMENT;
+        else
+            new_token->type = TOKEN_OTHER;
+    }
+    return new_token;
+}
+
+void set_token(struct token_lexer *token,
+                enum token_lexer_type token_type,
+                char **cursor,
+                size_t nb_char
+)
 {
     token->data = xstrndup(*cursor, nb_char);
     token->type = token_type;
     *cursor += nb_char;
 }
 
-struct token_lexer *generate_token(char *cursor, char **delim)
+void handle_comments(struct queue *token_queue,
+                    struct token_lexer *new_token,
+                    char **cursor,
+                    int is_linestart
+)
+{
+    if (*cursor == NULL)
+        return;
+    if (**cursor != '#')
+        return;
+    if (is_linestart || *(*cursor - 1) == ' ')
+    {
+        while (**cursor != '\0' && **cursor != '\n')
+            (*cursor)++;
+    }
+    else
+    {
+        char *delim = get_delimiter(*cursor + 1);
+        struct token_lexer *last_token = token_queue->tail->data;
+        last_token->data = realloc(last_token->data, delim - *cursor
+                                   + strlen(last_token->data) + 1);
+        last_token->data = strncat(last_token->data, *cursor, delim - *cursor);
+        *cursor = delim;
+    }
+    free(new_token);
+}
+
+struct token_lexer *generate_token(struct queue *token_queue,
+                                    char *cursor,
+                                    char **delim
+)
 {
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
     if (cursor != *delim) // word pointed by cursor is not a delimiter
     {
-        size_t token_length = *delim - cursor;
-        new_token->data = xstrndup(cursor, token_length);
-        new_token->type = TOKEN_OTHER;
+        new_token = create_other_or_keyword_token(new_token, cursor, delim);
     }
     /*
     else if (*cursor == '\"' || *cursor == '\\' || *cursor == '\'')
@@ -83,7 +159,8 @@ struct token_lexer *generate_token(char *cursor, char **delim)
     }
     */
     else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
-            || strncmp(cursor, ";;", 2) == 0)
+            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
+            || strncmp(cursor, "2>", 2) == 0)
     {
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
@@ -108,8 +185,8 @@ struct token_lexer *generate_token(char *cursor, char **delim)
 
     else if (*cursor == '#')
     {
-        while(**delim != '\n')
-            (*delim)++;
+        handle_comments(token_queue, new_token, delim, 0);
+        return NULL;
     }
 
     else // other delimiters not defined yet
@@ -126,14 +203,18 @@ struct queue *lexer(char *line, struct queue *token_queue)
         token_queue = queue_init();
 
     char *cursor = line;
-    while (*cursor != '\0')
+    handle_comments(token_queue, NULL, &cursor, 1);
+    while (cursor != NULL && *cursor != '\0')
     {
         char *delim = get_delimiter(cursor);
-        struct token_lexer *token_found = generate_token(cursor, &delim);
+        struct token_lexer *token_found = generate_token(token_queue, cursor,
+                                                                        &delim);
         if (token_found != NULL)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
+    if (is_interactive())
+        queue_push(token_queue, create_newline_token(NULL));
     return token_queue;
 }
 
@@ -143,7 +224,6 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     if (current_token != NULL)
         return current_token;
     char *next_line = get_next_line(g_env.prompt);
-    // TODO add_history(next_line);
     if (next_line == NULL) // End Of File
     {
         current_token = xmalloc(sizeof(struct token_lexer));
@@ -153,11 +233,11 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
-        if (g_env.not_first_line)
+        if (g_env.not_first_line && !is_interactive())
             queue_push(token_queue, create_newline_token(NULL));
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
-        if (g_env.options.option_c != 1)
+        if (g_env.is_parsing_ressource || !g_env.options.option_c)
             free(next_line);
     }
     g_env.not_first_line = 1;
@@ -174,10 +254,19 @@ struct token_lexer *token_lexer_pop(struct queue *token_queue)
 
 void token_queue_free(struct queue **token_queue)
 {
-    while((*token_queue)->size != 0)
+    while ((*token_queue)->size != 0)
     {
         struct token_lexer *to_free = token_lexer_pop(*token_queue);
         token_lexer_free(&to_free);
     }
     queue_destroy(token_queue);
+}
+
+void token_queue_empty(struct queue *token_queue)
+{
+    while (token_queue->size != 0)
+    {
+        struct token_lexer *to_free = token_lexer_pop(token_queue);
+        token_lexer_free(&to_free);
+    }
 }

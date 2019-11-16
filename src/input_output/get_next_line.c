@@ -14,8 +14,10 @@
 
 struct shell_environment g_env = {0};
 
-static int is_interactive(void)
+int is_interactive(void)
 {
+    if (g_env.options.option_c)
+        return 0;
     int tty = rl_instream ? fileno(rl_instream) : fileno(stdin);
 
     return isatty(tty);
@@ -29,18 +31,19 @@ static void prep_terminal(int meta_flag)
 
 char *get_next_line(const char *prompt)
 {
+    rl_prep_term_function = prep_terminal;
     // if option c, returns NULL to exit the execution loop
-    if (g_env.options.option_c)
+    if (g_env.options.option_c && !g_env.is_parsing_ressource)
     {
         char *command = g_env.options.command_option_c;
         g_env.options.command_option_c = NULL;
         return command;
     }
 
-    rl_prep_term_function = prep_terminal;
-
     if (!is_interactive())
         prompt = NULL;
 
-    return readline(prompt);
+    char *new_line = readline(prompt);
+    add_history(new_line);
+    return new_line;
 }

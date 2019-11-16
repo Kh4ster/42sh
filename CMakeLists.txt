@@ -37,7 +37,7 @@ set(SRC_FILES
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
-    #src/execution_handling/redirector.c
+    src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
     src/lexer/token_lexer.c
@@ -48,6 +48,7 @@ set(SRC_FILES
     src/input_output/get_next_line.c
     src/error/error.c
     src/parser/ast/ast_print.c
+    src/redirections_handling/redirect.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -81,6 +82,7 @@ add_library(common_options INTERFACE)
 target_compile_options(common_options INTERFACE
     #[[Basic options]]
     "-D_GNU_SOURCE"
+    "-D_POSIX_C_SOURCE"
     "-Wall"
     "-Wextra"
     "-pedantic"
