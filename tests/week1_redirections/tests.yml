@@ -15,6 +15,8 @@
 
 - name: Redirection without file
   stdin: echo ok >
+  checks:
+  - has_stderr
 
 - name: Redirection without a command
   options:
@@ -22,7 +24,7 @@
     - "> toto"
 
 - name: Redirection of a whole command
-  stdin: if echo ok; then echo good!; fi
+  stdin: if echo ok; then echo good; fi > toto
 
 - name: Redirection of a command - redirector in wrong place
   stdin: if > toto echo ok; then echo ko; fi
