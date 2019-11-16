@@ -4,6 +4,14 @@
     - has_stderr
     - returncode
 
+- name: -c command not found
+  options:
+    - "-c"
+    - ""
+  checks:
+    - has_stderr
+    - returncode
+
 - name: command_notexecutable
   options:
     - ../tests/week1_simplecommand_error/test1.sh

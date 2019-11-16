@@ -24,3 +24,6 @@
   checks:
     - stdout
     - returncode
+
+- name: echo -n | ./42sh
+  stdin: echo -n | ../42sh
