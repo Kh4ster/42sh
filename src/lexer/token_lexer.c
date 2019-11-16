@@ -157,8 +157,7 @@ struct token_lexer *generate_token(struct queue *token_queue,
     }
     */
     else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
-            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
-            || strncmp(cursor, "2>", 2) == 0)
+            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
     {
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
