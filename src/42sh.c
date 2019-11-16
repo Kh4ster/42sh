@@ -61,5 +61,6 @@ int main(int argc, char *argv[])
 
     if (is_interactive())
         puts("");
+
     return return_code;
 }
