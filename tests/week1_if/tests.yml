@@ -3,28 +3,28 @@
 
 - name: if echo ok \n then \n echo ok \n fi
   options:
-    - ../tests/parser_execution_if/test1.sh
+    - ../tests/week1_if/test1.sh
 
-- name: if in another if
+- name: if in another if with quotes
   options:
-    - ../tests/parser_execution_if/test2.sh
+    - ../tests/week1_if/test2.sh
 
 - name: basic if elif else - elif true
   options:
-    - ../tests/parser_execution_if/test3.sh
+    - ../tests/week1_if/test3.sh
 
 - name: basic if elif else - else true
   options:
-    - ../tests/parser_execution_if/test4.sh
+    - ../tests/week1_if/test4.sh
 
 - name: basic if elif else - if true
   options:
-    - ../tests/parser_execution_if/test5.sh
+    - ../tests/week1_if/test5.sh
 
 - name: if with a lot of \n
   options:
-    - ../tests/parser_execution_if/test6.sh
+    - ../tests/week1_if/test6.sh
 
 - name: if in if in if
   options:
-    - ../tests/parser_execution_if/test7.sh
+    - ../tests/week1_if/test7.sh

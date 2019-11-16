@@ -21,3 +21,6 @@
 - name: many_commands
   options:
     - ../tests/week1_simplecommand/test3.sh
+  checks:
+    - stdout
+    - returncode

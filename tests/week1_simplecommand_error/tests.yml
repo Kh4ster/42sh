@@ -22,6 +22,7 @@
   stdin: ls wrong_parameter
   checks:
     - has_stderr
+    - stderr
     - returncode
 
 - name: cp missing_parameter

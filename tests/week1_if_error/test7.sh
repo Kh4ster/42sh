@@ -1,2 +1,2 @@
 if echo "first if"; then
-    echo toto; fi
+    echo toto fi

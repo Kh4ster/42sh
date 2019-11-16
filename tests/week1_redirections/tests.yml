@@ -10,20 +10,24 @@
 - name: Redirection stdin
   stdin: cat < toto
 
-- name: Redirection simple : check if override
+- name: Redirection simple - check if override
   stdin: echo ok > toto
 
 - name: Redirection without file
   stdin: echo ok >
 
 - name: Redirection without a command
-  stdin: > toto
+  options:
+    - "-c"
+    - "> toto"
 
 - name: Redirection of a whole command
   stdin: if echo ok; then echo good!; fi
 
-- name: Redirection of a command: redirector in wrong place
+- name: Redirection of a command - redirector in wrong place
   stdin: if > toto echo ok; then echo ko; fi
 
 - name: Redirection of stdout
-  stdin: ech ok 2> toto
+  stdin: ech ok 2> toto \n cat toto \n rm toto
+  checks:
+    - has_stdout

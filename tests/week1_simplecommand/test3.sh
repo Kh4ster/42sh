@@ -1,25 +1,11 @@
 echo 3
-mkdir toto
-cd toto
-touch toto
-mv toto papa
-rm papa
-cd ..
-rm -r toto
+ls
 echo 2
-mkdir toto
-cd toto
-touch toto
-mv toto papa
-rm papa
-cd ..
-rm -r toto
+tree
 echo 1
-mkdir toto
-cd toto
-touch toto
-mv toto papa
-rm papa
-cd ..
-rm -r toto
+tree ..
+find ..
+echo 0
 echo toto
+echo echo echo 0
+tree
