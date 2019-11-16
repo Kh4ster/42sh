@@ -17,5 +17,4 @@
 * @return 2 if cmd argument not valid
 * @return -1 if execvp fails
 */
-
 int exec_cmd(struct command_container *cmd);

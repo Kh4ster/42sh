@@ -41,29 +41,32 @@ extern void destroy_tree(struct instruction *ast)
         return;
 
     struct and_or_instruction *node;
+
     switch (ast->type)
     {
-        case TOKEN_OR:
-        case TOKEN_AND:
-            node = ast->data;
-            destroy_tree(node->left);
-            destroy_tree(node->right);
-            break;
-        case TOKEN_COMMAND:
-            free_command(ast->data);
-            break;
-        case TOKEN_IF:
-            free_if(ast->data);
-            break;
-        case TOKEN_REDIRECT_APPEND_LEFT:
-        case TOKEN_REDIRECT_LEFT:
-        case TOKEN_REDIRECT_RIGHT:
-            free_redirection(ast->data);
-            break;
-        default:
-            return;
+    case TOKEN_OR:
+    case TOKEN_AND:
+        node = ast->data;
+        destroy_tree(node->left);
+        destroy_tree(node->right);
+        break;
+    case TOKEN_COMMAND:
+        free_command(ast->data);
+        break;
+    case TOKEN_IF:
+        free_if(ast->data);
+        break;
+    case TOKEN_REDIRECT_APPEND_LEFT:
+    case TOKEN_REDIRECT_LEFT:
+    case TOKEN_REDIRECT_RIGHT:
+        free_redirection(ast->data);
+        break;
+    default:
+        return;
     }
+
     if (ast->next != NULL)
         destroy_tree(ast->next);
+
     free(ast);
 }
