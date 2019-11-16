@@ -157,8 +157,7 @@ struct token_lexer *generate_token(struct queue *token_queue,
     }
     */
     else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
-            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
-            || strncmp(cursor, "2>", 2) == 0)
+            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
     {
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
@@ -223,7 +222,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
         return current_token;
     char *next_line = get_next_line(g_env.prompt);
     // TODO add_history(next_line);
-    if (next_line == NULL) // End Of File
+    if (next_line == NULL && !is_interactive()) // End Of File
     {
         current_token = xmalloc(sizeof(struct token_lexer));
         current_token->type = TOKEN_EOF;
@@ -232,7 +231,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
-        if (g_env.not_first_line)
+        if (g_env.not_first_line && !is_interactive())
             queue_push(token_queue, create_newline_token(NULL));
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
