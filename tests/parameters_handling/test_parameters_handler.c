@@ -64,7 +64,7 @@ Test(arguments, arg_mix)
     cr_assert_eq(0, strcmp(options.command_option_c, "ls"), "should be ls");
 }
 
-Test(arguments, arg_file)
+Test(arguments, arg_file_not_exec)
 {
     struct boot_params options = {0};
     char *argv[] = {"42sh", "not_executable"};
