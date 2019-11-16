@@ -1,0 +1,26 @@
+- name: ls
+  options:
+    - ../tests/week1_simplecommand/test1.sh
+
+- name: tree
+  stdin: tree
+
+- name: tree dir_not_fond
+  stdin: test dfdvfvf
+
+- name: echo toto
+  stdin: echo toto
+
+- name: echo very_long_parameter
+  options:
+    - ../tests/week1_simplecommand/test2.sh
+
+- name: echo tree echo ls toto
+  stdin: echo tree echo ls toto
+
+- name: many_commands
+  options:
+    - ../tests/week1_simplecommand/test3.sh
+  checks:
+    - stdout
+    - returncode
