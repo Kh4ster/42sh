@@ -53,16 +53,16 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 
     if (if_clause->else_container)
     {
-        if (if_clause->to_execute->type == TOKEN_IF)
+        if (if_clause->else_container->type == TOKEN_IF)
         {
             fprintf(file, "%s -> if_%ld [label=else]", format_if,
                     g_env_ast.nb_if);
-            __print_ast(if_clause->to_execute, file, 0);
+            __print_ast(if_clause->else_container, file, 0);
         }
         else
         {
             fprintf(file, "%s -> ", format_if);
-            __print_ast(if_clause->to_execute, file, 0);
+            __print_ast(if_clause->else_container, file, 0);
             fprintf(file, " [label=\"else\"];\n");
         }
     }
