@@ -42,5 +42,7 @@ char *get_next_line(const char *prompt)
     if (!is_interactive())
         prompt = NULL;
 
-    return readline(prompt);
+    char *new_line = readline(prompt);
+    add_history(new_line);
+    return new_line;
 }
