@@ -1,5 +1,14 @@
 - name: command_notfound
-  stdin: ./abcd toto
+
+stdin: ./abcd toto
+  checks:
+    - has_stderr
+    - returncode
+
+- name: -c command not found
+  options:
+    - "-c"
+    - ""
   checks:
     - has_stderr
     - returncode
