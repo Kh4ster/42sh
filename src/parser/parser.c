@@ -17,6 +17,7 @@
 #define NEXT_IS_EOF() next_is_eof(lexer)
 #define NEXT_IS_OTHER() next_is_other(lexer)
 #define NEXT_IS_ASSIGNEMENT() next_is_assignement(lexer)
+#define NEXT_IS_NUMBER() next_is_number(lexer);
 
 static bool next_is_assignement(struct queue *lexer)
 {
@@ -26,6 +27,7 @@ static bool next_is_assignement(struct queue *lexer)
     return token->type == TOKEN_ASSIGNEMENT;
 }
 
+
 static bool next_is_other(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
@@ -33,6 +35,18 @@ static bool next_is_other(struct queue *lexer)
         return false;
     return token->type == TOKEN_OTHER;
 }
+
+
+static bool next_is_number(struct queue *lexer)
+{
+    struct token_lexer *token = token_lexer_head(lexer);
+
+    if (token == NULL)
+        return false;
+
+    return token->type == TOKEN_IO_NUMBER;
+}
+
 
 //free all instructions passed and returns NULL
 static void* free_instructions(size_t nb_param, ...)
@@ -157,8 +171,27 @@ static bool is_shell_command(struct queue *lexer)
 }
 
 
+static int parse_io_number(struct queue *lexer)
+{
+    if (!NEXT_IS_NUMBER())
+        return -1;
+
+    struct token_lexer *token = token_lexer_head(lexer);
+    char *cpy = strdup(token->data);
+    EAT();
+
+    int fd = atoi(cpy);
+    free(cpy);
+    return fd;
+}
+
 static struct instruction *parse_redirection(struct queue *lexer)
 {
+    int fd = parse_io_number(lexer);
+
+    if (fd == -1)
+        fd = 1;
+
     enum token_parser_type type;
 
     if ((type = is_redirection(lexer)) == 0)
@@ -166,13 +199,9 @@ static struct instruction *parse_redirection(struct queue *lexer)
 
     struct token_lexer *token = token_lexer_head(lexer);
     char *cpy = strdup(token->data);
-    int fd = 1;
-    cpy[1] = '\0'; //to be able to use atoi
-    if (*cpy >= '0' && *cpy <= '9')
-        fd = atoi(cpy);
 
     free(cpy);
-    EAT(); //eat the redirection token 
+    EAT(); //eat the redirection token
 
     token = token_lexer_head(lexer);
 
