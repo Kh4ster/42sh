@@ -227,14 +227,7 @@ static bool next_is_end_of_instruction(struct queue *lexer)
         return true;
 
     if (NEXT_IS_NUMBER())
-    {
-        if (lexer->size > 1)
-        {
-            struct token_lexer *token = lexer->head->next->data;
-            if (token_is_redirection(token) != 0)
-                return true;
-        }
-    }
+        return true;
 
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF

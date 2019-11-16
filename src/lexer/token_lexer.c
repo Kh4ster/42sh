@@ -100,16 +100,12 @@ struct token_lexer *create_other_or_keyword_token(
             return new_token;
         }
     }
+
     if (is_assignement(new_token->data))
         new_token->type = TOKEN_ASSIGNEMENT;
 
     else
-    {
-        if (is_number(new_token->data))
-            new_token->type = TOKEN_IO_NUMBER;
-        else
-            new_token->type = TOKEN_OTHER;
-    }
+        new_token->type = TOKEN_OTHER;
 
     return new_token;
 }
@@ -135,6 +131,7 @@ void handle_comments(struct queue *token_queue,
         return;
     if (**cursor != '#')
         return;
+
     if (is_linestart || *(*cursor - 1) == ' ')
     {
         while (**cursor != '\0' && **cursor != '\n')
@@ -185,11 +182,32 @@ void handle_quoting(struct token_lexer *new_token,
     }
 }
 
+static void handle_io_number(char *cursor, struct queue *token_queue)
+{
+    if (token_queue->size && (! strncmp(cursor, ">>", 2) ||
+            ! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1)))
+    {
+        char *is_delim = cursor - 1;
+        if (strpbrk(is_delim, DELIMITERS) != is_delim)
+        {
+            if (token_queue->tail)
+            {
+                struct token_lexer *token = token_queue->tail->data;
+                if (is_number(token->data))
+                    token->type = TOKEN_IO_NUMBER;
+            }
+        }
+    }
+}
+
 struct token_lexer *generate_token(struct queue *token_queue,
                                     char *cursor,
                                     char **delim
 )
 {
+    if (*cursor == '\0')
+        return NULL;
+
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
     if (cursor != *delim) // word pointed by cursor is not a delimiter
@@ -217,7 +235,14 @@ struct token_lexer *generate_token(struct queue *token_queue,
     else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
             || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
     {
+        handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
+    }
+
+    else if (! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1))
+    {
+        handle_io_number(cursor, token_queue);
+        set_token(new_token, TOKEN_OPERATOR, delim, 1);
     }
 
     else if (strncmp(cursor, "\\n", 2) == 0)
