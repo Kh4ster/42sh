@@ -21,6 +21,7 @@ struct shell_environment
     struct boot_params options; /**< @brief parameters given to 42sh */
     char *prompt; /**< @brief ps1 or ps2 prompt */
     int not_first_line;  /**< @brief used to know if it's first call to getline*/
+    int is_parsing_ressource;
 };
 
 int is_interactive(void);
