@@ -74,4 +74,4 @@ struct redirection
 * @param lexer the lexer that we will use for our pop/peek
 * @return success : an ast, fail : NULL
 */
-struct instruction* parse_input(struct queue *lexer, int *is_end, int *error);
+struct instruction *parse_input(struct queue *lexer, int *is_end, int *error);

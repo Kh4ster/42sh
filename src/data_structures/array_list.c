@@ -9,7 +9,7 @@ struct array_list* array_list_init(void)
     struct array_list *arr = xmalloc(sizeof(struct array_list));
     arr->max_size = MAX_INIT_SIZE;
     arr->nb_element = 0;
-    arr->content = xcalloc(MAX_INIT_SIZE, sizeof(void*));
+    arr->content = xcalloc(MAX_INIT_SIZE, sizeof(void *));
     return arr;
 }
 
@@ -23,7 +23,7 @@ void array_list_append(struct array_list *l, void *ptr)
     if (l->nb_element + 1 > l->max_size)
     {
         l->max_size *= 2;
-        l->content = xrealloc(l->content, sizeof(void*) * l->max_size);
+        l->content = xrealloc(l->content, sizeof(void *) * l->max_size);
     }
     l->content[l->nb_element++] = ptr;
 }

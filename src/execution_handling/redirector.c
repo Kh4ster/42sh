@@ -37,7 +37,9 @@ int save_stds(void)
     errors[1] = dup2(1, 11);
     errors[2] = dup2(2, 12);
     for (short i = 0; i < 3; i++)
+    {
         if (errors[i] == -1)
             return -1;
+    }
     return 0;
 }

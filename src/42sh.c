@@ -90,6 +90,12 @@ static void handle_ressource_files(void)
     }
 }
 
+void free_all(struct queue *lexer)
+{
+    free(lexer);
+    destroy_saved_stds();
+}
+
 int main(int argc, char *argv[])
 {
     if (handle_parameters(&g_env.options, argc, argv) == -1)
@@ -127,8 +133,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    free(lexer);
-    destroy_saved_stds();
+    free_all(lexer);
 
     if (is_interactive())
         puts("");

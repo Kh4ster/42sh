@@ -10,7 +10,7 @@
 
 #define DELIMITERS " \\\n\t&|<>$\"\'`$();"
 
-void skip_class(int (*classifier)(int c), char **cursor)
+static void skip_class(int (*classifier)(int c), char **cursor)
 {
     while (classifier(**cursor))
         (*cursor)++;
@@ -23,7 +23,7 @@ void token_lexer_free(struct token_lexer **token)
     *token = NULL;
 }
 
-char *get_delimiter(char *line, char *delimiters)
+static char *get_delimiter(char *line, char *delimiters)
 {
     assert(line != NULL);
     char *delim = strpbrk(line, delimiters);
@@ -36,7 +36,7 @@ char *get_delimiter(char *line, char *delimiters)
     return delim;
 }
 
-char *xstrndup(char *str, size_t n)
+static char *xstrndup(char *str, size_t n)
 {
     char *copy_str = strndup(str, n);
     if (copy_str == NULL)
@@ -44,7 +44,7 @@ char *xstrndup(char *str, size_t n)
     return copy_str;
 }
 
-struct token_lexer *create_newline_token(struct token_lexer *new_token)
+static struct token_lexer *create_newline_token(struct token_lexer *new_token)
 {
     if (new_token == NULL)
         new_token = xmalloc(sizeof(struct token_lexer));
@@ -76,7 +76,7 @@ static int is_number(char *data)
 }
 
 
-struct token_lexer *create_other_or_keyword_token(
+static struct token_lexer *create_other_or_keyword_token(
        struct token_lexer *new_token,
        char *cursor,
        char **delim
@@ -92,7 +92,7 @@ struct token_lexer *create_other_or_keyword_token(
         "esac", "fi", "for", "if", "in", "then", "until", "while"
     };
     size_t i = 0;
-    for (; i < sizeof(reserved_words) / sizeof(char*); i++)
+    for (; i < sizeof(reserved_words) / sizeof(char *); i++)
     {
         if (strcmp(reserved_words[i], new_token->data) == 0)
         {
@@ -100,22 +100,18 @@ struct token_lexer *create_other_or_keyword_token(
             return new_token;
         }
     }
+
     if (is_assignement(new_token->data))
         new_token->type = TOKEN_ASSIGNEMENT;
 
     else
-    {
-        if (is_number(new_token->data))
-            new_token->type = TOKEN_IO_NUMBER;
-        else
-            new_token->type = TOKEN_OTHER;
-    }
+        new_token->type = TOKEN_OTHER;
 
     return new_token;
 }
 
 
-void set_token(struct token_lexer *token,
+static void set_token(struct token_lexer *token,
                 enum token_lexer_type token_type,
                 char **cursor,
                 size_t nb_char
@@ -126,7 +122,7 @@ void set_token(struct token_lexer *token,
     *cursor += nb_char;
 }
 
-void handle_comments(struct queue *token_queue,
+static void handle_comments(struct queue *token_queue,
                     struct token_lexer *new_token,
                     char **cursor,
                     int is_linestart)
@@ -135,6 +131,7 @@ void handle_comments(struct queue *token_queue,
         return;
     if (**cursor != '#')
         return;
+
     if (is_linestart || *(*cursor - 1) == ' ')
     {
         while (**cursor != '\0' && **cursor != '\n')
@@ -152,18 +149,20 @@ void handle_comments(struct queue *token_queue,
     free(new_token);
 }
 
-void handle_quoting(struct token_lexer *new_token,
+static void handle_quoting(struct token_lexer *new_token,
         char **cursor)
 {
     if (**cursor == '\'')
     {
         char *end_quote = strchr(*cursor, '\'');
+        #if 0
         while (end_quote == NULL)
         {
             // TODO strcat get_next_line to the current str
             // end_quote = strchr(*cursor, '\'');
             // if EOF, error, expecting a closing '
         }
+        #endif /* 0 */
         set_token(new_token, TOKEN_OTHER, cursor, end_quote - *cursor);
         *cursor = end_quote + 1;
     }
@@ -185,11 +184,79 @@ void handle_quoting(struct token_lexer *new_token,
     }
 }
 
-struct token_lexer *generate_token(struct queue *token_queue,
+static void handle_io_number(char *cursor, struct queue *token_queue)
+{
+    if (token_queue->size && (! strncmp(cursor, ">>", 2)
+            || ! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1)))
+    {
+        char *is_delim = cursor - 1;
+        if (strpbrk(is_delim, DELIMITERS) != is_delim)
+        {
+            if (token_queue->tail)
+            {
+                struct token_lexer *token = token_queue->tail->data;
+                if (is_number(token->data))
+                    token->type = TOKEN_IO_NUMBER;
+            }
+        }
+    }
+}
+
+static int generate_token_aux(struct queue *token_queue, char *cursor,
+        char **delim, struct token_lexer *new_token)
+{
+    if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
+            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
+    {
+        handle_io_number(cursor, token_queue);
+        set_token(new_token, TOKEN_OPERATOR, delim, 2);
+    }
+
+    else if (! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1))
+    {
+        handle_io_number(cursor, token_queue);
+        set_token(new_token, TOKEN_OPERATOR, delim, 1);
+    }
+
+    else if (strncmp(cursor, "\\n", 2) == 0)
+    {
+        new_token = create_newline_token(new_token);
+        (*delim) += 2;
+    }
+
+    else if (*cursor == ';')
+    {
+        set_token(new_token, TOKEN_END_OF_INSTRUCTION, delim, 1);
+    }
+
+    else if (*cursor == ' ' || *cursor == '\t')
+    {
+        skip_class(isblank, delim);
+        free(new_token);
+        return 0;
+    }
+
+    else if (*cursor == '#')
+    {
+        handle_comments(token_queue, new_token, delim, 0);
+        return 0;
+    }
+
+    else // other delimiters not defined yet
+    {
+        set_token(new_token, TOKEN_OTHER, delim, 1);
+    }
+    return 1;
+}
+
+static struct token_lexer *generate_token(struct queue *token_queue,
                                     char *cursor,
                                     char **delim
 )
 {
+    if (*cursor == '\0')
+        return NULL;
+
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
     if (cursor != *delim) // word pointed by cursor is not a delimiter
@@ -214,40 +281,9 @@ struct token_lexer *generate_token(struct queue *token_queue,
     }
     #endif /* 0 */
 
-    else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
-            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
-    {
-        set_token(new_token, TOKEN_OPERATOR, delim, 2);
-    }
-
-    else if (strncmp(cursor, "\\n", 2) == 0)
-    {
-        new_token = create_newline_token(new_token);
-        (*delim) += 2;
-    }
-
-    else if (*cursor == ';')
-    {
-        set_token(new_token, TOKEN_END_OF_INSTRUCTION, delim, 1);
-    }
-
-    else if (*cursor == ' ' || *cursor == '\t')
-    {
-        skip_class(isblank, delim);
-        free(new_token);
-        return NULL;
-    }
-
-    else if (*cursor == '#')
-    {
-        handle_comments(token_queue, new_token, delim, 0);
-        return NULL;
-    }
-
-    else // other delimiters not defined yet
-    {
-        set_token(new_token, TOKEN_OTHER, delim, 1);
-    }
+    else
+        if (!generate_token_aux(token_queue, cursor, delim, new_token))
+            return NULL;
 
     return new_token;
 }
