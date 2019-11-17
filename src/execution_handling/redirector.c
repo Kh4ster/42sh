@@ -24,6 +24,22 @@
 #include "redirector.h"
 #include "command_container.h"
 
+
+extern void free_one_fd(int fd)
+{
+    close(fd);
+}
+
+extern int save_one_fd(int fd)
+{
+    int error = dup2(fd, 42);
+
+    if (error == -1)
+        return -1;
+
+    return 0;
+}
+
 /*
 * Copy stdin/out/err to 10/11/12
 * Allows us to then modify the stds of the bins we want to execute

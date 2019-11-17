@@ -25,36 +25,44 @@ static int redirect_stdin(struct redirection *redirection)
 
 static int redirect_stdout(struct redirection *redirection)
 {
-     if (save_stds() == -1)
-         errx(1, "could not save stdout");
+     if (save_one_fd(redirection->fd) == -1)
+         errx(1, "could not save stds");
 
     int filedes_file = open(redirection->file, O_WRONLY | O_CREAT | O_TRUNC,
                                                                     00666);
     if (filedes_file == -1)
         err(1, "could not open file");
+
     dup2(filedes_file, redirection->fd);
     int return_commande = 0;
+
     if (redirection->to_redirect != NULL)
         return_commande = execute_ast(redirection->to_redirect);
-    dup2(11, 1); //close file fd
+
+    dup2(42, redirection->fd); //closes file fd
+    FREE_DEFAULT_FD();
     return return_commande;
 }
 
 
 static int redirect_stdout_append(struct redirection *redirection)
 {
-     if (save_stds() == -1)
-         errx(1, "could not save stdout");
+     if (save_one_fd(redirection->fd) == -1)
+         errx(1, "could not save stds");
 
     int filedes_file = open(redirection->file, O_WRONLY | O_APPEND | O_CREAT,
                                                                         00666);
     if (filedes_file == -1)
         err(1, "could not open file");
+
     dup2(filedes_file, redirection->fd);
     int return_commande = 0;
+
     if (redirection->to_redirect != NULL)
         return_commande = execute_ast(redirection->to_redirect);
-    dup2(11, 1); //close file fd
+
+    dup2(42, redirection->fd); //close file fd
+    FREE_DEFAULT_FD();
     return return_commande;
 }
 
