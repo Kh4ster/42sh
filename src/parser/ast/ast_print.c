@@ -67,8 +67,11 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
         }
     }
 
-    asprintf(&g_env_ast.labels, "%s%s [label=\"if\"];\n",
+    char *new_env = NULL;
+    asprintf(&new_env, "%s%s [label=\"if\"];\n",
             g_env_ast.labels, format_if);
+    free(g_env_ast.labels);
+    g_env_ast.labels = new_env;
     free(format_if);
 }
 
@@ -83,11 +86,24 @@ static void print_command(struct command_container *cmd, FILE *file)
     asprintf(&label_cmd, "%s", cmd->command);
 
     for (size_t i = 1; cmd->params[i]; i++)
-        asprintf(&label_cmd,"%s %s", label_cmd, cmd->params[i]);
+    {
+        char *new_label = NULL;
+        asprintf(&new_label,"%s %s", label_cmd, cmd->params[i]);
+        free(label_cmd);
+        label_cmd = new_label;
+    }
 
     fprintf(file, "%s", format);
-    asprintf(&g_env_ast.labels, "%s%s [label=\"%s\"];\n", g_env_ast.labels,
-            format, label_cmd);
+
+    char *new_env = NULL;
+    asprintf(&new_env, "%s%s[label=\"%s\"];\n",
+            g_env_ast.labels,format, label_cmd);
+
+    if (*g_env_ast.labels)
+        free(g_env_ast.labels);
+
+    g_env_ast.labels = new_env;
+
     free(format);
     free(label_cmd);
 }
