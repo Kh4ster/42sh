@@ -1,0 +1,18 @@
+42sh: command not found
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==12508==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5648abe871a5 bp 0x7fff3d89e630 sp 0x7fff3d89e5f0 T0)
+==12508==The signal is caused by a READ memory access.
+==12508==Hint: address points to the zero page.
+    #0 0x5648abe871a4 in handle_comments /home/fayln/ing1/project/pierrick.made-42sh/src/lexer/token_lexer.c:135
+    #1 0x5648abe87c3b in lexer /home/fayln/ing1/project/pierrick.made-42sh/src/lexer/token_lexer.c:260
+    #2 0x5648abe87fec in token_lexer_head /home/fayln/ing1/project/pierrick.made-42sh/src/lexer/token_lexer.c:292
+    #3 0x5648abe829e8 in next_is /home/fayln/ing1/project/pierrick.made-42sh/src/parser/parser.c:108
+    #4 0x5648abe83ae0 in parse_input /home/fayln/ing1/project/pierrick.made-42sh/src/parser/parser.c:479
+    #5 0x5648abe816a3 in main /home/fayln/ing1/project/pierrick.made-42sh/src/42sh.c:50
+    #6 0x7f79007b2ee2 in __libc_start_main (/usr/lib/libc.so.6+0x26ee2)
+    #7 0x5648abe813ad in _start (/home/fayln/ing1/project/pierrick.made-42sh/42sh+0x43ad)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /home/fayln/ing1/project/pierrick.made-42sh/src/lexer/token_lexer.c:135 in handle_comments
+==12508==ABORTING

@@ -8,10 +8,22 @@
 #include "ast_print.h"
 #include "../../execution_handling/command_container.h"
 
+struct env_ast
+{
+    size_t nb_if;
+    size_t nb_cmd;
+    char *labels;
+};
 
-size_t nb_if = 1;
-size_t nb_cmd = 1;
-char *labels = "";
+struct env_ast g_env_ast;
+
+static void env_ast_init(void)
+{
+    g_env_ast.nb_if = 1;
+    g_env_ast.nb_cmd = 1;
+    g_env_ast.labels = "";
+}
+
 
 static void __print_ast(struct instruction *ast, FILE *file);
 
@@ -19,8 +31,8 @@ static void __print_ast(struct instruction *ast, FILE *file);
 static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 {
     char *format_if = NULL;
-    asprintf(&format_if, "if_%ld", nb_if);
-    nb_if++;
+    asprintf(&format_if, "if_%ld", g_env_ast.nb_if);
+    g_env_ast.nb_if++;
 
     fprintf(file, "%s -> ", format_if);
     __print_ast(if_clause->conditions, file);
@@ -28,7 +40,8 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 
     if (if_clause->to_execute->type == TOKEN_IF)
     {
-        fprintf(file, "%s -> if_%ld [label=then]\n", format_if, nb_if);
+        fprintf(file, "%s -> if_%ld [label=then]\n", format_if,
+                g_env_ast.nb_if);
         __print_ast(if_clause->to_execute, file);
     }
     else
@@ -42,7 +55,8 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
     {
         if (if_clause->to_execute->type == TOKEN_IF)
         {
-            fprintf(file, "%s -> if_%ld [label=else]", format_if, nb_if);
+            fprintf(file, "%s -> if_%ld [label=else]", format_if,
+                    g_env_ast.nb_if);
             __print_ast(if_clause->to_execute, file);
         }
         else
@@ -53,7 +67,8 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
         }
     }
 
-    asprintf(&labels, "%s%s [label=\"if\"];\n",labels, format_if);
+    asprintf(&g_env_ast.labels, "%s%s [label=\"if\"];\n",
+            g_env_ast.labels, format_if);
     free(format_if);
 }
 
@@ -61,8 +76,8 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 static void print_command(struct command_container *cmd, FILE *file)
 {
     char *format = NULL;
-    asprintf(&format, "%s_%ld",cmd->command, nb_cmd);
-    nb_cmd++;
+    asprintf(&format, "%s_%ld",cmd->command, g_env_ast.nb_cmd);
+    g_env_ast.nb_cmd++;
 
     char *label_cmd = NULL;
     asprintf(&label_cmd, "%s", cmd->command);
@@ -71,7 +86,8 @@ static void print_command(struct command_container *cmd, FILE *file)
         asprintf(&label_cmd,"%s %s", label_cmd, cmd->params[i]);
 
     fprintf(file, "%s", format);
-    asprintf(&labels, "%s%s [label=\"%s\"];\n",labels, format, label_cmd);
+    asprintf(&g_env_ast.labels, "%s%s [label=\"%s\"];\n", g_env_ast.labels,
+            format, label_cmd);
     free(format);
     free(label_cmd);
 }
@@ -139,11 +155,15 @@ extern void print_ast(struct instruction *ast)
     FILE *dot_ast = fopen("ast.dot", "a+");
 
     if (!dot_ast)
+    {
         warn("Could not open file ast.dot");
+        return;
+    }
 
+    env_ast_init();
     fprintf(dot_ast, "digraph ast {\n");
     __print_ast(ast, dot_ast);
-    fprintf(dot_ast, "%s", labels);
+    fprintf(dot_ast, "%s", g_env_ast.labels);
     fprintf(dot_ast, "}\n");
     fclose(dot_ast);
 }

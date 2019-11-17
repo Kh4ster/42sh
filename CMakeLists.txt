@@ -47,11 +47,8 @@ set(SRC_FILES
     src/parser/ast/destroy_tree.c
     src/input_output/get_next_line.c
     src/error/error.c
-<<<<<<< HEAD
     src/parser/ast/ast_print.c
-=======
     src/redirections_handling/redirect.c
->>>>>>> b53eb6edf7a045848d2c59b774e44a4a20a0c2a9
 )
 
 # ---- List of test files (unit tests) ----
