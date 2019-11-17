@@ -3,7 +3,7 @@ find_program(CMAKE_C_COMPILER
     NAMES $ENV{CC} gcc
     PATHS ENV PATH NO_DEFAULT_PATH
 )
-project(42sh VERSION 1.0.0 LANGUAGES C)
+project(42sh VERSION 1.2.1 LANGUAGES C)
 
 #[[
 ----- USAGE -----
@@ -86,6 +86,7 @@ target_compile_options(common_options INTERFACE
     "-Wall"
     "-Wextra"
     "-pedantic"
+    "-std=c99"
     #[[Active -Werror on build_release and sanitize on build_debug]]
     $<IF:$<CONFIG:Release>,-Werror,-fsanitize=address>
 )
