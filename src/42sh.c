@@ -122,8 +122,10 @@ int main(int argc, char *argv[])
         return_code = execute_ast(ast);
 
         destroy_tree(ast);
+
         if (is_end)
             break;
+
         else if (error)
         {
             handle_parser_errors(lexer);
