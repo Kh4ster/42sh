@@ -64,6 +64,7 @@ static int handle_while(struct instruction *ast)
     while (!have_to_stop && execute_ast(while_instruction->conditions))
         return_value = execute_ast(while_instruction->to_execute);
 
+    have_to_stop = 0;
     return return_value;
 }
 
