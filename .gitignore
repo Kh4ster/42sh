@@ -12,3 +12,4 @@ build*
 42sh_manual_doxygen
 *.out
 *.dot
+toto

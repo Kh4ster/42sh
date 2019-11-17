@@ -7,6 +7,7 @@
 #include "../parser.h"
 #include "ast_print.h"
 #include "../../execution_handling/command_container.h"
+#include "../../memory/memory.h"
 
 struct env_ast
 {
@@ -25,69 +26,74 @@ static void env_ast_init(void)
 }
 
 
-static void __print_ast(struct instruction *ast, FILE *file);
-
+static void __print_ast(struct instruction *ast, FILE *file, int flag);
 
 static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 {
     char *format_if = NULL;
-    asprintf(&format_if, "if_%ld", g_env_ast.nb_if);
+    int ouais = asprintf(&format_if, "if_%ld", g_env_ast.nb_if);
     g_env_ast.nb_if++;
 
     fprintf(file, "%s -> ", format_if);
-    __print_ast(if_clause->conditions, file);
+    __print_ast(if_clause->conditions, file, 0);
     fprintf(file, " [label=\"conditions\"];\n");
 
     if (if_clause->to_execute->type == TOKEN_IF)
     {
         fprintf(file, "%s -> if_%ld [label=then]\n", format_if,
                 g_env_ast.nb_if);
-        __print_ast(if_clause->to_execute, file);
+        __print_ast(if_clause->to_execute, file, 0);
     }
     else
     {
         fprintf(file, "%s -> ", format_if);
-        __print_ast(if_clause->to_execute, file);
+        __print_ast(if_clause->to_execute, file, 0);
         fprintf(file, " [label=\"then\"];\n");
     }
 
     if (if_clause->else_container)
     {
-        if (if_clause->to_execute->type == TOKEN_IF)
+        if (if_clause->else_container->type == TOKEN_IF)
         {
             fprintf(file, "%s -> if_%ld [label=else]", format_if,
                     g_env_ast.nb_if);
-            __print_ast(if_clause->to_execute, file);
+            __print_ast(if_clause->else_container, file, 0);
         }
         else
         {
-        fprintf(file, "%s -> ", format_if);
-        __print_ast(if_clause->to_execute, file);
-        fprintf(file, " [label=\"else\"];\n");
+            fprintf(file, "%s -> ", format_if);
+            __print_ast(if_clause->else_container, file, 0);
+            fprintf(file, " [label=\"else\"];\n");
         }
     }
 
-    asprintf(&g_env_ast.labels, "%s%s [label=\"if\"];\n",
+    ouais += asprintf(&g_env_ast.labels, "%s%s [label=\"if\"];\n",
             g_env_ast.labels, format_if);
+
     free(format_if);
 }
 
 
-static void print_command(struct command_container *cmd, FILE *file)
+static void print_command(struct command_container *cmd, FILE *file, int flag)
 {
     char *format = NULL;
-    asprintf(&format, "%s_%ld",cmd->command, g_env_ast.nb_cmd);
+    int ouais = asprintf(&format, "%s_%ld",cmd->command, g_env_ast.nb_cmd);
     g_env_ast.nb_cmd++;
 
     char *label_cmd = NULL;
-    asprintf(&label_cmd, "%s", cmd->command);
+    ouais += asprintf(&label_cmd, "%s", cmd->command);
 
     for (size_t i = 1; cmd->params[i]; i++)
-        asprintf(&label_cmd,"%s %s", label_cmd, cmd->params[i]);
+        ouais += asprintf(&label_cmd,"%s %s", label_cmd, cmd->params[i]);
 
     fprintf(file, "%s", format);
-    asprintf(&g_env_ast.labels, "%s%s [label=\"%s\"];\n", g_env_ast.labels,
-            format, label_cmd);
+
+    if (flag)
+        fprintf(file, "\n");
+
+    ouais += asprintf(&g_env_ast.labels, "%s%s [label=\"%s\"];\n",
+            g_env_ast.labels, format, label_cmd);
+
     free(format);
     free(label_cmd);
 }
@@ -100,19 +106,19 @@ static void print_and_or(struct instruction *a_o, FILE *file)
     if (a_o->type == TOKEN_AND)
     {
         fprintf(file, "&& -> ");
-        __print_ast(a_o_i->left, file);
+        __print_ast(a_o_i->left, file, 1);
         fprintf(file, "\n");
         fprintf(file, "&& -> ");
-        __print_ast(a_o_i->right, file);
+        __print_ast(a_o_i->right, file, 1);
         fprintf(file, "\n");
     }
     else
     {
         fprintf(file, "|| -> ");
-        __print_ast(a_o_i->left, file);
+        __print_ast(a_o_i->left, file, 1);
         fprintf(file, "\n");
         fprintf(file, "|| -> ");
-        __print_ast(a_o_i->right, file);
+        __print_ast(a_o_i->right, file, 1);
         fprintf(file, "\n");
     }
 }
@@ -124,7 +130,7 @@ static void print_redirection(struct redirection *redirect, FILE *file)
 }
 #endif
 
-static void __print_ast(struct instruction *ast, FILE *file)
+static void __print_ast(struct instruction *ast, FILE *file, int flag)
 {
     if (!ast)
         return;
@@ -139,7 +145,7 @@ static void __print_ast(struct instruction *ast, FILE *file)
             print_if_clause(ast->data, file);
             break;
         case TOKEN_COMMAND:
-            print_command(ast->data, file);
+            print_command(ast->data, file, flag);
             break;
         default:
             return;
@@ -162,8 +168,9 @@ extern void print_ast(struct instruction *ast)
 
     env_ast_init();
     fprintf(dot_ast, "digraph ast {\n");
-    __print_ast(ast, dot_ast);
+    __print_ast(ast, dot_ast, 1);
     fprintf(dot_ast, "%s", g_env_ast.labels);
     fprintf(dot_ast, "}\n");
+    free(g_env_ast.labels);
     fclose(dot_ast);
 }

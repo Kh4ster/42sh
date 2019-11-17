@@ -7,7 +7,7 @@
 #include "../data_structures/array_list.h"
 #include "command_execution.h"
 
-struct command_container* command_init(size_t nb_args, char *command, ...)
+struct command_container *command_init(size_t nb_args, char *command, ...)
 {
     va_list ap;
     va_start(ap, command);
@@ -15,15 +15,16 @@ struct command_container* command_init(size_t nb_args, char *command, ...)
     struct command_container *command_container;
     command_container = xmalloc(sizeof(struct command_container));
     command_container->command = command;
-    command_container->params = xmalloc(sizeof(char*) * (nb_args + 2));
+    command_container->params = xmalloc(sizeof(char *) * (nb_args + 2));
     command_container->params[0] = command;
-    char *end = command_container->params[0] + strlen(command_container->params[0]);
+    char *end = command_container->params[0] +
+                    strlen(command_container->params[0]);
     while (end - command_container->params[0] >= 0 && *end != '/')
         end--;
     end++;
     command_container->params[0] = end;
     for (size_t i = 0; i < nb_args; ++i)
-        command_container->params[i + 1] = va_arg(ap, char*);
+        command_container->params[i + 1] = va_arg(ap, char *);
     command_container->params[nb_args + 1] = NULL;
 
     va_end(ap);

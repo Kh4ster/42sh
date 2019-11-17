@@ -27,7 +27,7 @@ struct string
 * @return success : initialized empty string , fail : errx
 * @relates string
 */
-struct string* string_init(void);
+struct string *string_init(void);
 
 /**
 * @brief Append text at the end of the string
@@ -67,7 +67,7 @@ void string_append_char(struct string *string, char c);
 * @param string String to get content
 * @relates string
 */
-char* string_get_content(struct string **string);
+char *string_get_content(struct string **string);
 
 /**
 * @brief Set content to 0
