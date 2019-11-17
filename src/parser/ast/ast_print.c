@@ -62,7 +62,11 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
         else
         {
             fprintf(file, "%s -> ", format_if);
+<<<<<<< HEAD
             __print_ast(if_clause->else_container, file, 0);
+=======
+            __print_ast(if_clause->to_execute, file);
+>>>>>>> 34d5efa34ee5e637b5b47a1535a4328bb6e9808c
             fprintf(file, " [label=\"else\"];\n");
         }
     }
