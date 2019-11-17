@@ -122,6 +122,10 @@ int main(int argc, char *argv[])
         return_code = execute_ast(ast);
 
         destroy_tree(ast);
+
+        if (signal(SIGINT, sigint_handler) == SIG_ERR)
+            errx(1, "an error occurred while setting up a signal handler");
+
         if (is_end)
             break;
         else if (error)
