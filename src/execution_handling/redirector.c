@@ -30,9 +30,9 @@ extern void free_one_fd(int fd)
     close(fd);
 }
 
-extern int save_one_fd(int fd)
+extern int save_one_fd(int fd_save, int fd)
 {
-    int error = dup2(fd, 42);
+    int error = dup2(fd, fd_save);
 
     if (error == -1)
         return -1;
@@ -46,6 +46,21 @@ extern int save_one_fd(int fd)
 * And then get back the true stds
 * return -1 in case of error
 */
+
+int restore_stds(void)
+{
+    int errors[3];
+    errors[0] = dup2(10, 0);
+    errors[1] = dup2(11, 1);
+    errors[2] = dup2(12, 2);
+    for (short i = 0; i < 3; i++)
+    {
+        if (errors[i] == -1)
+            return -1;
+    }
+    return 0;
+}
+
 int save_stds(void)
 {
     int errors[3];
