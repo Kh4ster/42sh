@@ -95,14 +95,18 @@ target_link_libraries(common_options INTERFACE
 )
 
 
-# add "../" prefix to src files to use them in sub-directories
-set(listVar "")
-foreach(f IN LISTS SRC_FILES)
-    list(APPEND listVar "../${f}")
-endforeach(f)
-set(SRC_FILES_FROM_SUBDIR "${listVar}")
+# add "../" prefix to src files if build in sub_dir (cmake ..)
+if(NOT ${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+    set(listVar "")
+    foreach(f IN LISTS SRC_FILES)
+        list(APPEND listVar "../${f}")
+    endforeach(f)
+    set(SRC_FILES "${listVar}")
+endif(NOT ${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+
+
 # Create a library containing all src files
-add_library(SRC_FILES_OBJ ${SRC_FILES_FROM_SUBDIR})
+add_library(SRC_FILES_OBJ ${SRC_FILES})
 target_link_libraries(SRC_FILES_OBJ PRIVATE
     common_options
 )
