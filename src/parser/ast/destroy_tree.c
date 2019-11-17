@@ -68,14 +68,14 @@ extern void destroy_tree(struct instruction *ast)
         free_redirection(ast->data);
         break;
     case TOKEN_WHILE:
+    case TOKEN_UNTIL:
         free_while(ast->data);
         break;
     default:
         return;
     }
 
-    if (ast->next != NULL)
-        destroy_tree(ast->next);
+    destroy_tree(ast->next);
 
     free(ast);
 }
