@@ -1,12 +1,3 @@
-/*
-** Coder : nicolas.blin
-** Tester :
-** Reviewer :
-** Integrator :
-**
-** API to make redirection between commands and files
-*/
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -24,12 +15,6 @@
 #include "redirector.h"
 #include "command_container.h"
 
-/*
-* Copy stdin/out/err to 10/11/12
-* Allows us to then modify the stds of the bins we want to execute
-* And then get back the true stds
-* return -1 in case of error
-*/
 int save_stds(void)
 {
     int errors[3];
