@@ -285,6 +285,13 @@ static bool redirection_not_valid(struct instruction *redirection)
     return redir->file == NULL;
 }
 
+static struct instruction *add_and_to_redirections(
+            struct instruction *redirection1, struct instruction *redirection2)
+{
+    return build_instruction(TOKEN_AND,
+                build_and_or(redirection1, redirection2));
+}
+
 //only handle shell command and simple command
 static struct instruction* parse_command(struct queue *lexer)
 {
@@ -309,7 +316,7 @@ static struct instruction* parse_command(struct queue *lexer)
 
     struct instruction *redirection = parse_redirection(lexer);
 
-    if (redirection)
+    while (redirection)
     {
         //to make difference between no redirection and bad grammar
         if (redirection_not_valid(redirection))
@@ -317,8 +324,8 @@ static struct instruction* parse_command(struct queue *lexer)
 
         struct redirection *redirect = redirection->data;
         redirect->to_redirect = command;
-
-        return redirection;
+        command = redirection;
+        redirection = parse_redirection(lexer);
     }
 
     return command;

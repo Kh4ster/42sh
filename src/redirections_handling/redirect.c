@@ -34,7 +34,6 @@ static int redirect_stdout(struct redirection *redirection)
         err(1, "could not open file");
 
     dup2(filedes_file, redirection->fd);
-<<<<<<< HEAD
     int return_commande = 0;
 
     if (redirection->to_redirect != NULL)
@@ -43,13 +42,6 @@ static int redirect_stdout(struct redirection *redirection)
     dup2(42, redirection->fd); //closes file fd
     FREE_DEFAULT_FD();
     return return_commande;
-=======
-    int return_command = 0;
-    if (redirection->to_redirect != NULL)
-        return_command = execute_ast(redirection->to_redirect);
-    dup2(11, 1); //close file fd
-    return return_command;
->>>>>>> develop
 }
 
 
@@ -64,7 +56,6 @@ static int redirect_stdout_append(struct redirection *redirection)
         err(1, "could not open file");
 
     dup2(filedes_file, redirection->fd);
-<<<<<<< HEAD
     int return_commande = 0;
 
     if (redirection->to_redirect != NULL)
@@ -73,13 +64,6 @@ static int redirect_stdout_append(struct redirection *redirection)
     dup2(42, redirection->fd); //close file fd
     FREE_DEFAULT_FD();
     return return_commande;
-=======
-    int return_command = 0;
-    if (redirection->to_redirect != NULL)
-        return_command = execute_ast(redirection->to_redirect);
-    dup2(11, 1); //close file fd
-    return return_command;
->>>>>>> develop
 }
 
 extern int redirections_handling(struct instruction *redirection)
