@@ -28,6 +28,23 @@ static void env_ast_init(void)
 
 static void __print_ast(struct instruction *ast, FILE *file, int flag);
 
+void __print_if_clause(struct if_instruction *if_clause, FILE *file,
+        char *format_if)
+{
+    if (if_clause->else_container->type == TOKEN_IF)
+    {
+        fprintf(file, "%s -> if_%ld [label=else]", format_if,
+                g_env_ast.nb_if);
+        __print_ast(if_clause->else_container, file, 0);
+    }
+    else
+    {
+        fprintf(file, "%s -> ", format_if);
+        __print_ast(if_clause->else_container, file, 0);
+        fprintf(file, " [label=\"else\"];\n");
+    }
+}
+
 static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 {
     char *format_if = NULL;
@@ -53,18 +70,7 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 
     if (if_clause->else_container)
     {
-        if (if_clause->else_container->type == TOKEN_IF)
-        {
-            fprintf(file, "%s -> if_%ld [label=else]", format_if,
-                    g_env_ast.nb_if);
-            __print_ast(if_clause->else_container, file, 0);
-        }
-        else
-        {
-            fprintf(file, "%s -> ", format_if);
-            __print_ast(if_clause->else_container, file, 0);
-            fprintf(file, " [label=\"else\"];\n");
-        }
+        __print_if_clause(if_clause, file, format_if);
     }
 
     char *new_env = NULL;
