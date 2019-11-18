@@ -41,13 +41,12 @@ static void execute_shell(void)
     int is_end = 0;
     struct queue *lexer = queue_init();
     int error = 0;
-    int return_code = 0;
 
     while (42)
     {
         g_env.prompt = "42sh$ ";
         struct instruction *ast = parse_input(lexer, &is_end, &error);
-        return_code = execute_ast(ast);
+        execute_ast(ast);
         destroy_tree(ast);
         if (is_end)
             break;
@@ -57,7 +56,6 @@ static void execute_shell(void)
             error = 0; //set error back to 0 for interactive mode
         }
     }
-    return_code++; //useless for now
     free(lexer);
 }
 
@@ -135,7 +133,7 @@ int main(int argc, char *argv[])
 
     free_all(lexer);
 
-    if (is_interactive())
+    if (is_interactive()) //to have a \n on ctrl-d in interactive mode
         puts("");
 
     return return_code;

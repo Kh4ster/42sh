@@ -10,6 +10,12 @@
 #include "../execution_handling/command_container.h"
 #include "../parser/ast/ast.h"
 
+static void restore_stds(void)
+{
+    dup2(10, 0);
+    dup2(11, 1);
+    dup2(12, 2);
+}
 
 static int redirect_stdin(struct redirection *redirection)
 {
@@ -19,7 +25,7 @@ static int redirect_stdin(struct redirection *redirection)
     int filedes_file = open(redirection->file, O_RDONLY);
     dup2(filedes_file, 0);
     int return_command = execute_ast(redirection->to_redirect);
-    dup2(11, 0);
+    restore_stds();
     return return_command;
 }
 
@@ -36,7 +42,7 @@ static int redirect_stdout(struct redirection *redirection)
     int return_command = 0;
     if (redirection->to_redirect != NULL)
         return_command = execute_ast(redirection->to_redirect);
-    dup2(11, 1); //close file fd
+    restore_stds();
     return return_command;
 }
 
@@ -54,7 +60,7 @@ static int redirect_stdout_append(struct redirection *redirection)
     int return_command = 0;
     if (redirection->to_redirect != NULL)
         return_command = execute_ast(redirection->to_redirect);
-    dup2(11, 1); //close file fd
+    restore_stds();
     return return_command;
 }
 

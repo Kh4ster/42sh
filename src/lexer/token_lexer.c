@@ -314,7 +314,9 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     struct token_lexer *current_token = queue_head(token_queue);
     if (current_token != NULL)
         return current_token;
+
     char *next_line = get_next_line(g_env.prompt);
+
     if (next_line == NULL) // End Of File
     {
         current_token = xmalloc(sizeof(struct token_lexer));
@@ -324,15 +326,22 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
+        //add a new line token in the queue execpt if it's first call
         if (g_env.not_first_line && !is_interactive())
             queue_push(token_queue, create_newline_token(NULL));
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
+
+        /*
+        ** free line if not -c option, execpt if its parsing ressource
+        ** then even if 42sh binary was called with -c we want to free lines
+        */
         if (g_env.is_parsing_ressource || !g_env.options.option_c)
             free(next_line);
     }
+
     g_env.not_first_line = 1;
-    g_env.prompt = "> ";
+    g_env.prompt = "> "; //change prompt to ps2 avec lexing
     return current_token;
 }
 
