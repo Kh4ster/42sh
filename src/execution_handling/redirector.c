@@ -1,12 +1,3 @@
-/*
-** Coder : nicolas.blin
-** Tester :
-** Reviewer :
-** Integrator :
-**
-** API to make redirection between commands and files
-*/
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -23,7 +14,6 @@
 
 #include "redirector.h"
 #include "command_container.h"
-
 
 extern void free_one_fd(int fd)
 {

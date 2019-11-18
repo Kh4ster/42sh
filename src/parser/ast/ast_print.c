@@ -28,6 +28,23 @@ static void env_ast_init(void)
 
 static void __print_ast(struct instruction *ast, FILE *file, int flag);
 
+void __print_if_clause(struct if_instruction *if_clause, FILE *file,
+        char *format_if)
+{
+    if (if_clause->else_container->type == TOKEN_IF)
+    {
+        fprintf(file, "%s -> if_%ld [label=else]", format_if,
+                g_env_ast.nb_if);
+        __print_ast(if_clause->else_container, file, 0);
+    }
+    else
+    {
+        fprintf(file, "%s -> ", format_if);
+        __print_ast(if_clause->else_container, file, 0);
+        fprintf(file, " [label=\"else\"];\n");
+    }
+}
+
 static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 {
     char *format_if = NULL;
@@ -53,23 +70,14 @@ static void print_if_clause(struct if_instruction *if_clause, FILE *file)
 
     if (if_clause->else_container)
     {
-        if (if_clause->else_container->type == TOKEN_IF)
-        {
-            fprintf(file, "%s -> if_%ld [label=else]", format_if,
-                    g_env_ast.nb_if);
-            __print_ast(if_clause->else_container, file, 0);
-        }
-        else
-        {
-            fprintf(file, "%s -> ", format_if);
-            __print_ast(if_clause->else_container, file, 0);
-            fprintf(file, " [label=\"else\"];\n");
-        }
+        __print_if_clause(if_clause, file, format_if);
     }
 
-    ouais += asprintf(&g_env_ast.labels, "%s%s [label=\"if\"];\n",
+    char *new_env = NULL;
+    ouais += asprintf(&new_env, "%s%s [label=\"if\"];\n",
             g_env_ast.labels, format_if);
-
+    free(g_env_ast.labels);
+    g_env_ast.labels = new_env;
     free(format_if);
 }
 
@@ -84,15 +92,26 @@ static void print_command(struct command_container *cmd, FILE *file, int flag)
     ouais += asprintf(&label_cmd, "%s", cmd->command);
 
     for (size_t i = 1; cmd->params[i]; i++)
-        ouais += asprintf(&label_cmd,"%s %s", label_cmd, cmd->params[i]);
+    {
+        char *new_label = NULL;
+        ouais += asprintf(&new_label,"%s %s", label_cmd, cmd->params[i]);
+        free(label_cmd);
+        label_cmd = new_label;
+    }
 
     fprintf(file, "%s", format);
 
     if (flag)
         fprintf(file, "\n");
 
-    ouais += asprintf(&g_env_ast.labels, "%s%s [label=\"%s\"];\n",
-            g_env_ast.labels, format, label_cmd);
+    char *new_env = NULL;
+    ouais += asprintf(&new_env, "%s%s[label=\"%s\"];\n",
+            g_env_ast.labels,format, label_cmd);
+
+    if (*g_env_ast.labels)
+        free(g_env_ast.labels);
+
+    g_env_ast.labels = new_env;
 
     free(format);
     free(label_cmd);
