@@ -29,9 +29,15 @@ static int handle_and_or_instruction(struct instruction *ast)
     struct and_or_instruction *node = ast->data;
 
     if (ast->type == TOKEN_OR)
-        return execute_ast(node->left) == 0 || execute_ast(node->right) == 0;
+    {
+        if (execute_ast(node->left) == 0 || execute_ast(node->right) == 0)
+            return 0;
+        return 1;
+    }
 
-    return execute_ast(node->left) == 0 && execute_ast(node->right) == 0;
+    if (execute_ast(node->left) == 0 && execute_ast(node->right) == 0)
+        return 0;
+    return 1;
 }
 
 
@@ -70,4 +76,3 @@ extern int execute_ast(struct instruction *ast)
     }
     return 1;
 }
-
