@@ -55,6 +55,7 @@ extern void destroy_tree(struct instruction *ast)
         node = ast->data;
         destroy_tree(node->left);
         destroy_tree(node->right);
+        free(node);
         break;
     case TOKEN_COMMAND:
         free_command(ast->data);

@@ -388,7 +388,6 @@ static struct instruction *parse_and_or(struct queue *lexer)
 
         struct and_or_instruction *new = and_or_new->data;
         new->left = and_or;
-        free(and_or);
         and_or = and_or_new;
     }
 
