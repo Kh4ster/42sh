@@ -29,9 +29,9 @@ static int handle_and_or_instruction(struct instruction *ast)
     struct and_or_instruction *node = ast->data;
 
     if (ast->type == TOKEN_OR)
-        return execute_ast(node->left) == 0 || execute_ast(node->right) == 0;
+        return execute_ast(node->left) || execute_ast(node->right);
 
-    return execute_ast(node->left) == 0 && execute_ast(node->right) == 0;
+    return execute_ast(node->left) && execute_ast(node->right);
 }
 
 
@@ -63,6 +63,8 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_REDIRECT_LEFT:
     case TOKEN_REDIRECT_RIGHT:
     case TOKEN_REDIRECT_APPEND_LEFT:
+    case TOKEN_REDIRECT_LEFT_TO_FD:
+    case TOKEN_REDIRECT_READ_WRITE:
         return redirections_handling(ast);
         break;
     default:

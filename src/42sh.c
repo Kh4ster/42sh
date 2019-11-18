@@ -21,6 +21,7 @@
 #include "parser/ast/destroy_tree.h"
 #include "parser/ast/ast_print.h"
 #include "memory/memory.h"
+#include "execution_handling/redirector.h"
 
 static void sigint_handler(int signum)
 {
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
         errx(1, "an error occurred while setting up a signal handler");
 
     handle_ressource_files();
-
+    save_stds();
     int is_end = 0;
     struct queue *lexer = queue_init();
     int error = 0;
