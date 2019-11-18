@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
 
         if (is_end)
             break;
+
         else if (error)
         {
             handle_parser_errors(lexer);
