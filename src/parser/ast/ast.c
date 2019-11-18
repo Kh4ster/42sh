@@ -13,8 +13,7 @@ static int handle_if(struct instruction *ast)
     {
         struct instruction *to_execute = if_struct->to_execute;
 
-        for (; to_execute; to_execute = to_execute->next)
-            execute_ast(to_execute);
+        execute_ast(to_execute);
 
         return 0;
     }
@@ -38,8 +37,14 @@ static int handle_and_or_instruction(struct instruction *ast)
 static int handle_commands(struct instruction *ast)
 {
     /* execute commande with zak function */
-    struct command_container *command = ast->data;
-    return exec_cmd(command);
+    int result = 0;
+    while (ast)
+    {
+        struct command_container *command = ast->data;
+        result = exec_cmd(command);
+        ast = ast->next;
+    }
+    return result;
 }
 
 
