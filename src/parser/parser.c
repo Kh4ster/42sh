@@ -342,10 +342,10 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 
 //not exactly grammar
 //for now handle the * recursively
-static struct instruction *parse_and_or(struct queue *lexer)
+static struct instruction *__parse_and_or(struct queue *lexer, int flag)
 {
     struct instruction *left = NULL;
-    if ((left = parse_pipeline(lexer)) == NULL)
+    if ((left = parse_pipeline(lexer)) == NULL && !flag)
         return NULL;
 
     struct instruction *right = NULL;
@@ -362,7 +362,7 @@ static struct instruction *parse_and_or(struct queue *lexer)
         while (NEXT_IS("\n"))
             EAT();
 
-        if ((right = parse_and_or(lexer)) == NULL)
+        if ((right = parse_pipeline(lexer)) == NULL)
             return free_instructions(1, left);
 
         return build_instruction(type, build_and_or(left, right));
@@ -370,6 +370,31 @@ static struct instruction *parse_and_or(struct queue *lexer)
     else
         return left;
 }
+
+
+static struct instruction *parse_and_or(struct queue *lexer)
+{
+    struct instruction *and_or = __parse_and_or(lexer, 0);
+
+    if (!and_or)
+        return NULL;
+
+    while (and_or && lexer->head->next)
+    {
+        struct instruction *and_or_new = __parse_and_or(lexer, 1);
+
+        if (!and_or_new)
+            return and_or;
+
+        struct and_or_instruction *new = and_or_new->data;
+        new->left = and_or;
+        free(and_or);
+        and_or = and_or_new;
+    }
+
+    return and_or;
+}
+
 
 // grammar implemented recursively
 // that's why there is no free there cause will return null before allocating
