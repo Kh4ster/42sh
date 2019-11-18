@@ -170,9 +170,7 @@ static void print_redirection(struct redirection *redirect, FILE *file)
     char *format_redirection = NULL;
     int ouai = asprintf(&format_redirection, "redirection_%ld",
                                             g_env_ast.nb_redirections);
-    ouai++;
     g_env_ast.nb_redirections++;
-    fprintf(file, "%s -> ", format_redirection);
 
     if (redirect->to_redirect->type != TOKEN_COMMAND)
     {
@@ -187,16 +185,27 @@ static void print_redirection(struct redirection *redirect, FILE *file)
         fprintf(file, " [label=redirect]\n");
     }
 
-    fprintf(file, "%s -> %d_%ld [label=\"from FD\"]\n", format_redirection,
-                        redirect->fd, g_env_ast.nb_redirections);
-    fprintf(file, "%d_%ld [label=%d]", redirect->fd, g_env_ast.nb_redirections,
+    fprintf(file, "%s -> fd_%ld [label=\"from FD\"]\n", format_redirection,
+                                g_env_ast.nb_redirections);
+    fprintf(file, "fd_%ld [label=\"%d\"]\n", g_env_ast.nb_redirections,
                                     redirect->fd);
     g_env_ast.nb_redirections++;
 
     fprintf(file, "%s -> %s_%ld [label=\"to file\"]\n", format_redirection,
                                     redirect->file, g_env_ast.nb_redirections);
-    fprintf(file, "%s_%ld [label = %s]", redirect->file,
+    fprintf(file, "%s_%ld [label = %s]\n", redirect->file,
                     g_env_ast.nb_redirections, redirect->file);
+
+    char *new_env = NULL;
+    ouai += asprintf(&new_env, "%s%s[label=\"redirection\"];\n",
+            g_env_ast.labels,format_redirection);
+
+    if (*g_env_ast.labels)
+        free(g_env_ast.labels);
+
+    g_env_ast.labels = new_env;
+    free(format_redirection);
+
 }
 
 
@@ -220,6 +229,7 @@ static void __print_ast(struct instruction *ast, FILE *file, int flag)
         default:
             print_redirection(ast->data, file);
     }
+    __print_ast(ast->next, file, 1);
 }
 
 

@@ -35,5 +35,4 @@ int redirect_command_to_file(int fd_in,
 
 int restore_stds(void);
 
->>>>>>> redirections
 int save_stds(void);
