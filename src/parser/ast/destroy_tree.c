@@ -13,6 +13,12 @@ static void free_if (struct if_instruction *if_container)
     free(if_container);
 }
 
+static void free_while(struct while_instruction *while_container)
+{
+    destroy_tree(while_container->conditions);
+    destroy_tree(while_container->to_execute);
+    free(while_container);
+}
 
 static void free_command(struct command_container *command)
 {
@@ -60,6 +66,9 @@ extern void destroy_tree(struct instruction *ast)
     case TOKEN_REDIRECT_LEFT:
     case TOKEN_REDIRECT_RIGHT:
         free_redirection(ast->data);
+        break;
+    case TOKEN_WHILE:
+        free_while(ast->data);
         break;
     default:
         return;

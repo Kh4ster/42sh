@@ -143,12 +143,17 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
 }
 
 static struct instruction *parse_if(struct queue *lexer);
+static struct instruction *parse_while_clause(struct queue *lexer);
 
 // see how it works exactly
 static struct instruction *parse_shell_command(struct queue *lexer)
 {
     if (NEXT_IS("if"))
         return parse_if(lexer);
+
+    if (NEXT_IS("while"))
+        return parse_while_clause(lexer);
+
     assert(0 && "not yet implented");
     return NULL;
 }
@@ -159,7 +164,8 @@ static bool is_shell_command(struct queue *lexer)
     static const char *shell_command[] =
     {
         "if",
-        "for"
+        "for",
+        "while"
     };
     size_t size_array = sizeof(shell_command) / sizeof(char *);
 
@@ -386,6 +392,51 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
         EAT();
     return and_or;
 }
+
+
+static struct while_instruction *build_while_instruction(struct instruction *cond,
+                                            struct instruction *to_do)
+{
+    struct while_instruction *while_i = 
+                        xmalloc(sizeof(struct while_instruction));
+    while_i->conditions = cond;
+    while_i->to_execute = to_do;
+    return while_i;
+}
+
+
+static struct instruction *parse_do_groupe(struct queue *lexer)
+{
+    if (!NEXT_IS("do"))
+        return NULL;
+
+    EAT();
+    struct instruction *do_group = parse_compound_list_break(lexer);
+
+    if (!NEXT_IS("done"))
+        return free_instructions(1, do_group);
+
+    EAT();
+    return do_group;
+}
+
+static struct instruction *parse_while_clause(struct queue *lexer)
+{
+    if (!NEXT_IS("while"))
+        return NULL;
+    EAT();
+
+    struct instruction *condition = parse_compound_list_break(lexer);
+    struct instruction *to_execute = parse_do_groupe(lexer);
+
+    if (!to_execute)
+        return free_instructions(1, condition);
+
+    return build_instruction(TOKEN_WHILE, 
+                build_while_instruction(condition, to_execute));
+}
+
+
 
 static struct if_instruction *build_if_instruction(
                                         struct instruction *conditions,
