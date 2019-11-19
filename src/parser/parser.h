@@ -23,7 +23,17 @@ enum token_parser_type
     TOKEN_REDIRECT_RIGHT, /**< @brief token redirect right */
     TOKEN_REDIRECT_APPEND_LEFT, /**< @brief token append left */
     TOKEN_COMMAND, /**< @brief token command */
-    TOKEN_ELSE /**< @brief token else */
+    TOKEN_ELSE, /**< @brief token else */
+    TOKEN_WHILE,
+    TOKEN_UNTIL,
+    TOKEN_FOR
+};
+
+
+struct while_instruction
+{
+    struct instruction *conditions;
+    struct instruction *to_execute;
 };
 
 /**
