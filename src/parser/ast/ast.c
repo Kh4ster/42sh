@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <err.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -8,14 +9,14 @@
 #include "../../execution_handling/command_execution.h"
 #include "../../redirections_handling/redirect.h"
 
-int have_to_stop = 0;
+bool g_have_to_stop = 0; //to break in case of signal
 
 void handle_sigint(int signal)
 {
     if (signal == SIGINT)
     {
         puts("");
-        have_to_stop = 1;
+        g_have_to_stop = true;
     }
 }
 
@@ -23,7 +24,7 @@ static int handle_if(struct instruction *ast)
 {
     struct if_instruction *if_struct = ast->data;
 
-    if (execute_ast(if_struct->conditions))
+    if (execute_ast(if_struct->conditions) == 0)
     {
         struct instruction *to_execute = if_struct->to_execute;
         execute_ast(to_execute);
@@ -31,14 +32,9 @@ static int handle_if(struct instruction *ast)
     }
 
     struct instruction *else_clause = if_struct->else_container;
-    while (else_clause)
-    {
-        execute_ast(else_clause);
-        else_clause = else_clause->next;
-    }
+    execute_ast(else_clause);
     return 0;
 }
-
 
 static int handle_and_or_instruction(struct instruction *ast)
 {
@@ -61,7 +57,7 @@ static int handle_commands(struct instruction *ast)
 {
     /* execute commande with zak function */
     struct command_container *command = ast->data;
-    return exec_cmd(command) == 0;
+    return exec_cmd(command);
 }
 
 
@@ -70,10 +66,10 @@ static int handle_while(struct instruction *ast)
     struct while_instruction *while_instruction = ast->data;
     int return_value = 1;
 
-    while (!have_to_stop && execute_ast(while_instruction->conditions))
+    while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
         return_value = execute_ast(while_instruction->to_execute);
 
-    have_to_stop = 0;
+    g_have_to_stop = false;
     return return_value;
 }
 
@@ -83,10 +79,10 @@ static int handle_until(struct instruction *ast)
     struct while_instruction *while_instruction = ast->data;
     int return_value = 1;
 
-    while (!have_to_stop && !execute_ast(while_instruction->conditions))
+    while (!g_have_to_stop && execute_ast(while_instruction->conditions))
         return_value = execute_ast(while_instruction->to_execute);
 
-    have_to_stop = 0;
+    g_have_to_stop = false;
     return return_value;
 }
 
@@ -128,6 +124,7 @@ extern int execute_ast(struct instruction *ast)
         return_value = 1;
     }
 
-    return_value = execute_ast(ast->next) && return_value;
+    if (ast->next != NULL)
+        return_value = execute_ast(ast->next);
     return return_value;
 }
