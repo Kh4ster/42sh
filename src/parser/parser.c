@@ -349,26 +349,27 @@ static struct instruction *__parse_and_or(struct queue *lexer, int flag)
         return NULL;
 
     struct instruction *right = NULL;
+    struct instruction *root = left;
 
-    if (NEXT_IS("||") || NEXT_IS("&&"))
+    while (NEXT_IS("||") || NEXT_IS("&&"))
     {
+        struct token_lexer *operator = token_lexer_pop(lexer);
         enum token_parser_type type;
-        if (NEXT_IS("||"))
+        if (strcmp(operator->data, "||") == 0)
             type = TOKEN_OR;
         else
             type = TOKEN_AND;
-        EAT();
 
+        token_lexer_free(&operator);
         while (NEXT_IS("\n"))
             EAT();
 
         if ((right = parse_pipeline(lexer)) == NULL)
             return free_instructions(1, left);
 
-        return build_instruction(type, build_and_or(left, right));
+        root = build_instruction(type, build_and_or(root, right));
     }
-    else
-        return left;
+    return root;
 }
 
 
@@ -602,13 +603,13 @@ struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
 
     struct instruction *tmp_ast = ast;
 
-    /*while (NEXT_IS(";") || NEXT_IS("&"))
+    while (NEXT_IS(";") || NEXT_IS("&"))
     {
         EAT();
         if ((tmp_ast->next = parse_and_or(lexer)) == NULL)
             return free_instructions(1, ast);//if error we need to free all ast
         tmp_ast = tmp_ast->next;
-    }*/
+    }
 
     if (NEXT_IS("\n"))
     {
