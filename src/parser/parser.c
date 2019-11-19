@@ -454,14 +454,14 @@ static bool is_function(struct queue *lexer)
     return false;
 }
 
-
+/*
 static struct instruction *add_and_to_redirections(
             struct instruction *redirection1, struct instruction *redirection2)
 {
     return build_instruction(TOKEN_AND,
                 build_and_or(redirection1, redirection2));
 }
-
+*/
 
 //only handle shell command and simple command
 static struct instruction* parse_command(struct queue *lexer)
