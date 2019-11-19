@@ -342,10 +342,10 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 
 //not exactly grammar
 //for now handle the * recursively
-static struct instruction *__parse_and_or(struct queue *lexer, int flag)
+static struct instruction *parse_and_or(struct queue *lexer)
 {
     struct instruction *left = NULL;
-    if ((left = parse_pipeline(lexer)) == NULL && !flag)
+    if ((left = parse_pipeline(lexer)) == NULL)
         return NULL;
 
     struct instruction *right = NULL;
@@ -370,29 +370,6 @@ static struct instruction *__parse_and_or(struct queue *lexer, int flag)
         root = build_instruction(type, build_and_or(root, right));
     }
     return root;
-}
-
-
-static struct instruction *parse_and_or(struct queue *lexer)
-{
-    struct instruction *and_or = __parse_and_or(lexer, 0);
-
-    if (!and_or)
-        return NULL;
-
-    while (and_or && lexer->head->next)
-    {
-        struct instruction *and_or_new = __parse_and_or(lexer, 1);
-
-        if (!and_or_new)
-            return and_or;
-
-        struct and_or_instruction *new = and_or_new->data;
-        new->left = and_or;
-        and_or = and_or_new;
-    }
-
-    return and_or;
 }
 
 
