@@ -25,7 +25,8 @@ enum token_parser_type
     TOKEN_REDIRECT_LEFT_TO_FD,
     TOKEN_REDIRECT_READ_WRITE,
     TOKEN_COMMAND, /**< @brief token command */
-    TOKEN_ELSE /**< @brief token else */
+    TOKEN_ELSE, /**< @brief token else */
+    TOKEN_DUP_FD
 };
 
 /**

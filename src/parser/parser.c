@@ -84,6 +84,9 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
     if (!strcmp(token->data, "<>"))
         type = TOKEN_REDIRECT_READ_WRITE;
 
+    if (!strcmp(token->data, "<&"))
+        type = TOKEN_DUP_FD;
+
     return type;
 
 }

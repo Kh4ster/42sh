@@ -109,6 +109,20 @@ static int redirect_stdin_read_write(struct redirection *redirection)
     return return_command;
 }
 
+
+static int redirect_dup_fd(struct redirection *redirection)
+{
+    int fd_to_save = fd_to_save_g;
+    int fd_to_redirect = atoi(redirection->file);
+
+    save_one_fd(redirection->fd, fd_to_save);
+    dup2(fd_to_redirect, redirection->fd);
+    int return_command = execute_ast(redirection->to_redirect);
+    dup2(fd_to_save, redirection->fd);
+    free_one_fd(fd_to_save);
+    return return_command;
+}
+
 extern int redirections_handling(struct instruction *redirection)
 {
     struct redirection *redirect = redirection->data;
@@ -128,6 +142,9 @@ extern int redirections_handling(struct instruction *redirection)
             break;
         case TOKEN_REDIRECT_READ_WRITE:
             return redirect_stdin_read_write(redirect);
+            break;
+        case TOKEN_DUP_FD:
+            return redirect_dup_fd(redirect);
             break;
         default:
             return 1;
