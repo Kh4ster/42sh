@@ -13,6 +13,9 @@ build*
 *.out
 *.dot
 toto
+titi
+tata
+TOTO
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
