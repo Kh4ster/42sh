@@ -61,6 +61,7 @@ extern void destroy_tree(struct instruction *ast)
     case TOKEN_REDIRECT_RIGHT:
     case TOKEN_REDIRECT_LEFT_TO_FD:
     case TOKEN_REDIRECT_READ_WRITE:
+    case TOKEN_DUP_FD:
         free_redirection(ast->data);
         break;
     default:

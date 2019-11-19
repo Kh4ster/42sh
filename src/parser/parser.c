@@ -226,7 +226,8 @@ static struct instruction *__parse_redirection(struct queue *lexer)
 
 static bool redirection_not_valid(struct instruction *redirection);
 
-static struct instruction *parse_redirection(struct queue *lexer, struct instruction *command)
+static struct instruction *parse_redirection(struct queue *lexer,
+                                        struct instruction *command)
 {
     struct instruction *redirection = __parse_redirection(lexer);
 
@@ -288,10 +289,26 @@ static struct command_container *build_simple_command(char *simple_command,
     return command_create(simple_command, parameters);
 }
 
+
+static struct instruction *add_command_redirection(
+                    struct instruction *redirection, struct instruction *cmd)
+{
+    struct redirection *redirect = redirection->data;
+
+    if (!redirect->to_redirect)
+        redirect->to_redirect = cmd;
+    else
+        redirect->to_redirect = add_command_redirection(redirection, cmd);
+
+    return redirection;
+}
+
 //simplified version of the grammar
 //here doesn't call eat cause we need the token data
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
+    struct instruction *redirection = parse_redirection(lexer, NULL);
+
     if (!NEXT_IS_OTHER() && !NEXT_IS_ASSIGNEMENT())
         return NULL;
 
@@ -318,6 +335,8 @@ static struct instruction *parse_simple_command(struct queue *lexer)
                                                     build_simple_command(
                                                             simple_command_str,
                                                             parameters));
+    if (redirection)
+        command = add_command_redirection(redirection, command);
 
     free(parameters->content);
     free(parameters);//not destroy array_list cause we need it's content
@@ -346,7 +365,7 @@ static struct instruction* parse_command(struct queue *lexer)
         command = parse_shell_command(lexer);
     else
     {
-        if (!NEXT_IS_OTHER())
+        if (!NEXT_IS_OTHER() && !is_redirection(lexer))
             return NULL;
         command = parse_simple_command(lexer);
     }

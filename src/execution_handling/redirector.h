@@ -10,6 +10,11 @@
 
 #include "command_container.h"
 
+/**
+** @brief Copy stdin/out/err to 10/11/12
+** @brief Allows us to then modify the stds of the bins we want to execute
+** @return -1 in case of error
+*/
 #define FREE_DEFAULT_FD() free_one_fd(42)
 
 extern void free_one_fd(int fd);
