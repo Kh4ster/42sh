@@ -38,3 +38,10 @@
   checks:
     - has_stderr
     - returncode
+
+- name: echo ok; ech ok
+  stdin: ech ok; echo ok
+  checks:
+    - has_stderr
+    - stdout
+    - returncode

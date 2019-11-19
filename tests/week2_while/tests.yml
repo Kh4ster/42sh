@@ -1,5 +1,5 @@
 - name : while false and one command outside
   stdin : while false; do; echo false; done; echo simple while
 
-- name : while false and many commands outside
-  stdin : while false; do; echo false; done; echo 5; echo 4; echo 3; echo 2 ;echo 1 ;echo 0; echo fin 
+- name : while false do command done
+  options: - ../tests/week2_while/test1.sh
