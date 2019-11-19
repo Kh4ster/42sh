@@ -484,6 +484,38 @@ static struct instruction *parser_error(struct instruction *ast, int *error)
     return NULL;
 }
 
+static struct instruction *parse_functions(struct queue *lexer)
+{
+    struct instruction *to_execute = NULL;
+    if (!NEXT_IS_OTHER())
+        return NULL;
+    EAT();
+    if (!NEXT_IS("()"))
+        return NULL;
+    EAT();
+    if (!NEXT_IS("\n"))
+        return NULL;
+    EAT();
+
+    if (NEXT_IS("{"))
+    {
+        if ((to_execute = parse_compound_list_break(lexer)) == NULL)
+            return free_instructions(1, to_execute);
+
+        if (!NEXT_IS("}"))
+            return free_instructions(1, to_execute);
+        EAT();
+        while (NEXT_IS("\n"))
+            EAT();
+        return ...;
+    }
+    else if (NEXT_IS("("))
+    {
+        //parse_compound_list
+    }
+    else if
+    {}
+}
 //for now doesn't handle if end with ; or with &
 //TOO LONG
 struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
