@@ -1,0 +1,6 @@
+- name : simple while
+  stdin : while true; do; echo simple while; done
+
+-name: many commands
+ options:
+   - ../tests/week2_while/test1.sh
