@@ -79,6 +79,15 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
     if (!strcmp(token->data, ">>"))
         type = TOKEN_REDIRECT_APPEND_LEFT;
 
+    if (!strcmp(token->data, ">&"))
+        type = TOKEN_REDIRECT_LEFT_TO_FD;
+
+    if (!strcmp(token->data, "<>"))
+        type = TOKEN_REDIRECT_READ_WRITE;
+
+    if (!strcmp(token->data, "<&"))
+        type = TOKEN_DUP_FD;
+
     return type;
 
 }
@@ -265,7 +274,7 @@ static int parse_io_number(struct queue *lexer)
     return fd;
 }
 
-static struct instruction *parse_redirection(struct queue *lexer)
+static struct instruction *__parse_redirection(struct queue *lexer)
 {
     int fd = parse_io_number(lexer);
 
@@ -294,6 +303,44 @@ static struct instruction *parse_redirection(struct queue *lexer)
     return build_instruction(type, build_redirection(fd, file));
 }
 
+
+static bool redirection_not_valid(struct instruction *redirection);
+
+
+static struct instruction *parse_redirection(struct queue *lexer,
+                                        struct instruction *command)
+{
+    struct instruction *redirection = __parse_redirection(lexer);
+
+    if (!redirection)
+        return command;
+
+    struct instruction *tmp = redirection;
+    struct instruction *redirection2 = NULL;
+
+    while (redirection)
+    {
+        //to make difference between no redirection and bad grammar
+        if (redirection_not_valid(redirection))
+            return free_instructions(2, command, redirection);
+
+        struct redirection *redirect = redirection->data;
+        redirect->to_redirect = command;
+
+        if (redirection2)
+        {
+            struct redirection *redirect2 = redirection2->data;
+            redirect2->to_redirect = redirection;
+        }
+
+        redirection2 = redirection;
+        redirection = __parse_redirection(lexer);
+    }
+
+    return tmp;
+}
+
+
 //maybe write it better ?
 static bool next_is_end_of_instruction(struct queue *lexer)
 {
@@ -315,6 +362,7 @@ static bool next_is_end_of_instruction(struct queue *lexer)
             || token->type == TOKEN_OPERATOR;
 }
 
+
 static struct command_container *build_simple_command(char *simple_command,
                                                 struct array_list *parameters
 )
@@ -322,12 +370,34 @@ static struct command_container *build_simple_command(char *simple_command,
     return command_create(simple_command, parameters);
 }
 
+
+static struct instruction *add_command_redirection(
+                    struct instruction *redirection, struct instruction *cmd)
+{
+    struct redirection *redirect = redirection->data;
+
+    if (!redirect->to_redirect)
+        redirect->to_redirect = cmd;
+    else
+        redirect->to_redirect = add_command_redirection(redirection, cmd);
+
+    return redirection;
+}
+
+
 //simplified version of the grammar
 //here doesn't call eat cause we need the token data
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
-    if (!NEXT_IS_OTHER() && !NEXT_IS_ASSIGNEMENT())
+    struct instruction *redirection = parse_redirection(lexer, NULL);
+
+    if (!NEXT_IS_OTHER() && !NEXT_IS_ASSIGNEMENT() && !redirection)
+    {
         return NULL;
+    }
+
+    if (NEXT_IS("\n") || NEXT_IS(";") || NEXT_IS("&"))
+        return redirection;
 
     if (NEXT_IS_ASSIGNEMENT())
     {
@@ -352,11 +422,14 @@ static struct instruction *parse_simple_command(struct queue *lexer)
                                                     build_simple_command(
                                                             simple_command_str,
                                                             parameters));
+    if (redirection)
+        command = add_command_redirection(redirection, command);
 
     free(parameters->content);
     free(parameters);//not destroy array_list cause we need it's content
     return command;
 }
+
 
 static bool redirection_not_valid(struct instruction *redirection)
 {
@@ -381,17 +454,18 @@ static bool is_function(struct queue *lexer)
     return false;
 }
 
+
+static struct instruction *add_and_to_redirections(
+            struct instruction *redirection1, struct instruction *redirection2)
+{
+    return build_instruction(TOKEN_AND,
+                build_and_or(redirection1, redirection2));
+}
+
+
 //only handle shell command and simple command
 static struct instruction* parse_command(struct queue *lexer)
 {
-    if (is_redirection(lexer))
-    {
-        struct instruction *redirection = parse_redirection(lexer);
-        struct redirection *redirect = redirection->data;
-        redirect->to_redirect = NULL;
-        return redirection;
-    }
-
     struct instruction *command = NULL;
 
     if (is_shell_command(lexer))
@@ -400,27 +474,14 @@ static struct instruction* parse_command(struct queue *lexer)
         command = parse_funcdec(lexer);
     else //simple command
     {
-        if (!NEXT_IS_OTHER())
+        if (!NEXT_IS_OTHER() && !is_redirection(lexer))
             return NULL;
         command = parse_simple_command(lexer);
     }
 
-    struct instruction *redirection = parse_redirection(lexer);
-
-    if (redirection)
-    {
-        //to make difference between no redirection and bad grammar
-        if (redirection_not_valid(redirection))
-            return free_instructions(2, command, redirection);
-
-        struct redirection *redirect = redirection->data;
-        redirect->to_redirect = command;
-
-        return redirection;
-    }
-
-    return command;
+    return parse_redirection(lexer, command);
 }
+
 
 //not exactly grammar
 static struct instruction *parse_pipeline(struct queue *lexer)
@@ -429,6 +490,7 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 
     return command;
 }
+
 
 //not exactly grammar
 //for now handle the * recursively

@@ -187,7 +187,9 @@ static void handle_quoting(struct token_lexer *new_token,
 static void handle_io_number(char *cursor, struct queue *token_queue)
 {
     if (token_queue->size && (! strncmp(cursor, ">>", 2)
-            || ! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1)))
+            || ! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1)
+            || ! strncmp(cursor, ">&", 2) || ! strncmp(cursor, "<>", 2)
+            || !strncmp(cursor, "<&", 2)))
     {
         char *is_delim = cursor - 1;
         if (strpbrk(is_delim, DELIMITERS) != is_delim)
@@ -206,7 +208,9 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
         char **delim, struct token_lexer *new_token)
 {
     if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
-            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
+            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
+            || strncmp(cursor, ">&", 2) == 0 || strncmp(cursor, "<>", 2) == 0
+        || strncmp(cursor, "<&", 2) == 0)
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
