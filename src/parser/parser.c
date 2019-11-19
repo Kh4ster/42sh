@@ -121,7 +121,7 @@ static struct redirection *build_redirection(int fd, char *file)
 }
 
 
-static struct instruction *build_instruction(enum token_parser_type type,
+struct instruction *build_instruction(enum token_parser_type type,
                                                             void *input_instr
 )
 {

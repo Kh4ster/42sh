@@ -23,7 +23,8 @@ enum token_parser_type
     TOKEN_REDIRECT_RIGHT, /**< @brief token redirect right */
     TOKEN_REDIRECT_APPEND_LEFT, /**< @brief token append left */
     TOKEN_COMMAND, /**< @brief token command */
-    TOKEN_ELSE /**< @brief token else */
+    TOKEN_ELSE, /**< @brief token else */
+    TOKEN_FUNCTION /**< @brief token function */
 };
 
 /**
@@ -75,3 +76,12 @@ struct redirection
 * @return success : an ast, fail : NULL
 */
 struct instruction *parse_input(struct queue *lexer, int *is_end, int *error);
+
+/**
+* @brief build an instruction (exported for unit test)
+* @param type type of the data behind the void*
+* @param input_instr the instruction
+* @return return an instruction
+*/
+struct instruction *build_instruction(enum token_parser_type type,
+                                                            void *input_instr);
