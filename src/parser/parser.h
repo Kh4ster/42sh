@@ -24,7 +24,7 @@ enum token_parser_type
     TOKEN_REDIRECT_APPEND_LEFT, /**< @brief token append left */
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
-    TOKEN_FUNCTION, /**< @brief token function */
+    //TOKEN_FUNCTION, /**< @brief token function */
     TOKEN_WHILE, /**< @brief token while */
     TOKEN_UNTIL, /**< @brief token until */
     TOKEN_FOR /**< @brief token for */

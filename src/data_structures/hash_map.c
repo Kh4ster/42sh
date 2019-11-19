@@ -39,13 +39,13 @@ void hash_insert(struct hash_map *set,
 
     if (s->key == NULL) //first time at this index
     {
-        s->key = strdup(key);
+        s->key = key;
         s->ast = ast;
     }
     else if (hash_find(set, key) == NULL) //if element not already in hashmap
     {
         struct hash_slot *new = xmalloc(sizeof(struct hash_slot));
-        new->key = strdup(key);
+        new->key = key;
         new->ast = ast;
         new->next = NULL;
         while (s->next != NULL)
