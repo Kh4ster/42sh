@@ -19,7 +19,12 @@ static int handle_if(struct instruction *ast)
         return 0;
     }
 
-    execute_ast(if_struct->else_container);
+    struct instruction *else_clause = if_struct->else_container;
+    while (else_clause)
+    {
+        execute_ast(else_clause);
+        else_clause = else_clause->next;
+    }
     return 0;
 }
 
@@ -29,9 +34,15 @@ static int handle_and_or_instruction(struct instruction *ast)
     struct and_or_instruction *node = ast->data;
 
     if (ast->type == TOKEN_OR)
-        return execute_ast(node->left) || execute_ast(node->right);
+    {
+        if (execute_ast(node->left) == 0 || execute_ast(node->right) == 0)
+            return 0;
+        return 1;
+    }
 
-    return execute_ast(node->left) && execute_ast(node->right);
+    if (execute_ast(node->left) == 0 && execute_ast(node->right) == 0)
+        return 0;
+    return 1;
 }
 
 
@@ -72,4 +83,3 @@ extern int execute_ast(struct instruction *ast)
     }
     return 1;
 }
-
