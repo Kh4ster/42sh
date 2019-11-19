@@ -21,11 +21,14 @@
 #include "parser/ast/destroy_tree.h"
 #include "parser/ast/ast_print.h"
 #include "memory/memory.h"
+#include "execution_handling/redirector.h"
 
 static void sigint_handler(int signum)
 {
     if (signum == SIGINT)
+    {
         printf("\n42sh$ ");
+    }
 }
 
 //the duplicated stdin/out... need to be closed at the end
