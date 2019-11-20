@@ -19,7 +19,12 @@ static int handle_if(struct instruction *ast)
         return 0;
     }
 
-    execute_ast(if_struct->else_container);
+    struct instruction *else_clause = if_struct->else_container;
+    while (else_clause)
+    {
+        execute_ast(else_clause);
+        else_clause = else_clause->next;
+    }
     return 0;
 }
 
