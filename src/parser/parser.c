@@ -44,7 +44,6 @@ static bool next_is_number(struct queue *lexer)
 
     if (token == NULL)
         return false;
-
     return token->type == TOKEN_IO_NUMBER;
 }
 
@@ -57,7 +56,7 @@ static void *free_instructions(size_t nb_param, ...)
 
     for (size_t i = 0; i < nb_param; ++i)
     {
-        struct instruction *to_free = va_arg(ap, struct instruction *);
+        struct instruction *to_free = va_arg(ap, struct instruction*);
         destroy_tree(to_free);
     }
 
@@ -490,7 +489,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
 static struct while_instruction *build_while_instruction(struct instruction *cond,
                                             struct instruction *to_do)
 {
-    struct while_instruction *while_i = 
+    struct while_instruction *while_i =
                         xmalloc(sizeof(struct while_instruction));
     while_i->conditions = cond;
     while_i->to_execute = to_do;
