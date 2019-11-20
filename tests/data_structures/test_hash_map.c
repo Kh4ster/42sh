@@ -9,10 +9,10 @@ int main(void)
     hash_init(&map, 1);
 
     struct command_container *echo_container = command_init(1, "echo", "ok");
-    hash_insert(&map, "echo", build_instruction(TOKEN_COMMAND, echo_container));
+    hash_insert(&map, strdup("echo"), build_instruction(TOKEN_COMMAND, echo_container));
 
     struct command_container *cat_container = command_init(0, "cat");
-    hash_insert(&map, "cat", build_instruction(TOKEN_COMMAND, cat_container));
+    hash_insert(&map, strdup("cat"), build_instruction(TOKEN_COMMAND, cat_container));
 
     struct instruction *echo_instruction = hash_find(&map, "echo");
     cr_assert_not_null(echo_instruction);

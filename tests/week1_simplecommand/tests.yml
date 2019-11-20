@@ -1,3 +1,6 @@
+- name: echo toto
+  stdin: echo toto
+
 - name: ls
   options:
     - ../tests/week1_simplecommand/test1.sh
@@ -7,9 +10,6 @@
 
 - name: tree dir_not_fond
   stdin: test dfdvfvf
-
-- name: echo toto
-  stdin: echo toto
 
 - name: echo very_long_parameter
   options:
@@ -63,3 +63,13 @@
     - ../tests/week1_simplecommand/test7.sh
   checks:
     - stdout
+- name: many echo ;
+  stdin: echo 1; echo 2; echo 3; echo 4; echo 5
+
+- name: ech ok; echo ok
+  stdin: ech ok; echo ok
+  checks:
+    - has_stderr
+    - stdout
+    - returncode
+

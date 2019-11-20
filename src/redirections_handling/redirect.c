@@ -11,7 +11,6 @@
 #include "../execution_handling/command_container.h"
 #include "../parser/ast/ast.h"
 
-
 static int redirect_stdin(struct redirection *redirection)
 {
     int fd_saved = dup(0);
