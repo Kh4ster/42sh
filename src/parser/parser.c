@@ -542,7 +542,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
-    if (NEXT_IS(";") || NEXT_IS("\n") || NEXT_IS("&"))
+    if (NEXT_IS(";") || NEXT_IS("&"))
     {
         EAT();
         and_or->next = parse_compound_list_break(lexer);
@@ -667,18 +667,23 @@ static struct instruction *parse_case_clause(struct queue *lexer,
 {
     struct case_item *first_item = parse_case_item(lexer);
 
-    while (first_item)
+    array_list_append(case_clause->items, first_item);
+
+    while (!NEXT_IS("esac"))
     {
-        array_list_append(case_clause->items, first_item);
+        while (NEXT_IS("\n"))
+            EAT();
 
         if (!NEXT_IS(";;"))
             errx(1, "Error while parsing");
 
         EAT();
+
         while (NEXT_IS("\n"))
             EAT();
 
         first_item = parse_case_item(lexer);
+        array_list_append(case_clause->items, first_item);
     }
 
     if (NEXT_IS(";;"))
