@@ -11,6 +11,12 @@
 #include "../execution_handling/command_container.h"
 #include "../parser/ast/ast.h"
 
+static void restore_stds(void)
+{
+    dup2(10, 0);
+    dup2(11, 1);
+    dup2(12, 2);
+}
 
 static int redirect_stdin(struct redirection *redirection)
 {

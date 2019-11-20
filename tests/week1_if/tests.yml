@@ -28,3 +28,7 @@
 - name: if in if in if
   options:
     - ../tests/week1_if/test7.sh
+
+- name: if else if fi echo_command fi
+  options:
+    - ../tests/week1_if/test8.sh
