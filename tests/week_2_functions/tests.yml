@@ -1,0 +1,7 @@
+- name: simple function exec with 'function'
+- options:
+    - ../tests/week1_functions/test1.sh
+
+- name: simple function exec without 'function'
+- options:
+    - ../tests/week1_functions/test2.sh
