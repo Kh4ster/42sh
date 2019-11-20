@@ -204,16 +204,18 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 static struct instruction *parse_funcdec(struct queue *lexer)
 {
     struct instruction *to_execute = NULL;
-
+    int func = 0; 
     if (NEXT_IS("function"))
+    {
+        func = 1;
         EAT();
-
+    }
     if (!NEXT_IS_OTHER())
         return NULL;
 
     struct token_lexer *func_name = token_lexer_pop(lexer);
 
-    if (!NEXT_IS("("))
+    if ((!NEXT_IS("(") && func != 1) || (NEXT_IS("(") && func == 1))
     {
         token_lexer_free(&func_name);
         return NULL;
