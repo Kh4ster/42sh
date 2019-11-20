@@ -39,9 +39,61 @@
     - has_stderr
     - returncode
 
-- name: echo ok; ech ok
-  stdin: ech ok; echo ok
+
+- name: echo || && wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test3.sh
+  checks:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name : echo toto || echo papa && echo dcdv && |echo papa
+  stdin: echo toto || echo papa && echo dcdv && |echo papa
+  check:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name : echo toto || echo papa && ech dcdv && echo papa
+  stdin: echo toto || echo papa && ech dcdv && echo papa
+  check:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name : echo toto ; || echo papa ; && echo dcdv ; || ech
+  stdin : echo toto ; || echo papa ; && echo dcdv ; || ech
+  check:
+    - has_stderr
+    - returncode
+
+- name : echo toto \n || echo papa ; && echo dcdv ; || ech
+  stdin : echo toto \n || echo papa ; && echo dcdv ; || ech
+  check:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name: echo + || && wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test4.sh
+  checks:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name: || && command not found + wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test5.sh
   checks:
     - has_stderr
+    - returncode
+
+- name: echo || && command not found + wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test6.sh
+  checks:
     - stdout
+    - has_stderr
     - returncode

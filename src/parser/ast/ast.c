@@ -136,6 +136,11 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_UNTIL:
         return_value = handle_until(ast);
         break;
+    case TOKEN_REDIRECT_LEFT_TO_FD:
+    case TOKEN_REDIRECT_READ_WRITE:
+    case TOKEN_DUP_FD:
+        return redirections_handling(ast);
+        break;
     default:
         return_value = 1;
     }
