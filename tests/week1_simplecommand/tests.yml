@@ -63,8 +63,12 @@
     - ../tests/week1_simplecommand/test7.sh
   checks:
     - stdout
+
 - name: many echo ;
   stdin: echo 1; echo 2; echo 3; echo 4; echo 5
+
+- name: many echo ;
+  stdin: echo 1;echo 2 & echo 3& echo 4 && echo 5
 
 - name: ech ok; echo ok
   stdin: ech ok; echo ok
@@ -72,4 +76,3 @@
     - has_stderr
     - stdout
     - returncode
-

@@ -1,0 +1,12 @@
+- name: simple function exec with 'function' and ()
+- options:
+    - ../tests/week1_functions/test1.sh
+
+- name: simple function exec without 'function' and syntax error
+- options:
+    - ../tests/week1_functions/test2.sh
+
+
+- name: simple function exec without 'function' and syntax error
+- options:
+    - ../tests/week1_functions/test3.sh
