@@ -83,7 +83,7 @@
     - has_stderr
     - returncode
 
-- name: || && command not found + wrong syntax
+- name: and-or command not found + wrong syntax
   options:
     - ../tests/week1_simplecommand_error/test5.sh
   checks:

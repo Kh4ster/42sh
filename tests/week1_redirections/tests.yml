@@ -11,10 +11,10 @@
     - returncode
 
 - name: Redirection append
-  stdin: echo good >> toto
+  stdin: echo good >> toto; rm toto
 
 - name: Redirection stdin
-  stdin: cat < toto; rm toto;
+  stdin: touch toto; cat < toto; rm toto;
 
 - name: Redirection simple - check if override
   stdin: echo ok > toto; cat toto; rm toto
@@ -48,5 +48,5 @@
 - name: Redirection of stderr to file to stdout
   stdin: ech ok 2> toto; cat toto; rm toto
   checks:
-    - stdout
+    - has_stdout
     - returncode
