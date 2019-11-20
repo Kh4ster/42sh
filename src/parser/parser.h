@@ -30,6 +30,7 @@ enum token_parser_type
     TOKEN_WHILE,
     TOKEN_UNTIL,
     TOKEN_FOR
+    //TOKEN_FUNCTION, /**< @brief token function */
 };
 
 
@@ -88,3 +89,12 @@ struct redirection
 * @return success : an ast, fail : NULL
 */
 struct instruction *parse_input(struct queue *lexer, int *is_end, int *error);
+
+/**
+* @brief build an instruction (exported for unit test)
+* @param type type of the data behind the void*
+* @param input_instr the instruction
+* @return return an instruction
+*/
+struct instruction *build_instruction(enum token_parser_type type,
+                                                            void *input_instr);

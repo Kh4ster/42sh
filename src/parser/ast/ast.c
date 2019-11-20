@@ -1,21 +1,24 @@
 #include <signal.h>
 #include <err.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "ast.h"
 #include "../parser.h"
 #include "../../execution_handling/command_container.h"
 #include "../../execution_handling/command_execution.h"
 #include "../../redirections_handling/redirect.h"
+#include "../../data_structures/hash_map.h"
+#include "../../input_output/get_next_line.h"
 
-int have_to_stop = 0;
+bool g_have_to_stop = 0; //to break in case of signal
 
 void handle_sigint(int signal)
 {
     if (signal == SIGINT)
     {
         puts("");
-        have_to_stop = 1;
+        g_have_to_stop = true;
     }
 }
 
@@ -23,7 +26,7 @@ static int handle_if(struct instruction *ast)
 {
     struct if_instruction *if_struct = ast->data;
 
-    if (execute_ast(if_struct->conditions))
+    if (execute_ast(if_struct->conditions) == 0)
     {
         struct instruction *to_execute = if_struct->to_execute;
         execute_ast(to_execute);
@@ -31,14 +34,9 @@ static int handle_if(struct instruction *ast)
     }
 
     struct instruction *else_clause = if_struct->else_container;
-    while (else_clause)
-    {
-        execute_ast(else_clause);
-        else_clause = else_clause->next;
-    }
+    execute_ast(else_clause);
     return 0;
 }
-
 
 static int handle_and_or_instruction(struct instruction *ast)
 {
@@ -56,12 +54,26 @@ static int handle_and_or_instruction(struct instruction *ast)
     return 1;
 }
 
+static bool is_func(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    return hash_find(g_env.functions, command->command) != NULL;
+}
+
+static int exec_func(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    struct instruction *code = hash_find(g_env.functions, command->command);
+    return execute_ast(code);
+}
 
 static int handle_commands(struct instruction *ast)
 {
     /* execute commande with zak function */
+    if (is_func(ast))
+        return exec_func(ast);
     struct command_container *command = ast->data;
-    return exec_cmd(command) == 0;
+    return exec_cmd(command);
 }
 
 
@@ -70,10 +82,10 @@ static int handle_while(struct instruction *ast)
     struct while_instruction *while_instruction = ast->data;
     int return_value = 1;
 
-    while (!have_to_stop && execute_ast(while_instruction->conditions))
+    while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
         return_value = execute_ast(while_instruction->to_execute);
 
-    have_to_stop = 0;
+    g_have_to_stop = false;
     return return_value;
 }
 
@@ -83,10 +95,10 @@ static int handle_until(struct instruction *ast)
     struct while_instruction *while_instruction = ast->data;
     int return_value = 1;
 
-    while (!have_to_stop && !execute_ast(while_instruction->conditions))
+    while (!g_have_to_stop && execute_ast(while_instruction->conditions))
         return_value = execute_ast(while_instruction->to_execute);
 
-    have_to_stop = 0;
+    g_have_to_stop = false;
     return return_value;
 }
 
@@ -94,7 +106,7 @@ static int handle_until(struct instruction *ast)
 extern int execute_ast(struct instruction *ast)
 {
     if (!ast || ast->data == NULL)//for now to handle var assignement
-        return 1;
+        return 0;
 
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
         errx(1, "an error occured while setting up a signal handler");
@@ -132,5 +144,6 @@ extern int execute_ast(struct instruction *ast)
     }
 
     return_value = execute_ast(ast->next) || return_value;
+
     return return_value;
 }

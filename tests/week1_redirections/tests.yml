@@ -26,10 +26,10 @@
 - name: Redirection of a whole command
   stdin: if echo ok; then echo good; fi > toto
 
-#- name: Redirection of a command - redirector at beginning of line
-#  stdin: if > toto echo ok; then echo ko; fi
+- name: Redirection of a command - redirector at beginning of line
+  stdin: if > toto echo ok; then echo ko; fi
 
-- name: Redirection of stdout
-  stdin: ech ok 2> toto \n cat toto \n rm toto
+- name: Redirection of stdout; cat file; rm file
+  stdin: echo ok 2> toto; cat toto; rm toto
   checks:
-    - has_stdout
+    - stdout
