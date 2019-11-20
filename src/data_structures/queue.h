@@ -45,6 +45,15 @@ struct queue *queue_init(void);
 void queue_push(struct queue *queue, void *elt);
 
 /**
+* @brief Append elt pointer at the beginning of the queue
+* @details used to implement the get next next function (next of head)
+* @param queue Your queue struct
+* @param elt pointer to the data to add at the beginning of queue
+* @relates queue
+*/
+void queue_push_start(struct queue *queue, void *elt);
+
+/**
 * @brief Return the content of the first item from queue
 * @param queue Your queue struct
 * @return success : pointer to the data contained in first item, fail : NULL

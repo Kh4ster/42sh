@@ -34,6 +34,7 @@ set(SRC_FILES
     src/memory/memory.c
     src/data_structures/data_string.c
     src/data_structures/queue.c
+    src/data_structures/hash_map.c
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
@@ -61,6 +62,7 @@ set(TESTS_FILES
     tests/commands_handling/test_exec.c
     tests/commands_handling/test_create.c
     tests/data_structures/test_queue.c
+    tests/data_structures/test_hash_map.c
     tests/lexer/test_token_lexer.c
 )
 
