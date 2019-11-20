@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     hash_init(&functions, NB_SLOTS);
     g_env.functions = &functions;
     handle_ressource_files();
-    save_stds();
+
     int is_end = 0;
     struct queue *lexer = queue_init();
     int error = 0;
