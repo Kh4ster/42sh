@@ -27,3 +27,39 @@
 
 - name: echo -n | ./42sh
   stdin: echo -n | ../42sh
+
+- name: echo 1 || echo 2 && echo 3
+  stdin: echo 1 || echo 2 && echo 3
+
+- name: echo 1 || echo 2 || echo 3
+  stdin: echo 1 || echo 2 || echo 3
+
+- name: echo 1 && echo 2 || echo 3
+  stdin: echo 1 && echo 2 || echo 3
+
+- name: echo 1 && echo 2 && echo 3
+  stdin: echo 1 && echo 2 && echo 3
+
+- name: echo && || (\n)*
+  options:
+    - ../tests/week1_simplecommand/test4.sh
+  checks:
+    - stdout
+
+- name: echo && || (\n)* + less space
+  options:
+    - ../tests/week1_simplecommand/test5.sh
+  checks:
+    - stdout
+
+- name: echo && || no (\n) + no space
+  options:
+    - ../tests/week1_simplecommand/test6.sh
+  checks:
+    - stdout
+
+- name: echo && || random indentation, spacing and (/n)*
+  options:
+    - ../tests/week1_simplecommand/test7.sh
+  checks:
+    - stdout
