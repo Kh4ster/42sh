@@ -143,7 +143,7 @@ extern int execute_ast(struct instruction *ast)
         return_value = 1;
     }
 
-    if (ast->next != NULL)
+    if (ast->next != NULL)//needed else return value becomes 1 for no reason
         return_value = execute_ast(ast->next);
     return return_value;
 }
