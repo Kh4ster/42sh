@@ -204,7 +204,7 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 static struct instruction *parse_funcdec(struct queue *lexer)
 {
     struct instruction *to_execute = NULL;
-    int func = 0; 
+    int func = 0;
     if (NEXT_IS("function"))
     {
         func = 1;
