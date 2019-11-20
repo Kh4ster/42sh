@@ -228,7 +228,7 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
         (*delim) += 2;
     }
 
-    else if (*cursor == ';')
+    else if (*cursor == ';' || *cursor == '&')
     {
         set_token(new_token, TOKEN_END_OF_INSTRUCTION, delim, 1);
     }
