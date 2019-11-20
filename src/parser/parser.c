@@ -155,12 +155,17 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
 }
 
 static struct instruction *parse_if(struct queue *lexer);
+static struct instruction *parse_while_clause(struct queue *lexer);
 
 // see how it works exactly
 static struct instruction *parse_shell_command(struct queue *lexer)
 {
     if (NEXT_IS("if"))
         return parse_if(lexer);
+
+    if (NEXT_IS("while") || NEXT_IS("until"))
+        return parse_while_clause(lexer);
+
     assert(0 && "not yet implented");
     return NULL;
 }
@@ -171,7 +176,10 @@ static bool is_shell_command(struct queue *lexer)
     static const char *shell_command[] =
     {
         "if",
-        "for"
+        "for",
+        "while",
+        "until",
+        "case"
     };
     size_t size_array = sizeof(shell_command) / sizeof(char *);
 
@@ -399,10 +407,10 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 
 //not exactly grammar
 //for now handle the * recursively
-static struct instruction *parse_and_or(struct queue *lexer)
+static struct instruction *__parse_and_or(struct queue *lexer, int flag)
 {
     struct instruction *left = NULL;
-    if ((left = parse_pipeline(lexer)) == NULL)
+    if ((left = parse_pipeline(lexer)) == NULL && !flag)
         return NULL;
 
     struct instruction *right = NULL;
@@ -429,6 +437,30 @@ static struct instruction *parse_and_or(struct queue *lexer)
     return root;
 }
 
+
+static struct instruction *parse_and_or(struct queue *lexer)
+{
+    struct instruction *and_or = __parse_and_or(lexer, 0);
+
+    if (!and_or)
+        return NULL;
+
+    while (and_or && lexer->head->next)
+    {
+        struct instruction *and_or_new = __parse_and_or(lexer, 1);
+
+        if (!and_or_new)
+            return and_or;
+
+        struct and_or_instruction *new = and_or_new->data;
+        new->left = and_or;
+        and_or = and_or_new;
+    }
+
+    return and_or;
+}
+
+
 // grammar implemented recursively
 // that's why there is no free there cause will return null before allocating
 static struct instruction *parse_compound_list_break(struct queue *lexer)
@@ -452,6 +484,58 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     return and_or;
 }
 
+
+static struct while_instruction *build_while_instruction(struct instruction *cond,
+                                            struct instruction *to_do)
+{
+    struct while_instruction *while_i = 
+                        xmalloc(sizeof(struct while_instruction));
+    while_i->conditions = cond;
+    while_i->to_execute = to_do;
+    return while_i;
+}
+
+
+static struct instruction *parse_do_groupe(struct queue *lexer)
+{
+    if (!NEXT_IS("do"))
+        return NULL;
+
+    EAT();
+    struct instruction *do_group = parse_compound_list_break(lexer);
+
+    if (!NEXT_IS("done"))
+        return free_instructions(1, do_group);
+
+    EAT();
+    return do_group;
+}
+
+
+static struct instruction *parse_while_clause(struct queue *lexer)
+{
+    if (!NEXT_IS("while") && !NEXT_IS("until"))
+        return NULL;
+
+    enum token_parser_type type = TOKEN_WHILE;
+
+    if (NEXT_IS("until"))
+        type = TOKEN_UNTIL;
+
+    EAT();
+
+    struct instruction *condition = parse_compound_list_break(lexer);
+    struct instruction *to_execute = parse_do_groupe(lexer);
+
+    if (!to_execute)
+        return free_instructions(1, condition);
+
+    return build_instruction(type,
+                build_while_instruction(condition, to_execute));
+}
+
+
+
 static struct if_instruction *build_if_instruction(
                                         struct instruction *conditions,
                                         struct instruction *to_execute,
@@ -464,6 +548,7 @@ static struct if_instruction *build_if_instruction(
     if_instruction->else_container = else_container;
     return if_instruction;
 }
+
 
 static struct instruction *parse_else_clause(struct queue *lexer)
 {
@@ -500,6 +585,7 @@ static struct instruction *parse_else_clause(struct queue *lexer)
     }
 }
 
+
 static struct instruction *parse_if(struct queue *lexer)
 {
     struct instruction *conditions = NULL;
@@ -534,6 +620,7 @@ static struct instruction *parse_if(struct queue *lexer)
                                                         else_container));
 }
 
+
 //for now doesn't handle comand;command
 static struct instruction *parse_list(struct queue *lexer)
 {
@@ -551,8 +638,15 @@ static struct instruction *parse_list(struct queue *lexer)
         tmp = tmp->next;
     }
 
+    if (and_or && (NEXT_IS(";") || NEXT_IS("&")))
+    {
+        EAT();
+        and_or->next = parse_list(lexer);
+    }
+
     return and_or;
 }
+
 
 static struct instruction *parser_error(struct instruction *ast, int *error)
 {
@@ -560,6 +654,7 @@ static struct instruction *parser_error(struct instruction *ast, int *error)
     destroy_tree(ast);
     return NULL;
 }
+
 
 //for now doesn't handle if end with ; or with &
 //TOO LONG
