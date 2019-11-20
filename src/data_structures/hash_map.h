@@ -17,7 +17,7 @@
 struct hash_slot
 {
     char *key;
-    struct instruction *ast;
+    void *data;
     struct hash_slot *next;
 };
 
@@ -43,12 +43,12 @@ void hash_init(struct hash_map *s, size_t size);
 * @brief insert ast combined with its name in hash_map
 * @param set the hash_map
 * @param key the name of the function
-* @param ast the ast of the function
+* @param data the data
 * @relates hash_map
 */
 void hash_insert(struct hash_map *set,
                 char *key,
-                struct instruction *ast);
+                void *data);
 
 /**
 * @brief return the function matched to its name
@@ -62,6 +62,8 @@ struct instruction* hash_find(struct hash_map *set, char *key);
 /**
 * @brief free content of hashmap (hashmap declared on the stack)
 * @param set the hash_map
+* @details ONLY TO BE CALLED ON THE FUNCTION HASH_MAP
+* @details IN THE BUILTIN HASH_MAP NOTHING IS TO BE FREED
 * @relates hash_map
 */
 void hash_free(struct hash_map *s);

@@ -64,7 +64,7 @@ int handle_parameters(struct boot_params *options,
         else if (c == 'A')
             options->option_a = true;
         else if (c == 'O')
-            options->option_o = true;
+            //TODO
         else if (c == 'c')
         {
             if (optarg == NULL)

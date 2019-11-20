@@ -50,6 +50,7 @@ set(SRC_FILES
     src/error/error.c
     src/parser/ast/ast_print.c
     src/redirections_handling/redirect.c
+    src/builtins/shopt.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -58,6 +59,7 @@ set(TESTS_FILES
     tests/input_output/test_read.c
     tests/input_output/test_write.c
     #tests/builtins/test_redirector.c
+    tests/builtins/test_shopt.c
     tests/parameters_handling/test_parameters_handler.c
     tests/commands_handling/test_exec.c
     tests/commands_handling/test_create.c

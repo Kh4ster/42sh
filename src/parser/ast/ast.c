@@ -67,11 +67,27 @@ static int exec_func(struct instruction *ast)
     return execute_ast(code);
 }
 
+static bool is_builtin(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    return hash_find(g_env.builtins, command->command) != NULL;
+}
+
+static int exec_builtin(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    int (*shopt)(char*[]) = hash_find(g_env.builtins, command->command);
+
+    return shopt(command->params);
+}
+
 static int handle_commands(struct instruction *ast)
 {
     /* execute commande with zak function */
     if (is_func(ast))
         return exec_func(ast);
+    else if (is_builtin(ast))
+        return exec_builtin(ast);
     struct command_container *command = ast->data;
     return exec_cmd(command);
 }

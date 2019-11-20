@@ -23,6 +23,7 @@
 #include "memory/memory.h"
 #include "execution_handling/redirector.h"
 #include "data_structures/hash_map.h"
+#include "builtins/shopt.h"
 
 static void sigint_handler(int signum)
 {
@@ -99,6 +100,22 @@ void free_all(struct queue *lexer)
     destroy_saved_stds();
 }
 
+static void init_builins_hash_map(struct hash_map *builtins)
+{
+    hash_init(builtins, NB_SLOTS);
+    hash_insert(builtins, "shopt", shopt);
+}
+
+static void init_hash_maps(struct hash_map *functions,
+                            struct hash_map *builtins
+)
+{
+    hash_init(builtins, NB_SLOTS);
+    g_env.functions = functions;
+    g_env.functions = builtins;
+    init_builtins_hash_map(g_env.functions);
+}
+
 int main(int argc, char *argv[])
 {
     if (handle_parameters(&g_env.options, argc, argv) == -1)
@@ -107,9 +124,10 @@ int main(int argc, char *argv[])
     if (signal(SIGINT, sigint_handler) == SIG_ERR)
         errx(1, "an error occurred while setting up a signal handler");
 
-    struct hash_map functions;
-    hash_init(&functions, NB_SLOTS);
-    g_env.functions = &functions;
+    struct hash_map functions; //declared on the stack no need to be freed
+    struct hash_map builtins;
+    init_hash_maps(&functions, &builtins);
+
     handle_ressource_files();
 
     int is_end = 0;
