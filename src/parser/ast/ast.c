@@ -2,6 +2,7 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <fnmatch.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -103,6 +104,33 @@ static int handle_until(struct instruction *ast)
 }
 
 
+static int check_patterns(char *pattern, struct array_list *patterns)
+{
+    for (size_t i = 0; i < patterns->nb_element; i++)
+    {
+        if (fnmatch(pattern, patterns->content[i], 0) == 0)
+            return 1;
+    }
+
+    return 0;
+}
+
+
+static int handle_case(struct instruction *ast)
+{
+    struct case_clause *case_clause = ast->data;
+
+    for (size_t i = 0; i < case_clause->items->nb_element; i++)
+    {
+        struct case_item *curr_item = case_clause->items->content[i];
+        if (check_patterns(case_clause->pattern, curr_item->patterns))
+            return execute_ast(curr_item->to_execute);
+    }
+
+    return 0;
+}
+
+
 extern int execute_ast(struct instruction *ast)
 {
     if (!ast || ast->data == NULL)//for now to handle var assignement
@@ -138,6 +166,9 @@ extern int execute_ast(struct instruction *ast)
         break;
     case TOKEN_UNTIL:
         return_value = handle_until(ast);
+        break;
+    case TOKEN_CASE:
+        return_value = handle_case(ast);
         break;
     default:
         return_value = 0;

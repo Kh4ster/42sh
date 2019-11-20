@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <err.h>
 
 #include "parser.h"
 #include "ast/ast.h"
@@ -165,6 +166,7 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
 static struct instruction *parse_if(struct queue *lexer);
 static struct instruction *parse_while_clause(struct queue *lexer);
 static struct instruction *parse_compound_list_break(struct queue *lexer);
+static struct instruction *parse_case_rule(struct queue *lexer);
 
 // see how it works exactly
 static struct instruction *parse_shell_command(struct queue *lexer)
@@ -174,6 +176,9 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 
     if (NEXT_IS("while") || NEXT_IS("until"))
         return parse_while_clause(lexer);
+
+    if (NEXT_IS("case"))
+        return parse_case_rule(lexer);
 
     struct instruction *to_execute = NULL;
     if (NEXT_IS("{"))
@@ -598,6 +603,128 @@ static struct instruction *parse_while_clause(struct queue *lexer)
                 build_while_instruction(condition, to_execute));
 }
 
+
+static struct case_item *init_case_item(void)
+{
+    struct case_item *item = xmalloc(sizeof(struct case_item));
+    item->patterns = array_list_init();
+    item->to_execute = NULL;
+    return item;
+}
+
+
+static struct case_clause *build_case_clause(char *pattern)
+{
+    struct case_clause *case_clause = xmalloc(sizeof(struct case_clause));
+    case_clause->pattern = strdup(pattern);
+    case_clause->items = array_list_init();
+    return case_clause;
+}
+
+static struct case_item *parse_case_item(struct queue *lexer)
+{
+    if (NEXT_IS("("))
+        EAT();
+
+    if (NEXT_IS("esac"))
+        return NULL;
+
+    struct token_lexer *token = token_lexer_pop(lexer);
+
+    if (token->type != TOKEN_OTHER)
+        errx(1, "Error while parsing");
+
+    struct case_item *item = init_case_item();
+    array_list_append(item->patterns, strdup(token->data));
+    token_lexer_free(&token);
+
+    while (NEXT_IS("|"))
+    {
+        EAT();
+        token = token_lexer_pop(lexer);
+
+        if (!token)
+            errx(1, "error while parsing case clause");
+
+        array_list_append(item->patterns, strdup(token->data));
+        token_lexer_free(&token);
+    }
+
+    if (!NEXT_IS(")"))
+        errx(1, "error while parsing: missing ) for case clause");
+
+    EAT();
+    while (NEXT_IS("\n"))
+        EAT();
+
+    item->to_execute = parse_compound_list_break(lexer);
+    return item;
+}
+
+
+static struct instruction *parse_case_clause(struct queue *lexer,
+                                struct case_clause *case_clause)
+{
+    struct case_item *first_item = parse_case_item(lexer);
+
+    while (first_item)
+    {
+        array_list_append(case_clause->items, first_item);
+
+        if (!NEXT_IS(";;"))
+            errx(1, "Error while parsing");
+
+        EAT();
+        while (NEXT_IS("\n"))
+            EAT();
+
+        first_item = parse_case_item(lexer);
+    }
+
+    if (NEXT_IS(";;"))
+        EAT();
+
+    while (NEXT_IS("\n"))
+        EAT();
+
+    return build_instruction(TOKEN_CASE, case_clause);
+}
+
+
+static struct instruction *parse_case_rule(struct queue *lexer)
+{
+    if (!NEXT_IS("case"))
+        return NULL;
+
+    EAT();
+    struct token_lexer *token = token_lexer_pop(lexer);
+
+    if (!token || token->type != TOKEN_OTHER)
+        return free_instructions(1, token);
+
+    struct case_clause *clause = build_case_clause(token->data);
+
+    while (NEXT_IS("\n"))
+        EAT();
+
+    if (!NEXT_IS("in"))
+        return free_instructions(2, token, clause);
+
+    EAT();
+    token_lexer_free(&token);
+
+    while (NEXT_IS("\n"))
+        EAT();
+
+    struct instruction *case_rule = parse_case_clause(lexer, clause);
+
+
+    if (!NEXT_IS("esac"))
+        return free_instructions(2, token, clause, case_rule);
+
+    EAT();
+    return case_rule;
+}
 
 
 static struct if_instruction *build_if_instruction(
