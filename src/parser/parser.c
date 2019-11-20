@@ -397,7 +397,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         return NULL;
     }
 
-    if (NEXT_IS("\n") || NEXT_IS(";") || NEXT_IS("&"))
+    if (next_is_end_of_instruction(lexer))
         return redirection;
 
     if (NEXT_IS_ASSIGNEMENT())
