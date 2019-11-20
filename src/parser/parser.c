@@ -87,6 +87,9 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
     if (!strcmp(token->data, "<&"))
         type = TOKEN_DUP_FD;
 
+    if (!strcmp(token->data, ">|"))
+        type = TOKEN_REDIRECT_LEFT;
+
     return type;
 
 }
@@ -535,6 +538,18 @@ static struct instruction *parse_if(struct queue *lexer)
 static struct instruction *parse_list(struct queue *lexer)
 {
     struct instruction *and_or = parse_and_or(lexer);
+    struct instruction *tmp = and_or;
+
+    while (NEXT_IS(";") || NEXT_IS("&"))
+    {
+        EAT();
+
+        if (!tmp)
+            return free_instructions(1, and_or);
+
+        tmp->next = parse_and_or(lexer);
+        tmp = tmp->next;
+    }
 
     return and_or;
 }
@@ -568,8 +583,7 @@ struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
     if ((ast = parse_list(lexer)) == NULL)
         return parser_error(ast, error);
 
-    struct instruction *tmp_ast = ast;
-
+/*
     while (NEXT_IS(";") || NEXT_IS("&"))
     {
         EAT();
@@ -577,6 +591,7 @@ struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
             return free_instructions(1, ast);//if error we need to free all ast
         tmp_ast = tmp_ast->next;
     }
+*/
 
     if (NEXT_IS("\n"))
     {
