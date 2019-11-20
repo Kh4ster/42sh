@@ -399,7 +399,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
 static struct while_instruction *build_while_instruction(struct instruction *cond,
                                             struct instruction *to_do)
 {
-    struct while_instruction *while_i = 
+    struct while_instruction *while_i =
                         xmalloc(sizeof(struct while_instruction));
     while_i->conditions = cond;
     while_i->to_execute = to_do;
