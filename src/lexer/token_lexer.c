@@ -370,3 +370,11 @@ void token_queue_empty(struct queue *token_queue)
         token_lexer_free(&to_free);
     }
 }
+
+struct token_lexer *lexer_next_next(struct queue *token_queue)
+{
+    struct token_lexer *head = queue_pop(token_queue);
+    struct token_lexer *next_next = queue_head(token_queue);
+    queue_push_start(token_queue, head);
+    return next_next;
+}

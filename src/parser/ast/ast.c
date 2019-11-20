@@ -8,6 +8,8 @@
 #include "../../execution_handling/command_container.h"
 #include "../../execution_handling/command_execution.h"
 #include "../../redirections_handling/redirect.h"
+#include "../../data_structures/hash_map.h"
+#include "../../input_output/get_next_line.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
@@ -52,10 +54,24 @@ static int handle_and_or_instruction(struct instruction *ast)
     return 1;
 }
 
+static bool is_func(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    return hash_find(g_env.functions, command->command) != NULL;
+}
+
+static int exec_func(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    struct instruction *code = hash_find(g_env.functions, command->command);
+    return execute_ast(code);
+}
 
 static int handle_commands(struct instruction *ast)
 {
     /* execute commande with zak function */
+    if (is_func(ast))
+        return exec_func(ast);
     struct command_container *command = ast->data;
     return exec_cmd(command);
 }
