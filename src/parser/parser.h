@@ -27,7 +27,6 @@ enum token_parser_type
     TOKEN_DUP_FD, /**< @brief token fd duplication */
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
-    TOKEN_DUP_FD,
     TOKEN_WHILE,
     TOKEN_UNTIL,
     TOKEN_FOR,
