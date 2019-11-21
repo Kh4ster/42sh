@@ -42,17 +42,19 @@ static int handle_if(struct instruction *ast)
 static int handle_and_or_instruction(struct instruction *ast)
 {
     struct and_or_instruction *node = ast->data;
-
+    int return_code;
     if (ast->type == TOKEN_OR)
     {
-        if (execute_ast(node->left) == 0 || execute_ast(node->right) == 0)
+        if ((return_code = execute_ast(node->left)) == 0
+                || (return_code = execute_ast(node->right)) == 0)
             return 0;
-        return 1;
+        return return_code;
     }
 
-    if (execute_ast(node->left) == 0 && execute_ast(node->right) == 0)
+    if ((return_code = execute_ast(node->left)) == 0
+            && (return_code = execute_ast(node->right)) == 0)
         return 0;
-    return 1;
+    return return_code;
 }
 
 static bool is_func(struct instruction *ast)
@@ -68,11 +70,32 @@ static int exec_func(struct instruction *ast)
     return execute_ast(code);
 }
 
+static bool is_builtin(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    return hash_find_builtin(g_env.builtins, command->command) != NULL;
+}
+
+//for now only execute shopt
+static int exec_builtin(struct instruction *ast)
+{
+    struct command_container *command = ast->data;
+    int (*builtin)(char*[]) = hash_find_builtin(g_env.builtins,
+                                                    command->command);
+
+    int return_value;
+
+    return_value = builtin(command->params);
+    return return_value;
+}
+
 static int handle_commands(struct instruction *ast)
 {
     /* execute commande with zak function */
     if (is_func(ast))
         return exec_func(ast);
+    else if (is_builtin(ast))
+        return exec_builtin(ast);
     struct command_container *command = ast->data;
     return exec_cmd(command);
 }
@@ -81,7 +104,7 @@ static int handle_commands(struct instruction *ast)
 static int handle_while(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
-    int return_value = 1;
+    int return_value = 0;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
         return_value = execute_ast(while_instruction->to_execute);
@@ -137,7 +160,7 @@ extern int execute_ast(struct instruction *ast)
         return 0;
 
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
-        errx(1, "an error occured while setting up a signal handler");
+        errx(1, "an error occurred while setting up a signal handler");
 
     int return_value;
 
@@ -174,7 +197,7 @@ extern int execute_ast(struct instruction *ast)
         return_value = 0;
     }
 
-    return_value = execute_ast(ast->next) || return_value;
-
+    if (ast->next != NULL)
+        return_value = execute_ast(ast->next);
     return return_value;
 }

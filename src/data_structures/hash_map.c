@@ -30,7 +30,7 @@ static struct hash_slot* get_slot(struct hash_map *set, char *key)
 
 void hash_insert(struct hash_map *set,
                 char *key,
-                struct instruction *ast
+                void *data
 )
 {
     assert(key != NULL);
@@ -40,13 +40,39 @@ void hash_insert(struct hash_map *set,
     if (s->key == NULL) //first time at this index
     {
         s->key = key;
-        s->ast = ast;
+        s->data = data;
     }
     else if (hash_find(set, key) == NULL) //if element not already in hashmap
     {
         struct hash_slot *new = xmalloc(sizeof(struct hash_slot));
         new->key = key;
-        new->ast = ast;
+        new->data = data;
+        new->next = NULL;
+        while (s->next != NULL)
+            s = s->next;
+        s->next = new;
+    }
+}
+
+void hash_insert_builtin(struct hash_map *set,
+                char *key,
+                builtin builtin
+)
+{
+    assert(key != NULL);
+
+    struct hash_slot *s = get_slot(set, key);
+
+    if (s->key == NULL) //first time at this index
+    {
+        s->key = strdup(key);
+        s->builtin = builtin;
+    }
+    else if (hash_find_builtin(set, key) == NULL)
+    {
+        struct hash_slot *new = xmalloc(sizeof(struct hash_slot));
+        new->key = strdup(key);
+        new->builtin = builtin;
         new->next = NULL;
         while (s->next != NULL)
             s = s->next;
@@ -57,9 +83,9 @@ void hash_insert(struct hash_map *set,
 static int free_slot(struct hash_slot *s)
 {
     free(s->key);
-    destroy_tree(s->ast);
+    destroy_tree(s->data);
     s->key = NULL;
-    s->ast = NULL;
+    s->data = NULL;
     s->next = NULL;
     return 1;
 }
@@ -67,7 +93,7 @@ static int free_slot(struct hash_slot *s)
 static int handle_start(struct hash_slot *s)
 {
     s->key = s->next->key;
-    s->ast = s->next->ast;
+    s->data = s->next->data;
     struct hash_slot *next = s->next;
     s->next = s->next->next;
     return free_slot(next);
@@ -101,7 +127,7 @@ int hash_remove(struct hash_map *set, char *key)
     return free_slot(s);
 }
 
-struct instruction* hash_find(struct hash_map *set, char *key)
+void* hash_find(struct hash_map *set, char *key)
 {
     assert(key != NULL);
 
@@ -117,7 +143,26 @@ struct instruction* hash_find(struct hash_map *set, char *key)
             return NULL;
     }
 
-    return s->ast;
+    return s->data;
+}
+
+builtin hash_find_builtin(struct hash_map *set, char *key)
+{
+    assert(key != NULL);
+
+    struct hash_slot *s = get_slot(set, key);
+
+    if (s->key == NULL) //key no present
+        return NULL;
+
+    while (strcmp(s->key, key) != 0)
+    {
+        s = s->next;
+        if (s == NULL)
+            return NULL;
+    }
+
+    return s->builtin;
 }
 
 void hash_init(struct hash_map *s, size_t size)
@@ -128,7 +173,8 @@ void hash_init(struct hash_map *s, size_t size)
     {
         s->slots[i].key = NULL;
         s->slots[i].next = NULL;
-        s->slots[i].ast = NULL;
+        s->slots[i].data = NULL;
+        s->slots[i].builtin = NULL;
     }
 }
 

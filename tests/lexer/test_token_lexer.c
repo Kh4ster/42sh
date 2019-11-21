@@ -158,7 +158,7 @@ Test(token_lexer, lexer_operators_simple)
     current_token = queue_pop(token_queue);
     cr_assert_not_null(current_token);
     cr_assert_eq(0, strcmp(current_token->data, "&"));
-    cr_assert_eq(TOKEN_OTHER, current_token->type);
+    cr_assert_eq(TOKEN_END_OF_INSTRUCTION, current_token->type);
     token_lexer_free(&current_token);
 
     current_token = queue_pop(token_queue);

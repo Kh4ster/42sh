@@ -212,10 +212,10 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 static struct instruction *parse_funcdec(struct queue *lexer)
 {
     struct instruction *to_execute = NULL;
-
     if (NEXT_IS("function"))
+    {
         EAT();
-
+    }
     if (!NEXT_IS_OTHER())
         return NULL;
 
@@ -227,7 +227,7 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
     EAT();
-    EAT(); //cause for now it's two token for ()
+    EAT(); //cause for now it's two tokens for ()
 
     while (NEXT_IS("\n"))
         EAT();
@@ -406,7 +406,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         return NULL;
     }
 
-    if (NEXT_IS("\n") || NEXT_IS(";") || NEXT_IS("&"))
+    if (next_is_end_of_instruction(lexer))
         return redirection;
 
     if (NEXT_IS_ASSIGNEMENT())
@@ -465,13 +465,6 @@ static bool redirection_not_valid(struct instruction *redirection)
 {
     struct redirection *redir = redirection->data;
     return redir->file == NULL;
-}
-
-static struct instruction *add_and_to_redirections(
-            struct instruction *redirection1, struct instruction *redirection2)
-{
-    return build_instruction(TOKEN_AND,
-                build_and_or(redirection1, redirection2));
 }
 
 static bool next_next_is(struct queue *lexer, const char *to_match)
