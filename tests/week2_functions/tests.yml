@@ -1,0 +1,7 @@
+- name: simple function exec with 'function' prefix (need variable expansion to work)
+  options:
+    - ../tests/week2_functions/test1.sh
+
+- name: simple function exec without 'function' prefix
+  options:
+    - ../tests/week2_functions/test2.sh

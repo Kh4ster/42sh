@@ -55,6 +55,7 @@ extern void destroy_tree(struct instruction *ast)
         node = ast->data;
         destroy_tree(node->left);
         destroy_tree(node->right);
+        free(node);
         break;
     case TOKEN_COMMAND:
         free_command(ast->data);
@@ -65,17 +66,20 @@ extern void destroy_tree(struct instruction *ast)
     case TOKEN_REDIRECT_APPEND_LEFT:
     case TOKEN_REDIRECT_LEFT:
     case TOKEN_REDIRECT_RIGHT:
+    case TOKEN_REDIRECT_LEFT_TO_FD:
+    case TOKEN_REDIRECT_READ_WRITE:
+    case TOKEN_DUP_FD:
         free_redirection(ast->data);
         break;
     case TOKEN_WHILE:
+    case TOKEN_UNTIL:
         free_while(ast->data);
         break;
     default:
         return;
     }
 
-    if (ast->next != NULL)
-        destroy_tree(ast->next);
+    destroy_tree(ast->next);
 
     free(ast);
 }

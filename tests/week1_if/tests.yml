@@ -28,3 +28,30 @@
 - name: if in if in if
   options:
     - ../tests/week1_if/test7.sh
+
+- name: if else if fi echo_command fi
+  options:
+    - ../tests/week1_if/test8.sh
+
+- name: 2 command lines
+  stdin: |
+    if true; then echo toto; fi
+    ech toto
+  checks:
+    - returncode
+    - has_stderr  
+
+- name: many command lines
+  stdin: |
+    if true; then echo toto; fi
+    if false; then echo papa; fi
+    if true; then echo papa; if false  
+    ech toto
+  checks:
+    - stdout
+    - returncode
+    - has_stderr  
+
+
+
+    

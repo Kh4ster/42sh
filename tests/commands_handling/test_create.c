@@ -20,8 +20,6 @@ Test(cmd_exec, echo_toto, .timeout = 0)
     cr_assert_eq(0, strcmp(cmd->params[0], "echo"));
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
     cr_assert_eq(0,exec_cmd(cmd));
-    free(cmd->command);
-    free(c);
     command_destroy(&cmd);
     array_list_destroy(list);
 }
@@ -37,8 +35,6 @@ Test(cmd_exec, cmd_not_found_toto, .timeout = 0)
     cr_assert_eq(0, strcmp(cmd->params[0], "cmd_notfound"));
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
     cr_assert_eq(127,exec_cmd(cmd));
-    free(cmd->command);
-    free(c);
     command_destroy(&cmd);
     array_list_destroy(list);
 }
@@ -56,8 +52,6 @@ Test(cmd_exec, not_executable_toto, .timeout = 0)
     cr_assert_eq(0, strcmp(cmd->params[0], "./not_executable"));
     cr_assert_eq(0, strcmp(cmd->params[1], "toto"));
     cr_assert_eq(126,exec_cmd(cmd));
-    free(cmd->command);
-    free(c);
     fclose(fd);
     command_destroy(&cmd);
     array_list_destroy(list);
@@ -74,8 +68,6 @@ Test(cmd_exec, ls_dir_notfound, .timeout = 0)
     cr_assert_eq(0, strcmp(cmd->params[0], "ls"));
     cr_assert_eq(0, strcmp(cmd->params[1], "dir_notfound"));
     cr_assert_eq(2,exec_cmd(cmd));
-    free(cmd->command);
-    free(c);
     command_destroy(&cmd);
     array_list_destroy(list);
 }
@@ -93,13 +85,11 @@ Test(cmd_exec, ls_prevdir_rootdir, .timeout = 0)
     cr_assert_eq(0, strcmp(cmd->params[1], ".."));
     cr_assert_eq(0, strcmp(cmd->params[2], "."));
     cr_assert_eq(0, exec_cmd(cmd));
-    free(cmd->command);
-    free(c);
     command_destroy(&cmd);
     array_list_destroy(list);
 }
 
-Test(cmd_exec, tree_dir_notfound, .timeout = 0)
+int main()
 {
     char *c = strdup("tree");
     struct array_list *list = array_list_init();
@@ -110,8 +100,7 @@ Test(cmd_exec, tree_dir_notfound, .timeout = 0)
     cr_assert_eq(0, strcmp(cmd->params[0], "tree"));
     cr_assert_eq(0, strcmp(cmd->params[1], "dir_notfound"));
     cr_assert_eq(0, exec_cmd(cmd));
-    free(cmd->command);
-    free(c);
     command_destroy(&cmd);
-    array_list_destroy(list);
+    free(list->content);
+    free(list);
 }
