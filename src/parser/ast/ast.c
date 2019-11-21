@@ -41,17 +41,19 @@ static int handle_if(struct instruction *ast)
 static int handle_and_or_instruction(struct instruction *ast)
 {
     struct and_or_instruction *node = ast->data;
-
+    int return_code;
     if (ast->type == TOKEN_OR)
     {
-        if (execute_ast(node->left) == 0 || execute_ast(node->right) == 0)
+        if ((return_code = execute_ast(node->left)) == 0
+                || (return_code = execute_ast(node->right)) == 0)
             return 0;
-        return 1;
+        return return_code;
     }
 
-    if (execute_ast(node->left) == 0 && execute_ast(node->right) == 0)
+    if ((return_code = execute_ast(node->left)) == 0
+            && (return_code = execute_ast(node->right)) == 0)
         return 0;
-    return 1;
+    return return_code;
 }
 
 static bool is_func(struct instruction *ast)
@@ -96,7 +98,7 @@ static int handle_commands(struct instruction *ast)
 static int handle_while(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
-    int return_value = 1;
+    int return_value = 0;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
         return_value = execute_ast(while_instruction->to_execute);
