@@ -710,7 +710,7 @@ static struct instruction *parse_case_clause(struct queue *lexer,
     if (*error)
         return build_instruction(TOKEN_CASE, case_clause);
 
-    if (!first_item)
+    if (first_item)
         array_list_append(case_clause->items, first_item);
 
     while (!NEXT_IS("esac"))
