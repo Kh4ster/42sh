@@ -126,6 +126,25 @@ static int handle_until(struct instruction *ast)
 }
 
 
+static int handle_for(struct instruction *ast)
+{
+    struct for_instruction *instruction_for = ast->data;
+    struct array_list *var_values = instruction_for->var_values;
+    int return_value;
+
+    if (!var_values)
+        return 0;
+
+    for (size_t i = 0; i < var_values->nb_element; i++)
+    {
+        // assigne_variable(instruction_for->var_name, var_values->content[i]);
+        return_value = execute_ast(instruction_for->to_execute);
+    }
+
+    return return_value;
+}
+
+
 extern int execute_ast(struct instruction *ast)
 {
     if (!ast || ast->data == NULL)//for now to handle var assignement
@@ -162,7 +181,10 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_REDIRECT_LEFT_TO_FD:
     case TOKEN_REDIRECT_READ_WRITE:
     case TOKEN_DUP_FD:
-        return redirections_handling(ast);
+        return_value = redirections_handling(ast);
+        break;
+    case TOKEN_FOR:
+        return_value = handle_for(ast);
         break;
     default:
         return_value = 1;

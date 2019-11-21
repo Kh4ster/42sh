@@ -162,6 +162,7 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
 static struct instruction *parse_if(struct queue *lexer);
 static struct instruction *parse_while_clause(struct queue *lexer);
 static struct instruction *parse_compound_list_break(struct queue *lexer);
+static struct instruction *parse_for(struct queue *lexer);
 
 // see how it works exactly
 static struct instruction *parse_shell_command(struct queue *lexer)
@@ -171,6 +172,9 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 
     if (NEXT_IS("while") || NEXT_IS("until"))
         return parse_while_clause(lexer);
+
+    if (NEXT_IS("for"))
+        return parse_for(lexer);
 
     struct instruction *to_execute = NULL;
     if (NEXT_IS("{"))
@@ -622,7 +626,7 @@ static struct instruction *parse_for(struct queue *lexer)
         {
             EAT();
             var_values = parse_for_var_values(lexer);
-            if (!NEXT_IS(";") || !NEXT_IS("\n"))
+            if (!NEXT_IS(";") && !NEXT_IS("\n"))
             {
                 array_list_destroy(var_values);
                 free(var_name);
