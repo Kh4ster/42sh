@@ -1,5 +1,5 @@
 function toto
 {
-    echo toto
+    echo $1
 }
-toto
+toto 10
