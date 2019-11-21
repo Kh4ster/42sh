@@ -15,14 +15,13 @@ static int is_number(char *data)
     return 1;
 }
 
-int handle_options(struct array_list *args, char *file_path)
+int handle_options(char **args, char *file_path)
 {
     // handle options
     int r_opt = 0;
     int c_opt = 0;
-    for (size_t i = 0; i < args->nb_element; i++)
+    for (char *arg = *args; arg != NULL; arg++)
     {
-        char *arg = args->content[i];
         if (arg[0] == '-')
         {
             if (arg[1] == 'c')
@@ -33,57 +32,71 @@ int handle_options(struct array_list *args, char *file_path)
             {
                 char *usage =
                     "history: usage: history [-c] [-r] or history [n]";
-                errx(2, "history: -%c: invalid option\n%s", arg[1], usage);
+                fprintf(stderr, "history: -%c: invalid option\n%s", arg[1]);
+                fprintf(stderr, "%s", usage);
+                return 2;
             }
         }
     }
     if (c_opt)
         clear_history();
     else if (r_opt)
-        read_history(file_path);
+        return read_history(file_path);
+    return 0;
 }
 
-void show_history(char *file_path, int nb_lines)
+int show_history(char *file_path, int nb_lines)
 {
     FILE *history_file = fopen(file_path, "r");
     if (history_file == NULL)
-        errx(1, "history: couldn't open %s", file_path);
+    {
+        fprintf(stderr, "history: couldn't open %s", file_path);
+        return 1;
+    }
     char c = fgetc(history_file);
     while (c != EOF && nb_lines != 0)
     {
-        while (c != EOF && c != '\n')
-        {
-            printf("%c", c);
-        }
-        nb_lines -= 1;
+        fprintf(stdout, "%c", c);
+        c = fgetc(history_file);
+        if (c == '\n' || c == EOF)
+            nb_lines -= 1;
     }
+    if (c == '\n')
+        fprintf(stdout, "%c", c);
     fclose(history_file);
+    return 0;
 }
 
-int history(struct array_list *args)
+int history(char **args)
 {
     char *history_path = "~/.42sh_history";
 
-    if (args->nb_element == 0)
+    if (args[1] == NULL)
     {
         //display full history
-        show_history(history_path, -1);
+        return show_history(history_path, -1);
     }
 
-    char *first_arg = args->content[0];
+    char *first_arg = args[1];
     if (first_arg[0] == '-')
     {
-        handle_options(args, history_path);
+        return handle_options(args, history_path);
     }
     else if (is_number(first_arg))
     {
-        if (args->nb_element == 1)
-            show_history(history_path, atoi(first_arg));
+        if (args[2] == NULL)
+            return show_history(history_path, atoi(first_arg));
         else
-            errx(1, "history: too many arguments");
+        {
+            fprintf(stderr, "history: too many arguments");
+            return 1;
+        }
     }
     else
-        errx(1, "history: numeric argument required");
+    {
+        fprintf(stderr, "history: numeric argument required");
+        return 1;
+    }
 
     return 0;
 }

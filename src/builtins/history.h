@@ -8,6 +8,9 @@
 
 #pragma once
 
-#include "../data_structures/array_list.h"
-
-int history(struct array_list *args);
+/**
+* @brief replicating the behavior of history builtin (cf. man bash-builtins)
+* @param args array of arguments given to history builtins
+* @return success : 0 , fail : same behavior as history builtin
+*/
+int history(char **args);
