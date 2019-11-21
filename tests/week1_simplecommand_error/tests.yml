@@ -1,0 +1,91 @@
+- name: command_notfound
+  stdin: ./abcd toto
+  checks:
+    - has_stderr
+    - returncode
+
+- name: command_notexecutable
+  options:
+    - ../tests/week1_simplecommand_error/test1.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ./file_notexecutable then remove file
+  options:
+    - ../tests/week1_simplecommand_error/test2.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ls wrong_parameter
+  stdin: ls wrong_parameter
+  checks:
+    - has_stderr
+    - stderr
+    - returncode
+
+- name: cp missing_parameter
+  stdin: cp
+  checks:
+    - has_stderr
+    - returncode
+
+
+- name: echo || && wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test3.sh
+  checks:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name : echo toto || echo papa && echo dcdv && |echo papa (not working yet need pipe)
+  stdin: echo toto || echo papa && echo dcdv && |echo papa
+  checks:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name : echo toto || echo papa && ech dcdv && echo papa
+  stdin: echo toto || echo papa && ech dcdv && echo papa
+  checks:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name : echo toto ; || echo papa ; && echo dcdv ; || ech
+  stdin : echo toto ; || echo papa ; && echo dcdv ; || ech
+  checks:
+    - has_stderr
+    - returncode
+
+- name : echo toto \n || echo papa ; && echo dcdv ; || ech
+  stdin : echo toto \n || echo papa ; && echo dcdv ; || ech
+  checks:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name: echo + || && wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test4.sh
+  checks:
+    - has_stdout
+    - has_stderr
+    - returncode
+
+- name: and-or command not found + wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test5.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: echo || && command not found + wrong syntax
+  options:
+    - ../tests/week1_simplecommand_error/test6.sh
+  checks:
+    - stdout
+    - has_stderr
+    - returncode

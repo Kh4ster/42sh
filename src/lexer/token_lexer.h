@@ -21,7 +21,8 @@ enum token_lexer_type
     TOKEN_OPERATOR, /**< @brief operators defined in scl (&&, ||, ;;, ...) */
     TOKEN_KEYWORD, /**< @brief reserved words like fi, then, ... */
     TOKEN_OTHER, /**< @brief any words without delimiters */
-    TOKEN_ASSIGNEMENT /**< @brief variable assignement */
+    TOKEN_ASSIGNEMENT, /**< @brief variable assignement */
+    TOKEN_IO_NUMBER /**< @brief io number for redirections */
 };
 
 /** @struct token_lexer
@@ -66,3 +67,10 @@ void token_queue_free(struct queue **token_queue);
 * @relates token_lexer
 */
 void token_queue_empty(struct queue *token_queue);
+
+/**
+* @brief get next next token
+* @param token_queue the queue
+* @relates token_lexer
+*/
+struct token_lexer *lexer_next_next(struct queue *token_queue);

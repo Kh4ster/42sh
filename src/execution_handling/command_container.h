@@ -29,7 +29,7 @@ struct command_container
 * @return struct command_container
 */
 
-struct command_container* command_init(size_t nb_args, char *command, ...);
+struct command_container *command_init(size_t nb_args, char *command, ...);
 
 /**
 * @brief destroy allocated command_container structure

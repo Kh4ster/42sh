@@ -29,7 +29,7 @@ struct array_list
 * @brief initializes an array_list structure with a size of MAX_INIT_SIZE
 * @return array_list structure
 */
-struct array_list* array_list_init(void);
+struct array_list *array_list_init(void);
 
 /**
 * @brief adds an element to an array_list structure that is resized if needed
@@ -37,13 +37,13 @@ struct array_list* array_list_init(void);
 * @param array_list structure
 * @param element to add to array_list structure
 */
-void array_list_append(struct array_list*, void*);
+void array_list_append(struct array_list *, void *);
 
 /**
 * @brief destroys the array_list structure and its content
 * @brief Pointer in content NEEDS to be freeable (coming from malloc)
 * @param array_list structure
 */
-void array_list_destroy(struct array_list*);
+void array_list_destroy(struct array_list *);
 
 #endif /* ! ARRAY_LIST_H */

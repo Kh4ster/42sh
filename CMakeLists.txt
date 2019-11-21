@@ -3,7 +3,7 @@ find_program(CMAKE_C_COMPILER
     NAMES $ENV{CC} gcc
     PATHS ENV PATH NO_DEFAULT_PATH
 )
-project(42sh VERSION 1.0.0 LANGUAGES C)
+project(42sh VERSION 1.2.1 LANGUAGES C)
 
 #[[
 ----- USAGE -----
@@ -34,6 +34,7 @@ set(SRC_FILES
     src/memory/memory.c
     src/data_structures/data_string.c
     src/data_structures/queue.c
+    src/data_structures/hash_map.c
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
@@ -47,7 +48,9 @@ set(SRC_FILES
     src/parser/ast/destroy_tree.c
     src/input_output/get_next_line.c
     src/error/error.c
+    src/parser/ast/ast_print.c
     src/redirections_handling/redirect.c
+    src/builtins/shopt.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -56,10 +59,12 @@ set(TESTS_FILES
     tests/input_output/test_read.c
     tests/input_output/test_write.c
     #tests/builtins/test_redirector.c
+    tests/builtins/test_shopt.c
     tests/parameters_handling/test_parameters_handler.c
     tests/commands_handling/test_exec.c
     tests/commands_handling/test_create.c
     tests/data_structures/test_queue.c
+    tests/data_structures/test_hash_map.c
     tests/lexer/test_token_lexer.c
 )
 
@@ -85,6 +90,7 @@ target_compile_options(common_options INTERFACE
     "-Wall"
     "-Wextra"
     "-pedantic"
+    "-std=c99"
     #[[Active -Werror on build_release and sanitize on build_debug]]
     $<IF:$<CONFIG:Release>,-Werror,-fsanitize=address>
 )
@@ -94,14 +100,18 @@ target_link_libraries(common_options INTERFACE
 )
 
 
-# add "../" prefix to src files to use them in sub-directories
-set(listVar "")
-foreach(f IN LISTS SRC_FILES)
-    list(APPEND listVar "../${f}")
-endforeach(f)
-set(SRC_FILES_FROM_SUBDIR "${listVar}")
+# add "../" prefix to src files if build in sub_dir (cmake ..)
+if(NOT ${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+    set(listVar "")
+    foreach(f IN LISTS SRC_FILES)
+        list(APPEND listVar "../${f}")
+    endforeach(f)
+    set(SRC_FILES "${listVar}")
+endif(NOT ${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+
+
 # Create a library containing all src files
-add_library(SRC_FILES_OBJ ${SRC_FILES_FROM_SUBDIR})
+add_library(SRC_FILES_OBJ ${SRC_FILES})
 target_link_libraries(SRC_FILES_OBJ PRIVATE
     common_options
 )

@@ -5,7 +5,7 @@
 #include "data_string.h"
 #include "../memory/memory.h"
 
-struct string* string_init(void)
+struct string *string_init(void)
 {
     struct string *s = xcalloc(1, sizeof(struct string));
     s->capacity = BASE_STR_CAPACITY;
@@ -68,7 +68,7 @@ void string_append_char(struct string *str, char c)
     string_append(str, arr);
 }
 
-char* string_get_content(struct string **ptr_str)
+char *string_get_content(struct string **ptr_str)
 {
     assert(ptr_str != NULL);
     struct string *str = *ptr_str;

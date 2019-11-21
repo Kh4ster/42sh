@@ -22,8 +22,22 @@ enum token_parser_type
     TOKEN_REDIRECT_LEFT, /**< @brief token redirect left */
     TOKEN_REDIRECT_RIGHT, /**< @brief token redirect right */
     TOKEN_REDIRECT_APPEND_LEFT, /**< @brief token append left */
+    TOKEN_REDIRECT_LEFT_TO_FD,
+    TOKEN_REDIRECT_READ_WRITE,
+    TOKEN_DUP_FD, /**< @brief token fd duplication */
     TOKEN_COMMAND, /**< @brief token command */
-    TOKEN_ELSE /**< @brief token else */
+    TOKEN_ELSE, /**< @brief token else */
+    //TOKEN_FUNCTION, /**< @brief token function */
+    TOKEN_WHILE, /**< @brief token while */
+    TOKEN_UNTIL, /**< @brief token until */
+    TOKEN_FOR /**< @brief token for */
+};
+
+
+struct while_instruction
+{
+    struct instruction *conditions;
+    struct instruction *to_execute;
 };
 
 /**
@@ -74,4 +88,13 @@ struct redirection
 * @param lexer the lexer that we will use for our pop/peek
 * @return success : an ast, fail : NULL
 */
-struct instruction* parse_input(struct queue *lexer, int *is_end, int *error);
+struct instruction *parse_input(struct queue *lexer, int *is_end, int *error);
+
+/**
+* @brief build an instruction (exported for unit test)
+* @param type type of the data behind the void*
+* @param input_instr the instruction
+* @return return an instruction
+*/
+struct instruction *build_instruction(enum token_parser_type type,
+                                                            void *input_instr);

@@ -85,6 +85,9 @@ def test(binary, test_case, timeout, args):
         elif check == "has_stderr":
             assert student.stderr != "", \
                 "The code should print an error message on stderr"
+        elif check == "has_stdout":
+            assert student.stdout != "", \
+                "The code should print a message on stdout"
 
 def launch_test(binary, test_case, args, category_xml):
     """ Launch the test and print OK or KO (+diff) depending on the result

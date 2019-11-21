@@ -11,9 +11,15 @@
 */
 struct boot_params
 {
-    bool option_n; /**< @brief option n */
-    bool option_a; /**< @brief option a */
-    bool option_o; /**< @brief option o */
-    bool option_c; /**< @brief option c */
+    bool option_n; /**< @brief option norc */
+    bool option_a; /**< @brief option ast-print */
+    bool option_c; /**< @brief option command */
     char *command_option_c; /**< @brief command given with option c */
+    bool option_dot_glob; /**< @brief option dot glob */
+    bool option_expand_aliases; /**< @brief option expand alias */
+    bool option_extglob; /**< @brief option extglob */
+    bool option_nocaseglob; /**< @brief option no case glob */
+    bool option_nullglob; /**< @brief option null glob */
+    bool option_sourcepath; /**< @brief option source path */
+    bool option_xpg_echo; /**< @brief option xpg echo */
 };

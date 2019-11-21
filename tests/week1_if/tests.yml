@@ -1,0 +1,57 @@
+- name: if echo then; then echo ok; echo ok; fi
+  stdin: if echo then; then echo ok; echo ok; fi
+
+- name: if echo ok \n then \n echo ok \n fi
+  options:
+    - ../tests/week1_if/test1.sh
+
+- name: if in another if with quotes
+  options:
+    - ../tests/week1_if/test2.sh
+
+- name: basic if elif else - elif true
+  options:
+    - ../tests/week1_if/test3.sh
+
+- name: basic if elif else - else true
+  options:
+    - ../tests/week1_if/test4.sh
+
+- name: basic if elif else - if true
+  options:
+    - ../tests/week1_if/test5.sh
+
+- name: if with a lot of \n
+  options:
+    - ../tests/week1_if/test6.sh
+
+- name: if in if in if
+  options:
+    - ../tests/week1_if/test7.sh
+
+- name: if else if fi echo_command fi
+  options:
+    - ../tests/week1_if/test8.sh
+
+- name: 2 command lines
+  stdin: |
+    if true; then echo toto; fi
+    ech toto
+  checks:
+    - returncode
+    - has_stderr  
+
+- name: many command lines
+  stdin: |
+    if true; then echo toto; fi
+    if false; then echo papa; fi
+    if true; then echo papa; if false  
+    ech toto
+  checks:
+    - stdout
+    - returncode
+    - has_stderr  
+
+
+
+    
