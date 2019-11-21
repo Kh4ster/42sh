@@ -10,15 +10,18 @@
 
 #include "../parser/parser.h"
 
+typedef int (*builtin)(char*[]);
+
 /**
 * @struct hash_slot
 * @brief a slot in the hashmap
 */
 struct hash_slot
 {
-    char *key;
-    struct instruction *ast;
+    struct instruction *data;
+    builtin builtin;
     struct hash_slot *next;
+    char *key;
 };
 
 /**
@@ -43,25 +46,33 @@ void hash_init(struct hash_map *s, size_t size);
 * @brief insert ast combined with its name in hash_map
 * @param set the hash_map
 * @param key the name of the function
-* @param ast the ast of the function
+* @param data the data
 * @relates hash_map
 */
 void hash_insert(struct hash_map *set,
                 char *key,
-                struct instruction *ast);
+                void *data);
+
+void hash_insert_builtin(struct hash_map *set,
+                char *key,
+                builtin builtin);
 
 /**
 * @brief return the function matched to its name
 * @param set the hash_map
 * @param key the name of the function
-* @return the ast found : success; NULL : fail
+* @return the content : success; NULL : fail
 * @relates hash_map
 */
-struct instruction* hash_find(struct hash_map *set, char *key);
+void* hash_find(struct hash_map *set, char *key);
+
+builtin hash_find_builtin(struct hash_map *set, char *key);
 
 /**
 * @brief free content of hashmap (hashmap declared on the stack)
 * @param set the hash_map
+* @details ONLY TO BE CALLED ON THE FUNCTION HASH_MAP
+* @details IN THE BUILTIN HASH_MAP NOTHING IS TO BE FREED
 * @relates hash_map
 */
 void hash_free(struct hash_map *s);
