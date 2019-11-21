@@ -1,0 +1,5 @@
+toto()
+{
+    echo toto
+}
+toto
