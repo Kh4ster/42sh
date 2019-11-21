@@ -24,6 +24,7 @@ enum token_parser_type
     TOKEN_REDIRECT_APPEND_LEFT, /**< @brief token append left */
     TOKEN_REDIRECT_LEFT_TO_FD,
     TOKEN_REDIRECT_READ_WRITE,
+    TOKEN_DUP_FD, /**< @brief token fd duplication */
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
     TOKEN_DUP_FD,

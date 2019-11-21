@@ -16,13 +16,13 @@ struct command_container *command_init(size_t nb_args, char *command, ...)
     command_container = xmalloc(sizeof(struct command_container));
     command_container->command = strdup(command);
     command_container->params = xmalloc(sizeof(char *) * (nb_args + 2));
-    command_container->params[0] = strdup(command);
+    command_container->params[0] = command;
     char *end = command_container->params[0] +
                     strlen(command_container->params[0]);
     while (end - command_container->params[0] >= 0 && *end != '/')
         end--;
     end++;
-    command_container->params[0] = end;
+    command_container->params[0] = strdup(end);
     for (size_t i = 0; i < nb_args; ++i)
         command_container->params[i + 1] = strdup(va_arg(ap, char *));
     command_container->params[nb_args + 1] = NULL;
@@ -35,6 +35,9 @@ struct command_container *command_init(size_t nb_args, char *command, ...)
 void command_destroy(struct command_container **ptr_command_container)
 {
     struct command_container *command_container = *ptr_command_container;
+    free(command_container->command);
+    for (size_t i = 0; command_container->params[i]; i++)
+        free(command_container->params[i]);
     free(command_container->params);
     free(command_container);
     *ptr_command_container = NULL;
