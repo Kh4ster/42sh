@@ -301,7 +301,7 @@ static struct instruction *__parse_redirection(struct queue *lexer)
 
     token = token_lexer_head(lexer);
 
-    if (token->type != TOKEN_OTHER)
+    if (token->type != TOKEN_OTHER || strcmp(token->data, "\n") == 0)
         return build_instruction(type, build_redirection(fd, NULL));
 
     char *file = strdup(token->data);
@@ -358,15 +358,17 @@ static bool next_is_end_of_instruction(struct queue *lexer)
     if (strcmp(token->data, "\n") == 0)
         return true;
 
+/*
     if (is_redirection(lexer))
         return true;
+*/
 
     if (NEXT_IS_NUMBER())
         return true;
 
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF
-            || token->type == TOKEN_OPERATOR;
+            || (token->type == TOKEN_OPERATOR && ! is_redirection(lexer));
 }
 
 
@@ -420,6 +422,20 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     while (!next_is_end_of_instruction(lexer))
     {
+        if (is_redirection(lexer))
+        {
+            redirection = parse_redirection(lexer, redirection);
+
+            if (!redirection)
+            {
+                array_list_destroy(parameters);
+                free(simple_command_str);
+                return NULL;
+            }
+
+            continue;
+        }
+
         token = token_lexer_pop(lexer);
         array_list_append(parameters, token->data);
         free(token);
@@ -430,7 +446,11 @@ static struct instruction *parse_simple_command(struct queue *lexer)
                                                             simple_command_str,
                                                             parameters));
     if (redirection)
+    {
+        if (redirection_not_valid(redirection))
+            return NULL;
         command = add_command_redirection(redirection, command);
+    }
 
     free(parameters->content);
     free(parameters);//not destroy array_list cause we need it's content
@@ -621,7 +641,15 @@ static struct case_clause *build_case_clause(char *pattern)
     return case_clause;
 }
 
-static struct case_item *parse_case_item(struct queue *lexer)
+
+static void *destroy_case_item(struct case_item *item)
+{
+    array_list_destroy(item->patterns);
+    free(item);
+    return NULL;
+}
+
+static struct case_item *parse_case_item(struct queue *lexer, int *error)
 {
     if (NEXT_IS("("))
         EAT();
@@ -632,7 +660,11 @@ static struct case_item *parse_case_item(struct queue *lexer)
     struct token_lexer *token = token_lexer_pop(lexer);
 
     if (token->type != TOKEN_OTHER)
-        errx(1, "Error while parsing");
+    {
+        token_lexer_free(&token);
+        *error = 1;
+        return NULL;
+    }
 
     struct case_item *item = init_case_item();
     array_list_append(item->patterns, strdup(token->data));
@@ -644,14 +676,20 @@ static struct case_item *parse_case_item(struct queue *lexer)
         token = token_lexer_pop(lexer);
 
         if (!token)
-            errx(1, "error while parsing case clause");
+        {
+            *error = 1;
+            return destroy_case_item(item);
+        }
 
         array_list_append(item->patterns, strdup(token->data));
         token_lexer_free(&token);
     }
 
     if (!NEXT_IS(")"))
-        errx(1, "error while parsing: missing ) for case clause");
+    {
+        *error = 1;
+        return destroy_case_item(item);
+    }
 
     EAT();
     while (NEXT_IS("\n"))
@@ -663,11 +701,15 @@ static struct case_item *parse_case_item(struct queue *lexer)
 
 
 static struct instruction *parse_case_clause(struct queue *lexer,
-                                struct case_clause *case_clause)
+                                struct case_clause *case_clause, int *error)
 {
-    struct case_item *first_item = parse_case_item(lexer);
+    struct case_item *first_item = parse_case_item(lexer, error);
 
-    array_list_append(case_clause->items, first_item);
+    if (*error)
+        return build_instruction(TOKEN_CASE, case_clause);
+
+    if (!first_item)
+        array_list_append(case_clause->items, first_item);
 
     while (!NEXT_IS("esac"))
     {
@@ -675,15 +717,23 @@ static struct instruction *parse_case_clause(struct queue *lexer,
             EAT();
 
         if (!NEXT_IS(";;"))
-            errx(1, "Error while parsing");
+        {
+            *error = 1;
+            return build_instruction(TOKEN_CASE, case_clause);
+        }
 
         EAT();
 
         while (NEXT_IS("\n"))
             EAT();
 
-        first_item = parse_case_item(lexer);
-        array_list_append(case_clause->items, first_item);
+        first_item = parse_case_item(lexer, error);
+
+        if (*error)
+            return build_instruction(TOKEN_CASE, case_clause);
+
+        if (first_item)
+            array_list_append(case_clause->items, first_item);
     }
 
     if (NEXT_IS(";;"))
@@ -721,11 +771,14 @@ static struct instruction *parse_case_rule(struct queue *lexer)
     while (NEXT_IS("\n"))
         EAT();
 
-    struct instruction *case_rule = parse_case_clause(lexer, clause);
+    int error = 0;
+    struct instruction *case_rule = parse_case_clause(lexer, clause, &error);
 
+    if (error)
+        return free_instructions(1, case_rule);
 
     if (!NEXT_IS("esac"))
-        return free_instructions(2, token, clause, case_rule);
+        return free_instructions(2, clause, case_rule);
 
     EAT();
     return case_rule;
