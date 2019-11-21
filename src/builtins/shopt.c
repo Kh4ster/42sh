@@ -84,17 +84,34 @@ static int unset_option(char *opt_name)
 
 static int handle_error(void)
 {
-    optind = 1; //set back to 1 for futur get_opt call
     warnx("Bad shopt option");
     return -1;
+}
+
+static int option_list(void)
+{
+    printf("ast_print %d\n", g_env.options.option_a);
+    printf("dotglob %d\n", g_env.options.option_dot_glob);
+    printf("expand_aliases %d\n", g_env.options.option_expand_aliases);
+    printf("extglob %d\n", g_env.options.option_extglob);
+    printf("nocaseglob %d\n", g_env.options.option_nocaseglob);
+    printf("nullglob %d\n", g_env.options.option_nullglob);
+    printf("sourcepath %d\n", g_env.options.option_sourcepath);
+    printf("xpg_echo %d\n", g_env.options.option_xpg_echo);
+    return 0;
 }
 
 int shopt(char *options[])
 {
     char c;
     int argc = 0;
+    int old_optind = optind; //save old optind and restore it at the end
+    optind = 1; //set at 1 (default value) cause multiple getopt
     while (options[argc] != NULL) //find how many argument in the *[]
         argc++;
+
+    if (argc == 1) //case call to shopt only
+        return option_list();
 
     while (optind < argc)
     {
@@ -118,6 +135,6 @@ int shopt(char *options[])
         else if (c == '?')
             return handle_error();
     }
-    optind = 1; //set back to 1 for futur get_opt call
+    optind = old_optind;
     return 0;
 }

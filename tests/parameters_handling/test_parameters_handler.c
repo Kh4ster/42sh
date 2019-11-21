@@ -3,6 +3,7 @@
 
 #include "../../src/parameters_handling/options.h"
 #include "../../src/parameters_handling/parameters_handler.h"
+#include "../../src/input_output/get_next_line.h"
 
 Test(arguments, no_arg)
 {
@@ -15,10 +16,10 @@ Test(arguments, no_arg)
     cr_assert_null(options.command_option_c, "should be null");
 }
 
-int main()
+Test(arguments, arg_minus_o)
 {
     struct boot_params options = {0};
-    char *argv[] = {"42sh", "-O"};
+    char *argv[] = {"42sh", "-O", NULL};
     cr_assert_eq(1, handle_parameters(&options, 2, argv), "return val should be 1");
     cr_assert_eq(0, options.option_c, "should be 0");
     cr_assert_eq(0, options.option_n, "should be 0");
@@ -29,7 +30,7 @@ int main()
 Test(arguments, arg_plus_o)
 {
     struct boot_params options = {0};
-    char *argv[] = {"42sh", "+O"};
+    char *argv[] = {"42sh", "+O", NULL};
     cr_assert_eq(1, handle_parameters(&options, 2, argv), "return val should be -1");
     cr_assert_eq(0, options.option_c, "should be 0");
     cr_assert_eq(0, options.option_n, "should be 0");
@@ -62,7 +63,7 @@ Test(arguments, arg_mix)
 Test(arguments, arg_file_not_exec)
 {
     struct boot_params options = {0};
-    char *argv[] = {"42sh", "tests/not_executable"};
+    char *argv[] = {"42sh", "not_executable"};
     cr_assert_eq(1, handle_parameters(&options, 2, argv), "return val should be 1");
     cr_assert_eq(0, options.option_c, "should be 0");
     cr_assert_eq(0, options.option_n, "should be 0");
@@ -73,7 +74,7 @@ Test(arguments, arg_file_not_exec)
 Test(arguments, args_option_file_not_exec)
 {
     struct boot_params options = {0};
-    char *argv[] = {"42sh", "--norc", "tests/not_executable"};
+    char *argv[] = {"42sh", "--norc", "not_executable"};
     cr_assert_eq(1, handle_parameters(&options, 3, argv), "return val should be 1");
     cr_assert_eq(0, options.option_c, "should be 0");
     cr_assert_eq(1, options.option_n, "should be 1");
@@ -110,21 +111,50 @@ Test(arguments, option_pluso_bad_param)
     cr_assert_eq(-1, handle_parameters(&options, 3, argv), "return val should be -1");
 }
 
-Test(arguments, option_minuxo_bad_param)
+Test(arguments, option_minuxo_good_param)
 {
     struct boot_params options = {0};
-    char *argv[] = {"42sh", "-O", "jio"};
-    cr_assert_eq(-1, handle_parameters(&options, 3, argv), "return val should be -1");
+    char *argv[] = {"42sh", "-O", "jio", NULL};
+    cr_assert_eq(-1, handle_parameters(&options, 4, argv), "return val should be -1");
 }
 
-Test(arguments, option_o)
+Test(arguments, option_minuso_good_param)
 {
-    struct boot_params options = {0};
-    char *argv[] = {"42sh", "-O", "nocaseglob"};
-    cr_assert_eq(false, options.option_nocaseglob);
-    cr_assert_eq(1, handle_parameters(&options, 3, argv), "return val should be 1");
-    cr_assert_eq(true, options.option_nocaseglob);
-    char *argv2[] = {"42sh", "+O", "nocaseglob"};
-    cr_assert_eq(1, handle_parameters(&options, 3, argv2), "return val should be 1");
-    cr_assert_eq(false, options.option_nocaseglob);
+    char *argv[] = {"42sh", "-O", "nocaseglob", NULL};
+    cr_assert_eq(false, g_env.options.option_nocaseglob);
+    cr_assert_eq(1, handle_parameters(&(g_env.options), 3, argv), "return val should be 1");
+    cr_assert_eq(true, g_env.options.option_nocaseglob);
+    char *argv2[] = {"42sh", "+O", "nocaseglob", NULL};
+    cr_assert_eq(1, handle_parameters(&(g_env.options), 3, argv2), "return val should be 1");
+    cr_assert_eq(false, g_env.options.option_nocaseglob);
+}
+
+Test(arguments, option_minuso_good_param_and_file)
+{
+    char *argv[] = {"42sh", "-O", "nocaseglob", "not_executable", NULL};
+    cr_assert_eq(false, g_env.options.option_nocaseglob);
+    cr_assert_eq(1, handle_parameters(&(g_env.options), 4, argv), "return val should be 1");
+    cr_assert_eq(true, g_env.options.option_nocaseglob);
+}
+
+Test(arguments, option_plus_good_param_and_file)
+{
+    char *argv[] = {"42sh", "+O", "nocaseglob", "not_executable", NULL};
+    cr_assert_eq(false, g_env.options.option_nocaseglob);
+    cr_assert_eq(1, handle_parameters(&(g_env.options), 4, argv), "return val should be 1");
+    cr_assert_eq(false, g_env.options.option_nocaseglob);
+}
+
+Test(arguments, option_minuso_bad_param_and_file)
+{
+    char *argv[] = {"42sh", "-O", "jdisqo", "not_executable", NULL};
+    cr_assert_eq(false, g_env.options.option_nocaseglob);
+    cr_assert_eq(-1, handle_parameters(&(g_env.options), 4, argv), "return val should be -1");
+}
+
+Test(arguments, option_plus_bad_param_and_file)
+{
+    char *argv[] = {"42sh", "+O", "jidosq", "not_executable", NULL};
+    cr_assert_eq(false, g_env.options.option_nocaseglob);
+    cr_assert_eq(-1, handle_parameters(&(g_env.options), 4, argv), "return val should be -1");
 }

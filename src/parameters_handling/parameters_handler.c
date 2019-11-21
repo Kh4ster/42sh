@@ -48,6 +48,7 @@ static int build_shopt_call(bool set, char *option)
     int return_value = shopt(shopt_container->params);
 
     command_destroy(&shopt_container);
+
     optind++;
 
     return return_value;
@@ -59,7 +60,7 @@ static int handle_not_existing_option(char *argv[])
     char *current_option = argv[optind];
     if (strcmp(current_option, "+O") == 0)
     {
-        if (build_shopt_call(false, optarg) == -1)
+        if (build_shopt_call(false, argv[optind + 1]) == -1)
             return -1;
     }
     else
@@ -67,7 +68,7 @@ static int handle_not_existing_option(char *argv[])
         if (handle_file(current_option) == -1)
             return -1;
     }
-    optind++;
+    optind++; //cause not getopt case need to manally increase optind
     return 0;
 }
 
@@ -82,6 +83,7 @@ int handle_parameters(struct boot_params *options,
         {"ast-print", no_argument, NULL, 'A'},
         {"norc", no_argument, NULL, 'N'}
     };
+    optind = 1; //set at 1 (default value) cause multiple getopt
 
     while (optind < argc)
     {
@@ -97,7 +99,7 @@ int handle_parameters(struct boot_params *options,
             options->option_a = true;
         else if (c == 'O')
         {
-            if (build_shopt_call(true, optarg) == -1)
+            if (build_shopt_call(true, argv[optind]) == -1)
                 return -1;
         }
         else if (c == 'c')
@@ -110,6 +112,5 @@ int handle_parameters(struct boot_params *options,
         else if (c == '?')
             return -1;
     }
-    optind = 1; //set back to 1 for futur get_opt call
     return 1;
 }
