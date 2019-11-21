@@ -1,0 +1,34 @@
+- name: simple case
+  stdin: case toto in toto) echo ok; esac
+
+- name: case with several patterns
+  stdin: case toto in titi | tata | toto) echo ok; esac
+
+- name: Only matching patterns
+  stdin: case toto in toto) echo ok ;; tot*) echo bad ;; t*) echo bad; esac
+
+- name: empty case
+  stdin: case toto in esac
+
+- name: empty case clause
+  stdin: case toto in titi) echo bad ;; toto) esac
+
+- name: Bad syntax, missing 'in'
+  stdin: case toto toto) echo ok; esac
+  checks:
+        - has stderr
+
+- name: Bad syntax, missing ')'
+  stdin: case toto in toto echo ok; esac
+  checks:
+        - has stderr
+
+- name: Bad syntax, missing ';;'
+  stdin: case toto in toto) echo ok titi) echo prout; esac
+  checks:
+        - has stderr
+
+- name: Bad syntax, only ( in case
+  stdin: case toto in (toto echo ok; esac
+  checks:
+        - has stderr
