@@ -1,23 +1,30 @@
-- name: syntax error 1
- options:
-   - ../tests/week2_case/test2.sh
- checks:
-   - returncode
-   - has_stderr
-- name: syntax error 1
- options:
-   - ../tests/week2_case/test2.sh
- checks:
-   - returncode
-   - has_stderr
+- name: Bad syntax, missing 'in'
+  stdin: case toto toto) echo ok; esac
+  checks:
+        - has_stderr
+        - returncode
 
-- name: syntax error 1
- options:
-   - ../tests/week2_case/test2.sh
- checks:
-   - returncode
-   - has_stderr
+- name: Bad syntax, missing ')'
+  stdin: case toto in toto echo ok; esac
+  checks:
+        - has_stderr
+        - returncode
 
-- name: syntax error 1
- options:
-   - ../tests/week2_case/test2.sh
+- name: Bad syntax, missing ';;'
+  stdin: case toto in toto) echo ok titi) echo prout; esac
+  checks:
+        - has_stderr
+        - returncode
+
+- name: Bad syntax, only "(" in case
+  stdin: case toto in (toto echo ok; esac
+  checks:
+        - has_stderr
+        - returncode
+
+- name: Bad syntax in file
+  options:
+       - ../tests/week2_case_error/test1.sh
+  checks:
+        - has_stderr
+        - returncode

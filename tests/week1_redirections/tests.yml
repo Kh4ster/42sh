@@ -64,9 +64,6 @@
     - returncode
     - stdout
 
-- name: rm toto (succeeds only if previous rederictions tests do)
-  stdin: rm toto
-
 - name: echo ok > titi > tata echo ok (check content of titi)
   stdin: |
     echo ok > titi > tata echo ok
