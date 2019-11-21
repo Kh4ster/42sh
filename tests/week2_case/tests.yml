@@ -1,0 +1,32 @@
+- name: case toto in papa) command *) command ;; esac
+  options:
+   - ../tests/week2_case/test1.sh
+
+- name: simple case in file
+  options:
+   - ../tests/week2_case/test2.sh
+
+- name: simple case
+  stdin: case toto in toto) echo ok; esac
+  checks:
+    - returncode
+    - stdout
+
+- name: case with several patterns
+  stdin: case toto in titi | toto | tata) echo ok; esac
+  checks:
+    - returncode
+    - stdout
+
+- name: inly matching cases
+  stdin: case toto in toto) echo ok ;; tot*) echo bad ;; *t) echo bad; esac
+  checks:
+    - returncode
+    - stdout
+
+- name: empty case
+  stdin: case toto in esac
+
+- name: empty case clause
+  stdin: case toto in titi) echo bad ;; toto) esac
+

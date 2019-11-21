@@ -154,6 +154,7 @@ static void handle_quoting(struct token_lexer *new_token,
 {
     if (**cursor == '\'')
     {
+        (*cursor)++;
         char *end_quote = strchr(*cursor, '\'');
         #if 0
         while (end_quote == NULL)
@@ -168,6 +169,7 @@ static void handle_quoting(struct token_lexer *new_token,
     }
     else if (**cursor == '"')
     {
+        (*cursor)++;
         char *end_quote = get_delimiter(*cursor, "\"\\\0");
         while (*end_quote != '\"')
         {

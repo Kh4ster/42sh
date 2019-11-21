@@ -5,13 +5,10 @@
     - returncode
 
 - name: Redirection within an if case
-  stdin: if echo ok > toto; cat toto; then echo food; fi; rm toto
+  stdin: if echo ok > toto; cat toto; then echo "food"; fi; rm toto
   checks:
     - stdout
     - returncode
-
-- name: Redirection append
-  stdin: echo good >> toto; rm toto
 
 - name: Redirection stdin
   stdin: touch toto; cat < toto; rm toto;
@@ -67,13 +64,24 @@
     - returncode
     - stdout
 
-- name: rm toto (succeeds only if previous rederictions tests do)
-  stdin: rm toto
-
 - name: echo ok > titi > tata echo ok (check content of titi)
   stdin: |
     echo ok > titi > tata echo ok
-    cat titi tata; rm titi tata
+    cat titi tata
+    rm titi tata
   checks:
     - stdout
     - returncode
+
+#DOUBLE REDIRECTION
+
+- name: Redirection append
+  stdin: |
+    echo good >> toto
+    echo papa >> toto
+    cat toto
+    rm toto
+  checks: |
+    - stdout
+    - returncode
+    - has_stderr
