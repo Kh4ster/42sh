@@ -2,15 +2,17 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <string.h>
+#include <err.h>
+#include <stdio.h>
 
-#include "get_next_line.h"
+#include "../input_output/get_next_line.h"
 #include "shopt.h"
 
 #define IS(X) strcmp(opt_name, X) == 0
 
 static bool is_opt(char *opt_name)
 {
-    static const char *options =
+    static const char *options[] =
     {
         "ast_print",
         "dotglob",
@@ -24,7 +26,7 @@ static bool is_opt(char *opt_name)
     static const size_t size_array = sizeof(options) / sizeof(char*);
 
     for (size_t i = 0; i < size_array; ++i)
-        if (strcmp(opt_name, options[i] == 0))
+        if (strcmp(opt_name, options[i]) == 0)
             return true;
 
     return false;
@@ -80,10 +82,16 @@ static int unset_option(char *opt_name)
     return 1;
 }
 
+static int handle_error(void)
+{
+    optind = 1; //set back to 1 for futur get_opt call
+    warnx("Bad shopt option");
+    return -1;
+}
+
 int shopt(char *options[])
 {
     char c;
-
     int argc = 0;
     while (options[argc] != NULL) //find how many argument in the *[]
         argc++;
@@ -92,23 +100,24 @@ int shopt(char *options[])
     {
         c = getopt(argc, options, "s:u:");
         if (c  == -1)
-            return -1;
+            return handle_error();
         if (c == 's')
         {
             if (optarg == NULL)
-                return -1;
+                return handle_error();
             if (set_option(optarg) == -1)
-                return -1;
+                return handle_error();
         }
         else if (c == 'u')
         {
             if (optarg == NULL)
-                return -1;
+                return handle_error();
             if (unset_option(optarg) == -1)
-                return -1;
+                return handle_error();
         }
         else if (c == '?')
-            return -1;
+            return handle_error();
     }
+    optind = 1; //set back to 1 for futur get_opt call
     return 0;
 }

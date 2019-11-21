@@ -96,24 +96,25 @@ static void handle_ressource_files(void)
 void free_all(struct queue *lexer)
 {
     hash_free(g_env.functions);
+    hash_free(g_env.builtins);
     free(lexer);
     destroy_saved_stds();
 }
 
-static void init_builins_hash_map(struct hash_map *builtins)
+static void init_builtins_hash_map(struct hash_map *builtins)
 {
     hash_init(builtins, NB_SLOTS);
-    hash_insert(builtins, "shopt", shopt);
+    hash_insert_builtin(builtins, "shopt", shopt);
 }
 
 static void init_hash_maps(struct hash_map *functions,
                             struct hash_map *builtins
 )
 {
-    hash_init(builtins, NB_SLOTS);
     g_env.functions = functions;
-    g_env.functions = builtins;
-    init_builtins_hash_map(g_env.functions);
+    g_env.builtins = builtins;
+    hash_init(functions, NB_SLOTS);
+    init_builtins_hash_map(g_env.builtins);
 }
 
 int main(int argc, char *argv[])

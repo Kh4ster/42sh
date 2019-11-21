@@ -10,15 +10,18 @@
 
 #include "../parser/parser.h"
 
+typedef int (*builtin)(char*[]);
+
 /**
 * @struct hash_slot
 * @brief a slot in the hashmap
 */
 struct hash_slot
 {
-    char *key;
-    void *data;
+    struct instruction *data;
+    builtin builtin;
     struct hash_slot *next;
+    char *key;
 };
 
 /**
@@ -50,14 +53,20 @@ void hash_insert(struct hash_map *set,
                 char *key,
                 void *data);
 
+void hash_insert_builtin(struct hash_map *set,
+                char *key,
+                builtin builtin);
+
 /**
 * @brief return the function matched to its name
 * @param set the hash_map
 * @param key the name of the function
-* @return the ast found : success; NULL : fail
+* @return the content : success; NULL : fail
 * @relates hash_map
 */
-struct instruction* hash_find(struct hash_map *set, char *key);
+void* hash_find(struct hash_map *set, char *key);
+
+builtin hash_find_builtin(struct hash_map *set, char *key);
 
 /**
 * @brief free content of hashmap (hashmap declared on the stack)

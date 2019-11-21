@@ -75,12 +75,17 @@ static bool is_builtin(struct instruction *ast)
     return hash_find(g_env.builtins, command->command) != NULL;
 }
 
+//for now only execute shopt
 static int exec_builtin(struct instruction *ast)
 {
     struct command_container *command = ast->data;
-    int (*shopt)(char*[]) = hash_find(g_env.builtins, command->command);
+    int (*builtin)(char*[]) = hash_find_builtin(g_env.builtins,
+                                                    command->command);
 
-    return shopt(command->params);
+    int return_value;
+
+    return_value = builtin(command->params);
+    return return_value;
 }
 
 static int handle_commands(struct instruction *ast)

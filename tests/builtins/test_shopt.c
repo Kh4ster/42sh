@@ -13,10 +13,12 @@ Test(shopt, set_unset)
                                                     "nullglob");
     cr_assert_eq(0, shopt(container->params));
     cr_assert_eq(true, g_env.options.option_nullglob);
+    command_destroy(&container);
 
-    container = command_init(2, "shopt", "-u", "nullglob");
-    cr_assert_eq(0, shopt(container->params));
+    struct command_container *container2 = command_init(2, "shopt", "-u", "nullglob");
+    cr_assert_eq(0, shopt(container2->params));
     cr_assert_eq(false, g_env.options.option_nullglob);
+    command_destroy(&container2);
 }
 
 Test(shopt, no_param)
@@ -25,6 +27,7 @@ Test(shopt, no_param)
                                                     "shopt",
                                                     "-s");
     cr_assert_eq(-1, shopt(container->params));
+    command_destroy(&container);
 }
 
 Test(shopt, bad_param)
@@ -34,4 +37,5 @@ Test(shopt, bad_param)
                                                     "-rz",
                                                     "ast_print");
     cr_assert_eq(-1, shopt(container->params));
+    command_destroy(&container);
 }
