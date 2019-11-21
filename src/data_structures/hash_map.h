@@ -53,19 +53,33 @@ void hash_insert(struct hash_map *set,
                 char *key,
                 void *data);
 
+/**
+* @brief insert a function pointer combined with its name in hash_map
+* @param set the hash_map
+* @param key the name of the function
+* @param builtin the function pointer
+* @relates hash_map
+*/
 void hash_insert_builtin(struct hash_map *set,
                 char *key,
                 builtin builtin);
 
 /**
-* @brief return the function matched to its name
+* @brief return the function (as an instruction) matched to its name
 * @param set the hash_map
 * @param key the name of the function
-* @return the content : success; NULL : fail
+* @return the instruction : success; NULL : fail
 * @relates hash_map
 */
 void* hash_find(struct hash_map *set, char *key);
 
+/**
+* @brief return the builtin (as a function pointer) matched to its name
+* @param set the hash_map
+* @param key the name of the function
+* @return the function pointer : success; NULL : fail
+* @relates hash_map
+*/
 builtin hash_find_builtin(struct hash_map *set, char *key);
 
 /**

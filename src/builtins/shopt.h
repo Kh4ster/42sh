@@ -1,7 +1,7 @@
 /** @file
 * @brief 
 * @author Coder : nicolas.blin
-* @author Tester :
+* @author Tester : nicolas.blin
 * @author Reviewer :
 * @author Integrator :
 */
