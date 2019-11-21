@@ -5,7 +5,7 @@
     - returncode
 
 - name: Redirection within an if case
-  stdin: if echo ok > toto; cat toto; then echo food; fi; rm toto
+  stdin: if echo ok > toto; cat toto; then echo "food"; fi; rm toto
   checks:
     - stdout
     - returncode

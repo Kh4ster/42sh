@@ -1,0 +1,23 @@
+- name: syntax error 1
+ options:
+   - ../tests/week2_case/test2.sh
+ checks:
+   - returncode
+   - has_stderr
+- name: syntax error 1
+ options:
+   - ../tests/week2_case/test2.sh
+ checks:
+   - returncode
+   - has_stderr
+
+- name: syntax error 1
+ options:
+   - ../tests/week2_case/test2.sh
+ checks:
+   - returncode
+   - has_stderr
+
+- name: syntax error 1
+ options:
+   - ../tests/week2_case/test2.sh

@@ -1,0 +1,3 @@
+- name: case toto in papa) command *) command ;; esac
+ options:
+   - ../tests/week2_case/test1.sh

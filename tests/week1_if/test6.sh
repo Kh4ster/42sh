@@ -4,7 +4,7 @@ false
 
 then
 
-echo bad
+echo "bad"
 
 
 else
