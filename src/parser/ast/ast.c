@@ -199,5 +199,6 @@ extern int execute_ast(struct instruction *ast)
 
     if (ast->next != NULL)
         return_value = execute_ast(ast->next);
+
     return return_value;
 }

@@ -29,7 +29,6 @@ static bool next_is_assignement(struct queue *lexer)
     return token->type == TOKEN_ASSIGNEMENT;
 }
 
-
 static bool next_is_other(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
@@ -363,9 +362,10 @@ static bool next_is_end_of_instruction(struct queue *lexer)
     if (is_redirection(lexer))
         return true;
 */
-
+/*
     if (NEXT_IS_NUMBER())
         return true;
+*/
 
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF
@@ -389,7 +389,8 @@ static struct instruction *add_command_redirection(
     if (!redirect->to_redirect)
         redirect->to_redirect = cmd;
     else
-        redirect->to_redirect = add_command_redirection(redirect->to_redirect, cmd);
+        redirect->to_redirect = add_command_redirection(redirect->to_redirect,
+                                                    cmd);
 
     return redirection;
 }
@@ -423,12 +424,17 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     while (!next_is_end_of_instruction(lexer))
     {
-        if (is_redirection(lexer))
+        if (is_redirection(lexer) || NEXT_IS_NUMBER())
         {
             struct instruction *redirection2 =
                                 parse_redirection(lexer, redirection);
-            redirection = add_command_redirection(redirection, redirection2);
-            if (!redirection)
+
+            if (redirection)
+                redirection = add_command_redirection(redirection, redirection2);
+            else
+                redirection = redirection2;
+
+            if (!redirection2)
             {
                 array_list_destroy(parameters);
                 free(simple_command_str);
