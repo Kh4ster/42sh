@@ -50,6 +50,7 @@
   checks:
     - has_stdout
     - returncode
+
 - name: ech ok 2> toto ech ok
   stdin: ech ok 2> toto ech ok
   checks:
@@ -66,5 +67,13 @@
     - returncode
     - stdout
 
-- name: rm toto (succeeds only if previous rederictions do)
+- name: rm toto (succeeds only if previous rederictions tests do)
   stdin: rm toto
+
+- name: echo ok > titi > tata echo ok (check content of titi)
+  stdin: |
+    echo ok > titi > tata echo ok
+    cat titi tata; rm titi tata
+  checks:
+    - stdout
+    - returncode
