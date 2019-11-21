@@ -33,6 +33,12 @@ enum token_parser_type
     TOKEN_FOR /**< @brief token for */
 };
 
+struct for_instruction
+{
+    char *var_name;
+    struct array_list *var_values;
+    struct instruction *to_execute;
+};
 
 struct while_instruction
 {
