@@ -160,7 +160,7 @@ extern int execute_ast(struct instruction *ast)
         return 0;
 
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
-        errx(1, "an error occured while setting up a signal handler");
+        errx(1, "an error occurred while setting up a signal handler");
 
     int return_value;
 
@@ -197,7 +197,7 @@ extern int execute_ast(struct instruction *ast)
         return_value = 0;
     }
 
-    return_value = execute_ast(ast->next) || return_value;
-
+    if (ast->next != NULL)
+        return_value = execute_ast(ast->next);
     return return_value;
 }
