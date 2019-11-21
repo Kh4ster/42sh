@@ -10,6 +10,7 @@
 #include "../../redirections_handling/redirect.h"
 #include "../../data_structures/hash_map.h"
 #include "../../input_output/get_next_line.h"
+#include "../../pipe_handling/pipe.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
@@ -125,6 +126,36 @@ static int handle_until(struct instruction *ast)
     return return_value;
 }
 
+/*
+** 1) save stdin/out/err
+** 2) create a pipe that will be used to store the command IO
+** 3) execute the first command to fill the pipe using stdin
+** 4) execute  each next command using pipe in as stdin, pipe out for stdout
+**    we stop before the last command
+** 6) execute the last command using stdout as stdout
+** 7) free the fd and the tube structure
+** 8) restore stdin/out/err
+*/
+static int handle_pipe(struct instruction *ast)
+{
+    save_stds();
+    struct instruction *commands = ast->data;
+    struct command_container *first_command = commands->data;
+    struct tube *tube = fill_pipe_from_stdin(first_command);
+
+    struct instruction *next = commands->next;
+
+    while (next->next != NULL)
+    {
+        read_and_fill_pipe(next->data, tube);
+        next = next->next;
+    }
+
+    int return_value = write_pipe_to_stdout(tube, next->data);
+    tube_free(tube);
+    restore_stds();
+    return return_value;
+}
 
 extern int execute_ast(struct instruction *ast)
 {
@@ -147,6 +178,9 @@ extern int execute_ast(struct instruction *ast)
         break;
     case TOKEN_IF:
         return_value = handle_if(ast);
+        break;
+    case TOKEN_PIPE:
+        return_value = handle_pipe(ast);
         break;
     case TOKEN_REDIRECT_LEFT:
     case TOKEN_REDIRECT_RIGHT:

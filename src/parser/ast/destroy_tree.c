@@ -33,7 +33,6 @@ static void free_command(struct command_container *command)
     free(command);
 }
 
-
 static void free_redirection(struct redirection *redirection)
 {
     free(redirection->file);
@@ -46,7 +45,8 @@ extern void destroy_tree(struct instruction *ast)
     if (!ast)
         return;
 
-    struct and_or_instruction *node;
+    struct and_or_instruction *node = NULL;
+    struct instruction *commands = NULL;
 
     switch (ast->type)
     {
@@ -56,6 +56,11 @@ extern void destroy_tree(struct instruction *ast)
         destroy_tree(node->left);
         destroy_tree(node->right);
         free(node);
+        break;
+    case TOKEN_PIPE:
+        commands = ast->data;
+        destroy_tree(ast->data);
+        commands++; //compile say not used
         break;
     case TOKEN_COMMAND:
         free_command(ast->data);

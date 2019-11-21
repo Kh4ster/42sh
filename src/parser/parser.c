@@ -485,9 +485,30 @@ static struct instruction* parse_command(struct queue *lexer)
 //not exactly grammar
 static struct instruction *parse_pipeline(struct queue *lexer)
 {
-    struct instruction *command = parse_command(lexer);
+    struct instruction *pipe = NULL;
 
-    return command;
+    if ((pipe = parse_command(lexer)) == NULL)
+        return NULL;
+
+    struct instruction *root = pipe;
+    if (NEXT_IS("|"))
+    {
+        while (NEXT_IS("|"))
+        {
+            EAT();
+
+            while (NEXT_IS("\n"))
+                EAT();
+
+            if ((pipe->next = parse_command(lexer)) == NULL)
+                return free_instructions(1, root);
+
+            pipe = pipe->next;
+        }
+        root = build_instruction(TOKEN_PIPE, root);
+    }
+
+    return root;
 }
 
 

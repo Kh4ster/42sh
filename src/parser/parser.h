@@ -30,7 +30,8 @@ enum token_parser_type
     //TOKEN_FUNCTION, /**< @brief token function */
     TOKEN_WHILE, /**< @brief token while */
     TOKEN_UNTIL, /**< @brief token until */
-    TOKEN_FOR /**< @brief token for */
+    TOKEN_FOR, /**< @brief token for */
+    TOKEN_PIPE /**< @brief token pipe */
 };
 
 
