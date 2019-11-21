@@ -281,6 +281,7 @@ static int parse_io_number(struct queue *lexer)
     return fd;
 }
 
+
 static struct instruction *__parse_redirection(struct queue *lexer)
 {
     int fd = parse_io_number(lexer);
@@ -388,7 +389,7 @@ static struct instruction *add_command_redirection(
     if (!redirect->to_redirect)
         redirect->to_redirect = cmd;
     else
-        redirect->to_redirect = add_command_redirection(redirection, cmd);
+        redirect->to_redirect = add_command_redirection(redirect->to_redirect, cmd);
 
     return redirection;
 }
@@ -424,8 +425,9 @@ static struct instruction *parse_simple_command(struct queue *lexer)
     {
         if (is_redirection(lexer))
         {
-            redirection = parse_redirection(lexer, redirection);
-
+            struct instruction *redirection2 =
+                                parse_redirection(lexer, redirection);
+            redirection = add_command_redirection(redirection, redirection2);
             if (!redirection)
             {
                 array_list_destroy(parameters);
@@ -445,6 +447,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
                                                     build_simple_command(
                                                             simple_command_str,
                                                             parameters));
+
     if (redirection)
     {
         if (redirection_not_valid(redirection))

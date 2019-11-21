@@ -1,0 +1,2 @@
+- name : while false and one command outside
+  stdin : while false; do; echo false; done; echo simple while
