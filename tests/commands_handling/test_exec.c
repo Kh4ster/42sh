@@ -61,4 +61,3 @@ Test(cmd_exec, tree_dir_notfound, .timeout = 0)
     cr_assert_eq(0, exec_cmd(cmd));
     command_destroy(&cmd);
 }
-
