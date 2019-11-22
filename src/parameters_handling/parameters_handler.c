@@ -83,7 +83,6 @@ int handle_parameters(struct boot_params *options,
         {"ast-print", no_argument, NULL, 'A'},
         {"norc", no_argument, NULL, 'N'}
     };
-    optind = 1; //set at 1 (default value) cause multiple getopt
 
     while (optind < argc)
     {

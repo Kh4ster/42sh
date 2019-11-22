@@ -114,15 +114,15 @@ static void init_hash_maps(struct hash_map *functions,
 
 int main(int argc, char *argv[])
 {
+    struct hash_map functions; //declared on the stack no need to be freed
+    struct hash_map builtins;
+    init_hash_maps(&functions, &builtins);
+
     if (handle_parameters(&g_env.options, argc, argv) == -1)
         errx(2, "invalid option or file");
 
     if (signal(SIGINT, sigint_handler) == SIG_ERR)
         errx(1, "an error occurred while setting up a signal handler");
-
-    struct hash_map functions; //declared on the stack no need to be freed
-    struct hash_map builtins;
-    init_hash_maps(&functions, &builtins);
 
     handle_ressource_files();
 

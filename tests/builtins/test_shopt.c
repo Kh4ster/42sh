@@ -26,7 +26,7 @@ Test(shopt, no_param)
     struct command_container *container = command_init(1,
                                                     "shopt",
                                                     "-s");
-    cr_assert_eq(-1, shopt(container->params));
+    cr_assert_eq(0, shopt(container->params));
     command_destroy(&container);
 }
 
@@ -36,6 +36,16 @@ Test(shopt, bad_param)
                                                     "shopt",
                                                     "-rz",
                                                     "ast_print");
-    cr_assert_eq(-1, shopt(container->params));
+    cr_assert_eq(2, shopt(container->params));
+    command_destroy(&container);
+}
+
+Test(shopt, bad_name)
+{
+    struct command_container *container = command_init(2,
+                                                    "shopt",
+                                                    "-s",
+                                                    "os");
+    cr_assert_eq(1, shopt(container->params));
     command_destroy(&container);
 }
