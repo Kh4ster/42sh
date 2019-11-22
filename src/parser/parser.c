@@ -299,7 +299,7 @@ static struct instruction *__parse_redirection(struct queue *lexer)
     if (fd == -1)
     {
         if (type == TOKEN_REDIRECT_RIGHT || type == TOKEN_HEREDOC
-            || type == TOKEN_REDIRECT_READ_WRITE)
+            || type == TOKEN_REDIRECT_READ_WRITE || type == TOKEN_HEREDOC_MINUS)
             fd = 0;
         else
             fd = 1;
