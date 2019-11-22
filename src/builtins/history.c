@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <readline/history.h>
+#include <stdlib.h>
 
 #include "history.h"
 
@@ -32,7 +33,8 @@ int handle_options(char **args, char *file_path)
             {
                 char *usage =
                     "history: usage: history [-c] [-r] or history [n]";
-                fprintf(stderr, "history: -%c: invalid option\n%s", arg[1]);
+                fprintf(stderr, "history: -%c: invalid option\n%s", arg[1],
+                                                                        "ok");
                 fprintf(stderr, "%s", usage);
                 return 2;
             }
@@ -50,7 +52,7 @@ int show_history(char *file_path, int nb_lines)
     FILE *history_file = fopen(file_path, "r");
     if (history_file == NULL)
     {
-        fprintf(stderr, "history: couldn't open %s", file_path);
+        fprintf(stderr, "history: couldn't open %s\n", file_path);
         return 1;
     }
     char c = fgetc(history_file);
