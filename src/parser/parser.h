@@ -64,6 +64,16 @@ struct and_or_instruction
 };
 
 /**
+* @struct pipe_instruction
+* @brief represent a pipe node in the ast
+*/
+struct pipe_instruction
+{
+    struct instruction *left; /**< @brief left child to execute */
+    struct instruction *right; /**< @brief right child to execute */
+};
+
+/**
 * @struct if_instruction
 * @brief represent an if node in the ast
 */

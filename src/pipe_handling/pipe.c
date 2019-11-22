@@ -1,7 +1,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/types.h>
+#include <ctype.h>
 #include <sys/wait.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <err.h>
@@ -47,6 +48,31 @@ int restore_stds(void)
     return 0;
 }
 
+static int exec_stdin(struct command_container *cmd, struct tube *tube)
+{
+    int pid = fork();
+    if (pid == -1)
+        exit(EXIT_FAILURE);
+    if (pid == 0)
+    {
+        close(tube->read);
+        if (dup2(tube->write, 1) == -1)
+            return -1;
+        execvp(cmd->command, cmd->params);
+        if (errno == ENOENT)
+        {
+            errx(127, "command not found");
+        }
+        else if (errno == EACCES)
+            errx(126, "cannot execute command");
+        else
+            errx(-1, "execvp has failed");
+    }
+    int wstatus;
+    waitpid(pid, &wstatus, 0);
+    return WEXITSTATUS(wstatus);
+}
+
 struct tube* fill_pipe_from_stdin(struct command_container *command)
 {
     int fd[2];
@@ -57,12 +83,8 @@ struct tube* fill_pipe_from_stdin(struct command_container *command)
     tube->read = fd[0];
     tube->write = fd[1];
 
-
-    if (dup2(tube->write, 1) == -1) //Replace stdout with pipe
-        return NULL;
-
     int return_value;
-    if ((return_value = exec_cmd(command)) != 0)
+    if ((return_value = exec_stdin(command, tube)) != 0)
     {
         close(fd[0]);
         close(fd[1]);
@@ -72,15 +94,32 @@ struct tube* fill_pipe_from_stdin(struct command_container *command)
     return tube;
 }
 
-int read_and_fill_pipe(struct command_container *command,
+int read_and_fill_pipe(struct command_container *cmd,
                                 struct tube *tube)
 {
-    if (dup2(tube->read, 0) == -1) //Replace stdin with tube read
-        return -1;
-    if (dup2(tube->write, 1) == -1) //Replace stdout with tube write
-        return -1;
- 
-    return exec_cmd(command);
+    int pid = fork();
+    if (pid == -1)
+        exit(EXIT_FAILURE);
+    if (pid == 0)
+    {
+        close(tube->read);
+        if (dup2(tube->write, 1) == -1)
+            return -1;
+        if (dup2(tube->read, 0) == -1)
+            return -1;
+        execvp(cmd->command, cmd->params);
+        if (errno == ENOENT)
+        {
+            errx(127, "command not found");
+        }
+        else if (errno == EACCES)
+            errx(126, "cannot execute command");
+        else
+            errx(-1, "execvp has failed");
+    }
+    int wstatus;
+    waitpid(pid, &wstatus, 0);
+    return WEXITSTATUS(wstatus);
 }
 
 void tube_free(struct tube *tube)
@@ -90,12 +129,29 @@ void tube_free(struct tube *tube)
     free(tube);
 }
 
-int write_pipe_to_stdout(struct tube *tube, struct command_container *command)
+int write_pipe_to_stdout(struct tube *tube, struct command_container *cmd)
 {
-    if (dup2(tube->read, 0) == -1) //Replace stdin with tube out
-        return -1;
-    if (dup2(21, 1) == -1) //Replace stdout with tube int
-        return -1;
-
-    return exec_cmd(command);
+    int pid = fork();
+    if (pid == -1)
+        exit(EXIT_FAILURE);
+    if (pid == 0)
+    {
+        close(tube->read);
+        if (dup2(21, 1) == -1)
+            return -1;
+        if (dup2(tube->read, 0) == -1)
+            return -1;
+        execvp(cmd->command, cmd->params);
+        if (errno == ENOENT)
+        {
+            errx(127, "command not found");
+        }
+        else if (errno == EACCES)
+            errx(126, "cannot execute command");
+        else
+            errx(-1, "execvp has failed");
+    }
+    int wstatus;
+    waitpid(pid, &wstatus, 0);
+    return WEXITSTATUS(wstatus);
 }

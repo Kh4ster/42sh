@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <fnmatch.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -128,35 +132,39 @@ static int handle_until(struct instruction *ast)
     return return_value;
 }
 
-/*
-** 1) save stdin/out/err
-** 2) create a pipe that will be used to store the command IO
-** 3) execute the first command to fill the pipe using stdin
-** 4) execute  each next command using pipe in as stdin, pipe out for stdout
-**    we stop before the last command
-** 6) execute the last command using stdout as stdout
-** 7) free the fd and the tube structure
-** 8) restore stdin/out/err
-*/
+
 static int handle_pipe(struct instruction *ast)
 {
-    save_stds();
-    struct instruction *commands = ast->data;
-    struct command_container *first_command = commands->data;
-    struct tube *tube = fill_pipe_from_stdin(first_command);
+    struct pipe_instruction *pipe_instruction = ast->data;
 
-    struct instruction *next = commands->next;
+    int fd[2];
+    if (pipe(fd) == -1)
+        return -1;
 
-    while (next->next != NULL)
+    int left;
+    int right;
+    if ((left = fork()))
     {
-        read_and_fill_pipe(next->data, tube);
-        next = next->next;
+        close(fd[0]);
+        dup2(fd[1], 1);
+        close(fd[1]);
+        exit(execute_ast(pipe_instruction->left));
     }
+    if ((right = fork()))
+    {
+        close(fd[1]);
+        dup2(fd[0], 0);
+        close(fd[0]);
+        exit(execute_ast(pipe_instruction->right));
+    }
+    close(fd[0]);
+    close(fd[1]);
 
-    int return_value = write_pipe_to_stdout(tube, next->data);
-    tube_free(tube);
-    restore_stds();
-    return return_value;
+    int left_status;
+    int right_status;
+    waitpid(left, &left_status, 0);
+    waitpid(right, &right_status, 0);
+    return WEXITSTATUS(right_status);
 }
 
 static int check_patterns(char *pattern, struct array_list *patterns)
