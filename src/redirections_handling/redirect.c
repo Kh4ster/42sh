@@ -192,8 +192,8 @@ extern int redirections_handling(struct instruction *redirection)
             return redirect_dup_fd(redirect);
             break;
         default:
-            return 1;
+            return 0;
     }
 
-    return 1;
+    return 0;
 }

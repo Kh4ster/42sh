@@ -65,7 +65,7 @@
     - stdout
 
 - name: many echo ;
-  stdin: echo 1; echo 2; echo 3; echo 4; echo 
+  stdin: echo 1; echo 2; echo 3; echo 4; echo
 
 - name: ech ok; echo ok
   stdin: ech ok; echo ok
