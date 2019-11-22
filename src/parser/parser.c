@@ -224,7 +224,6 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 
         return to_execute;
     }
-    assert(0);
     return NULL;
 }
 
