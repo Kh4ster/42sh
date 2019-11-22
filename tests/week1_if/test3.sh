@@ -1,7 +1,7 @@
 if false;then
     echo bad
 elif true;then
-    echo good
+    echo "good"
 else
     echo bad
 fi

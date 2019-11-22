@@ -51,6 +51,7 @@ set(SRC_FILES
     src/parser/ast/ast_print.c
     src/redirections_handling/redirect.c
     src/builtins/shopt.c
+    src/builtins/history.c
 )
 
 # ---- List of test files (unit tests) ----

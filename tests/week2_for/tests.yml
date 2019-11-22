@@ -1,0 +1,56 @@
+- name: for i in 1 2 3; do echo ok; done
+  stdin: for i in 1 2 3; do echo ok; done
+
+- name: for i in *; do echo toto; done
+  stdin: for i in *; do echo toto; done
+
+- name: for i in hvgv njn , 2 3; do echo ok; done
+  stdin: for i in hvgv njn , 2 3; do echo ok; done
+
+- name: for i in; do echo; done
+  stdin: for i in; do echo ok; done
+
+- name: for i in; do ech; done
+  stdin: for i in; do ech ok; done
+
+- name: for i; do echo; done
+  stdin: for i; do echo ok; done
+
+- name: for do done command for do done command
+  stdin: for i; do echo ok; done; echo toto; for i in ok; do echo ok; done; echo papa
+
+- name: for in; do echo; done
+  stdin: for in; do echo ok; done
+
+- name: for i in toto; do if true; then echo ok; fi; done
+  stdin: for i in toto; do if true; then echo ok; fi; done
+
+- name: for i in toto papa maman; do if true; then echo ok; fi; done
+  stdin: for i in toto papa maman; do if true; then echo ok; fi; done
+
+- name: for i; do if true; then echo ok; fi; done
+  stdin: for i; do if true; then echo ok; fi; done
+
+- name: for in; do if true; then echo ok; fi; done
+  stdin: for in; do if true; then echo ok; fi; done
+
+- name: for i in toto; do if false; then echo ok; fi; done
+  stdin: for i in toto; do if false; then echo ok; fi; done
+
+- name: for i in 1 2 3 4 5; do if true; then echo ok; else echo yes; fi; done
+  stdin: for i in 1 2 3 4 5; do if true; then echo ok; else echo yes; fi; done
+
+- name: for i in 1 2 3 4 5; do if false; then echo ok; else echo yes; fi; done
+  stdin: for i in 1 2 3 4 5; do if false; then echo ok; else echo yes; fi; done
+
+- name: for do if else fi; done 1
+  stdin: for i in 1 2 3 4 5; do if true; then echo ok; for toto in ecole; do echo toto in ecole; done else echo papa; fi; done
+
+- name: for do if else fi; done 2
+  stdin: for i in 1 2 3 4 5; do if false; then echo ok; for toto in ecole; do echo toto in ecole; done else echo papa; fi; done
+
+- name: for do if else fi command; done
+  stdin: for i in 1 2 3 4 5; do if true; then echo ok; for toto in ecole; do echo toto in ecole; done else echo papa; fi; echo true; done
+
+
+

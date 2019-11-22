@@ -1,7 +1,7 @@
 - name: if echo then; then echo ok; echo ok; fi
   stdin: if echo then; then echo ok; echo ok; fi
 
-- name: if echo ok \n then \n echo ok \n fi
+- name: \t if echo ok \n then \n echo ok \n fi
   options:
     - ../tests/week1_if/test1.sh
 
@@ -39,19 +39,15 @@
     ech toto
   checks:
     - returncode
-    - has_stderr  
+    - has_stderr
 
 - name: many command lines
   stdin: |
     if true; then echo toto; fi
     if false; then echo papa; fi
-    if true; then echo papa; if false  
+    if true; then echo papa; if false
     ech toto
   checks:
     - stdout
     - returncode
-    - has_stderr  
-
-
-
-    
+    - has_stderr

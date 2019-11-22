@@ -154,6 +154,7 @@ static void handle_quoting(struct token_lexer *new_token,
 {
     if (**cursor == '\'')
     {
+        (*cursor)++;
         char *end_quote = strchr(*cursor, '\'');
         #if 0
         while (end_quote == NULL)
@@ -168,6 +169,7 @@ static void handle_quoting(struct token_lexer *new_token,
     }
     else if (**cursor == '"')
     {
+        (*cursor)++;
         char *end_quote = get_delimiter(*cursor, "\"\\\0");
         while (*end_quote != '\"')
         {
@@ -210,11 +212,14 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
     if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
             || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
             || strncmp(cursor, ">&", 2) == 0 || strncmp(cursor, "<>", 2) == 0
-        || strncmp(cursor, "<&", 2) == 0)
+        || strncmp(cursor, "<&", 2) == 0 || strncmp(cursor, ">|", 2) == 0)
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
+
+    else if (strncmp(cursor, "|", 1) == 0)
+        set_token(new_token, TOKEN_OPERATOR, delim, 1);
 
     else if (! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1))
     {
