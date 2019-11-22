@@ -38,7 +38,6 @@ set(SRC_FILES
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
-    src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
     src/lexer/token_lexer.c
@@ -51,6 +50,7 @@ set(SRC_FILES
     src/parser/ast/ast_print.c
     src/redirections_handling/redirect.c
     src/builtins/shopt.c
+    src/builtins/history.c
 )
 
 # ---- List of test files (unit tests) ----

@@ -19,7 +19,7 @@ struct boot_params
     bool option_expand_aliases; /**< @brief option expand alias */
     bool option_extglob; /**< @brief option extglob */
     bool option_nocaseglob; /**< @brief option no case glob */
-    bool option_nullglob; /**< @brief option command */
-    bool option_sourcepath; /**< @brief option command */
-    bool option_xpg_echo; /**< @brief option command */
+    bool option_nullglob; /**< @brief option null glob */
+    bool option_sourcepath; /**< @brief option source path */
+    bool option_xpg_echo; /**< @brief option xpg echo */
 };

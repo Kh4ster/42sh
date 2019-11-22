@@ -21,9 +21,9 @@
 #include "parser/ast/destroy_tree.h"
 #include "parser/ast/ast_print.h"
 #include "memory/memory.h"
-#include "execution_handling/redirector.h"
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
+#include "builtins/history.h"
 
 static void sigint_handler(int signum)
 {
@@ -31,14 +31,6 @@ static void sigint_handler(int signum)
     {
         printf("\n42sh$ ");
     }
-}
-
-//the duplicated stdin/out... need to be closed at the end
-static void destroy_saved_stds(void)
-{
-    close(10);
-    close(11);
-    close(12);
 }
 
 static void execute_shell(void)
@@ -74,6 +66,7 @@ static void execute_ressource_file(char *name)
         close(fd);
         execute_shell();
         dup2(10, 0);
+        close(10);
     }
 }
 
@@ -98,13 +91,13 @@ void free_all(struct queue *lexer)
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
     free(lexer);
-    destroy_saved_stds();
 }
 
 static void init_builtins_hash_map(struct hash_map *builtins)
 {
     hash_init(builtins, NB_SLOTS);
     hash_insert_builtin(builtins, "shopt", shopt);
+    hash_insert_builtin(builtins, "history", history);
 }
 
 static void init_hash_maps(struct hash_map *functions,

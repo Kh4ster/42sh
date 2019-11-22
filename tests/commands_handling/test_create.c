@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../../src/execution_handling/redirector.h"
 #include "../../src/execution_handling/command_container.h"
 #include "../../src/execution_handling/command_execution.h"
 #include "../../src/memory/memory.h"
