@@ -90,6 +90,9 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
     if (!strcmp(token->data, ">|"))
         type = TOKEN_REDIRECT_LEFT;
 
+    if (! strcmp(token->data, "<<"))
+        type = TOKEN_HEREDOC;
+
     return type;
 
 }
@@ -567,7 +570,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
-    if (NEXT_IS(";") || NEXT_IS("&"))
+    if (NEXT_IS(";") || NEXT_IS("&") || NEXT_IS("\n"))
     {
         EAT();
         and_or->next = parse_compound_list_break(lexer);
