@@ -27,13 +27,22 @@ enum token_parser_type
     TOKEN_DUP_FD, /**< @brief token fd duplication */
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
-    TOKEN_WHILE,
-    TOKEN_UNTIL,
-    TOKEN_FOR,
-    TOKEN_CASE
+    TOKEN_CASE,
+    TOKEN_HEREDOC,
+    TOKEN_HEREDOC_MINUS,
     //TOKEN_FUNCTION, /**< @brief token function */
+    TOKEN_WHILE, /**< @brief token while */
+    TOKEN_UNTIL, /**< @brief token until */
+    TOKEN_FOR, /**< @brief token for */
+    TOKEN_PIPE /**< @brief token pipe */
 };
 
+struct for_instruction
+{
+    char *var_name;
+    struct array_list *var_values;
+    struct instruction *to_execute;
+};
 
 struct case_item {
     struct array_list *patterns;
@@ -57,6 +66,16 @@ struct while_instruction
 * @brief represent an "and" or "or" node in the ast
 */
 struct and_or_instruction
+{
+    struct instruction *left; /**< @brief left child to execute */
+    struct instruction *right; /**< @brief right child to execute */
+};
+
+/**
+* @struct pipe_instruction
+* @brief represent a pipe node in the ast
+*/
+struct pipe_instruction
 {
     struct instruction *left; /**< @brief left child to execute */
     struct instruction *right; /**< @brief right child to execute */

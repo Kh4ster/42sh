@@ -4,6 +4,11 @@
 #include <stdbool.h>
 #include <fnmatch.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <stdlib.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -128,6 +133,58 @@ static int handle_until(struct instruction *ast)
 }
 
 
+static int handle_for(struct instruction *ast)
+{
+    struct for_instruction *instruction_for = ast->data;
+    struct array_list *var_values = instruction_for->var_values;
+    int return_value;
+
+    if (!var_values)
+        return 0;
+
+    for (size_t i = 0; i < var_values->nb_element; i++)
+    {
+        // assigne_variable(instruction_for->var_name, var_values->content[i]);
+        return_value = execute_ast(instruction_for->to_execute);
+    }
+
+    return return_value;
+}
+
+static int handle_pipe(struct instruction *ast)
+{
+    struct pipe_instruction *pipe_instruction = ast->data;
+
+    int fd[2];
+    if (pipe(fd) == -1)
+        return -1;
+
+    int left;
+    int right;
+    if ((left = fork()) == 0)
+    {
+        close(fd[0]);
+        dup2(fd[1], 1);
+        close(fd[1]);
+        exit(execute_ast(pipe_instruction->left));
+    }
+    if ((right = fork()) == 0)
+    {
+        close(fd[1]);
+        dup2(fd[0], 0);
+        close(fd[0]);
+        exit(execute_ast(pipe_instruction->right));
+    }
+    close(fd[0]);
+    close(fd[1]);
+
+    int left_status;
+    int right_status;
+    waitpid(left, &left_status, 0);
+    waitpid(right, &right_status, 0);
+    return WEXITSTATUS(right_status);
+}
+
 static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
@@ -177,12 +234,17 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_IF:
         return_value = handle_if(ast);
         break;
+    case TOKEN_PIPE:
+        return_value = handle_pipe(ast);
+        break;
     case TOKEN_REDIRECT_LEFT:
     case TOKEN_REDIRECT_RIGHT:
     case TOKEN_REDIRECT_APPEND_LEFT:
     case TOKEN_REDIRECT_LEFT_TO_FD:
     case TOKEN_REDIRECT_READ_WRITE:
     case TOKEN_DUP_FD:
+    case TOKEN_HEREDOC:
+    case TOKEN_HEREDOC_MINUS:
         return_value = redirections_handling(ast);
         break;
     case TOKEN_WHILE:
@@ -190,6 +252,9 @@ extern int execute_ast(struct instruction *ast)
         break;
     case TOKEN_UNTIL:
         return_value = handle_until(ast);
+        break;
+    case TOKEN_FOR:
+        return_value = handle_for(ast);
         break;
     case TOKEN_CASE:
         return_value = handle_case(ast);
