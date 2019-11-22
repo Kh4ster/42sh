@@ -564,6 +564,7 @@ static struct instruction *parse_and_or(struct queue *lexer)
             type = TOKEN_AND;
 
         token_lexer_free(&operator);
+
         while (NEXT_IS("\n"))
             EAT();
 
@@ -588,7 +589,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
-    if (NEXT_IS(";") || NEXT_IS("&"))
+    if (NEXT_IS(";") || NEXT_IS("&") || NEXT_IS("\n"))
     {
         EAT();
         and_or->next = parse_compound_list_break(lexer);
@@ -596,6 +597,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
 
     while (NEXT_IS("\n"))
         EAT();
+
     return and_or;
 }
 
@@ -932,7 +934,6 @@ static struct instruction *parse_list(struct queue *lexer)
 
     return and_or;
 }
-
 
 static struct instruction *parser_error(struct instruction *ast, int *error)
 {
