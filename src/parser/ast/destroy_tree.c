@@ -4,6 +4,7 @@
 #include "../parser.h"
 #include "../../execution_handling/command_container.h"
 #include "destroy_tree.h"
+#include "../../data_structures/array_list.h"
 
 static void free_if (struct if_instruction *if_container)
 {
@@ -33,14 +34,12 @@ static void free_command(struct command_container *command)
     free(command);
 }
 
-
 static void free_redirection(struct redirection *redirection)
 {
     free(redirection->file);
     destroy_tree(redirection->to_redirect);
     free(redirection);
 }
-
 
 static void free_for(struct for_instruction *for_instruction)
 {
@@ -52,13 +51,31 @@ static void free_for(struct for_instruction *for_instruction)
     free(for_instruction);
 }
 
+extern void free_case_item(struct case_item *item)
+{
+    array_list_destroy(item->patterns);
+    destroy_tree(item->to_execute);
+}
+
+
+extern void free_case_clause(struct case_clause *clause)
+{
+    for (size_t i = 0; i < clause->items->nb_element; i++)
+        free_case_item(clause->items->content[i]);
+
+    array_list_destroy(clause->items);
+    free(clause->pattern);
+    free(clause);
+}
+
 
 extern void destroy_tree(struct instruction *ast)
 {
     if (!ast)
         return;
 
-    struct and_or_instruction *node;
+    struct and_or_instruction *node = NULL;
+    struct pipe_instruction *pipe = NULL;
 
     switch (ast->type)
     {
@@ -68,6 +85,12 @@ extern void destroy_tree(struct instruction *ast)
         destroy_tree(node->left);
         destroy_tree(node->right);
         free(node);
+        break;
+    case TOKEN_PIPE:
+        pipe = ast->data;
+        destroy_tree(pipe->left);
+        destroy_tree(pipe->right);
+        free(pipe);
         break;
     case TOKEN_COMMAND:
         free_command(ast->data);
@@ -89,6 +112,8 @@ extern void destroy_tree(struct instruction *ast)
         break;
     case TOKEN_FOR:
         free_for(ast->data);
+    case TOKEN_CASE:
+        free_case_clause(ast->data);
         break;
     default:
         return;

@@ -1,4 +1,4 @@
-if echo ok
+			if echo ok
 then
 echo ok
 fi
