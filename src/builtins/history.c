@@ -33,7 +33,7 @@ static int is_number(char *data)
     return 1;
 }
 
-unsigned int_width(int i)
+static unsigned int_width(int i)
 {
     long i_l = i;
     unsigned count = 1;
@@ -51,7 +51,7 @@ unsigned int_width(int i)
 }
 
 
-int handle_options(char **args, char *file_path)
+static int handle_options(char **args, char *file_path)
 {
     // handle options
     int r_opt = 0;
@@ -82,7 +82,7 @@ int handle_options(char **args, char *file_path)
     return 0;
 }
 
-int show_history(int nb_lines)
+static int show_history(int nb_lines)
 {
     HIST_ENTRY **hist_elts = history_list();
     if (hist_elts == NULL)
@@ -99,13 +99,18 @@ int show_history(int nb_lines)
     return 0;
 }
 
-int history(char **args)
+char *get_history_file_path(void)
 {
-    int return_val = 0;
     char *history_name = "/.42sh_history";
     char *homedir = get_homedir();
     homedir = xrealloc(homedir, strlen(homedir) + 1 + strlen(history_name));
-    char *history_path = strcat(homedir, history_name);
+    return strcat(homedir, history_name);
+}
+
+int history(char **args)
+{
+    int return_val = 0;
+    char *history_path = get_history_file_path();
 
     if (args[1] == NULL)
     {
