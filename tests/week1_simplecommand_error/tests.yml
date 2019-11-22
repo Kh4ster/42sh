@@ -43,7 +43,6 @@
 - name : echo toto || echo papa && echo dcdv && |echo papa (not working yet need pipe)
   stdin: echo toto || echo papa && echo dcdv && |echo papa
   checks:
-    - has_stdout
     - has_stderr
     - returncode
 

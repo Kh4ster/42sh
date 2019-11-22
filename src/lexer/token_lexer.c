@@ -227,6 +227,9 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
 
+    else if (strncmp(cursor, "|", 1) == 0)
+        set_token(new_token, TOKEN_OPERATOR, delim, 1);
+
     else if (! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1))
     {
         handle_io_number(cursor, token_queue);
