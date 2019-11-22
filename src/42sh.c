@@ -115,6 +115,8 @@ static void init_hash_maps(struct hash_map *functions,
     g_env.builtins = builtins;
     hash_init(functions, NB_SLOTS);
     init_builtins_hash_map(g_env.builtins);
+    g_env.options.option_expand_aliases = true;
+    g_env.options.option_sourcepath = true;
 }
 
 int main(int argc, char *argv[])

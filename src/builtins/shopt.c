@@ -90,14 +90,15 @@ static int handle_error(void)
 
 static int option_list(void)
 {
-    printf("ast_print %d\n", g_env.options.option_a);
-    printf("dotglob %d\n", g_env.options.option_dot_glob);
-    printf("expand_aliases %d\n", g_env.options.option_expand_aliases);
-    printf("extglob %d\n", g_env.options.option_extglob);
-    printf("nocaseglob %d\n", g_env.options.option_nocaseglob);
-    printf("nullglob %d\n", g_env.options.option_nullglob);
-    printf("sourcepath %d\n", g_env.options.option_sourcepath);
-    printf("xpg_echo %d\n", g_env.options.option_xpg_echo);
+    printf("ast_print %s\n", (g_env.options.option_a) ? "on" : "off");
+    printf("dotglob %s\n", (g_env.options.option_dot_glob) ? "on" : "off");
+    printf("expand_aliases %s\n",
+                        (g_env.options.option_expand_aliases) ? "on" : "off");
+    printf("extglob %s\n", (g_env.options.option_extglob) ? "on" : "off");
+    printf("nocaseglob %s\n", (g_env.options.option_nocaseglob) ? "on" : "off");
+    printf("nullglob %s\n", (g_env.options.option_nullglob) ? "on" : "off");
+    printf("sourcepath %s\n", (g_env.options.option_sourcepath) ? "on" : "off");
+    printf("xpg_echo %s\n", (g_env.options.option_xpg_echo) ? "on" : "off");
     return 0;
 }
 
