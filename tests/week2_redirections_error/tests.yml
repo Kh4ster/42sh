@@ -1,0 +1,38 @@
+- name: Redirection without a file
+  stdin: echo ok >
+  checks:
+    - has_stderr
+    - returncode
+
+- name: echo ok >&5
+  stdin: echo ok >&5
+  checks:
+    - has_stderr
+    - returncode
+
+- name: echo ok >&4
+  stdin: echo ok >&4
+  checks:
+    - has_stderr
+    - returncode
+
+- name: 4>toto cat <&4
+  stdin: 4>toto cat <&4
+  checks:
+    - has_stderr
+    - returncode
+  stdin: cat toto
+  stdin: rm toto
+
+#DOUBLE REDIRECTION
+
+- name: Redirection append
+  stdin: |
+    echo good >> toto
+    echo papa >> toto
+    cat toto
+    rm toto
+  checks: |
+    - stdout
+    - returncode
+    - has_stderr
