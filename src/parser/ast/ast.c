@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <stdlib.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -16,7 +17,6 @@
 #include "../../redirections_handling/redirect.h"
 #include "../../data_structures/hash_map.h"
 #include "../../input_output/get_next_line.h"
-#include "../../pipe_handling/pipe.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
@@ -143,14 +143,14 @@ static int handle_pipe(struct instruction *ast)
 
     int left;
     int right;
-    if ((left = fork()))
+    if ((left = fork()) == 0)
     {
         close(fd[0]);
         dup2(fd[1], 1);
         close(fd[1]);
         exit(execute_ast(pipe_instruction->left));
     }
-    if ((right = fork()))
+    if ((right = fork()) == 0)
     {
         close(fd[1]);
         dup2(fd[0], 0);

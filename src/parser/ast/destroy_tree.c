@@ -65,7 +65,7 @@ extern void destroy_tree(struct instruction *ast)
         return;
 
     struct and_or_instruction *node = NULL;
-    struct instruction *commands = NULL;
+    struct pipe_instruction *pipe = NULL;
 
     switch (ast->type)
     {
@@ -77,9 +77,10 @@ extern void destroy_tree(struct instruction *ast)
         free(node);
         break;
     case TOKEN_PIPE:
-        commands = ast->data;
-        destroy_tree(ast->data);
-        commands++; //compile say not used
+        pipe = ast->data;
+        destroy_tree(pipe->left);
+        destroy_tree(pipe->right);
+        free(pipe);
         break;
     case TOKEN_COMMAND:
         free_command(ast->data);

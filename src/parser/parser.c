@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <err.h>
+#include <stdlib.h>
 
 #include "parser.h"
 #include "ast/ast.h"
@@ -160,6 +161,16 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
     and_or->left = left;
     and_or->right = right;
     return and_or;
+}
+
+static struct pipe_instruction* build_pipe(struct instruction *left,
+                                    struct instruction *right
+)
+{
+    struct pipe_instruction *pipe = xmalloc(sizeof(*pipe));
+    pipe->left = left;
+    pipe->right = right;
+    return pipe;
 }
 
 static struct instruction *parse_if(struct queue *lexer);
@@ -398,30 +409,6 @@ static struct instruction *add_command_redirection(
     return redirection;
 }
 
-
-struct instruction *root = left;
-
-    while (NEXT_IS("||") || NEXT_IS("&&"))
-    {
-        struct token_lexer *operator = token_lexer_pop(lexer);
-        enum token_parser_type type;
-        if (strcmp(operator->data, "||") == 0)
-            type = TOKEN_OR;
-        else
-            type = TOKEN_AND;
-
-        token_lexer_free(&operator);
-        while (NEXT_IS("\n"))
-            EAT();
-
-        if ((right = parse_pipeline(lexer)) == NULL)
-            return free_instructions(1, left);
-
-        root = build_instruction(type, build_and_or(root, right));
-    }
-    return root;
-
-
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
     struct instruction *redirection = parse_redirection(lexer, NULL);
@@ -533,25 +520,26 @@ static struct instruction* parse_command(struct queue *lexer)
     return parse_redirection(lexer, command);
 }
 
-//not exactly grammar
 static struct instruction *parse_pipeline(struct queue *lexer)
 {
-    struct instruction *pipe = NULL;
+    struct instruction *left = NULL;
+    struct instruction *right = NULL;
 
-    if ((pipe = parse_command(lexer)) == NULL)
+    if ((left = parse_command(lexer)) == NULL)
         return NULL;
 
-    struct instruction *root = pipe;
-    if (NEXT_IS("|"))
+    struct instruction *root = left;
+    while (NEXT_IS("|"))
     {
         EAT();
 
         while (NEXT_IS("\n"))
             EAT();
 
-        if ((pipe->next = parse_command(lexer)) == NULL)
+        if ((right = parse_command(lexer)) == NULL)
             return free_instructions(1, root);
 
+        root = build_instruction(TOKEN_PIPE, build_pipe(root, right));
     }
 
     return root;
@@ -580,7 +568,7 @@ static struct instruction *parse_and_or(struct queue *lexer)
             EAT();
 
         if ((right = parse_pipeline(lexer)) == NULL)
-            return free_instructions(1, left);
+            return free_instructions(1, root);
 
         root = build_instruction(type, build_and_or(root, right));
     }
