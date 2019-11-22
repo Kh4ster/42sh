@@ -24,6 +24,7 @@
 #include "execution_handling/redirector.h"
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
+#include "builtins/history.h"
 
 static void sigint_handler(int signum)
 {
@@ -105,6 +106,7 @@ static void init_builtins_hash_map(struct hash_map *builtins)
 {
     hash_init(builtins, NB_SLOTS);
     hash_insert_builtin(builtins, "shopt", shopt);
+    hash_insert_builtin(builtins, "history", history);
 }
 
 static void init_hash_maps(struct hash_map *functions,
