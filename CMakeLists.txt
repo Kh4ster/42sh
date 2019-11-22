@@ -91,6 +91,7 @@ target_compile_options(common_options INTERFACE
     "-Wextra"
     "-pedantic"
     "-std=c99"
+    "-O0"
     #[[Active -Werror on build_release and sanitize on build_debug]]
     $<IF:$<CONFIG:Release>,-Werror,-fsanitize=address>
 )
