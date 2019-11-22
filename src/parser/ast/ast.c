@@ -194,6 +194,9 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_CASE:
         return_value = handle_case(ast);
         break;
+    case TOKEN_HEREDOC:
+        return_value = redirections_handling(ast);
+        break;
     default:
         return_value = 0;
     }

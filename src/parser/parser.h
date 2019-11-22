@@ -30,7 +30,8 @@ enum token_parser_type
     TOKEN_WHILE,
     TOKEN_UNTIL,
     TOKEN_FOR,
-    TOKEN_CASE
+    TOKEN_CASE,
+    TOKEN_HEREDOC
     //TOKEN_FUNCTION, /**< @brief token function */
 };
 
