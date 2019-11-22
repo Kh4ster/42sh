@@ -367,6 +367,9 @@ static bool next_is_end_of_instruction(struct queue *lexer)
         return true;
 */
 
+    if (NEXT_IS("(") || NEXT_IS(")"))
+        return true;
+
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF
             || (token->type == TOKEN_OPERATOR && ! is_redirection(lexer));
@@ -651,6 +654,12 @@ static void *destroy_case_item(struct case_item *item)
     return NULL;
 }
 
+static int next_is_end_of_case_item(struct queue *lexer)
+{
+    return NEXT_IS(";;") || NEXT_IS("(") || NEXT_IS(")") || NEXT_IS("esac");
+}
+
+
 static struct case_item *parse_case_item(struct queue *lexer, int *error)
 {
     if (NEXT_IS("("))
@@ -698,6 +707,14 @@ static struct case_item *parse_case_item(struct queue *lexer, int *error)
         EAT();
 
     item->to_execute = parse_compound_list_break(lexer);
+    struct instruction *tmp = item->to_execute;
+
+    while (tmp && !next_is_end_of_case_item(lexer))
+    {
+        tmp->next = parse_compound_list_break(lexer);
+        tmp = tmp->next;
+    }
+
     return item;
 }
 

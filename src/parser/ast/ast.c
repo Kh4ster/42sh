@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <fnmatch.h>
-
+#include <string.h>
 #include "ast.h"
 #include "../parser.h"
 #include "../../execution_handling/command_container.h"
@@ -131,6 +131,10 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
+        if (strcmp(pattern, "*") == 0
+            ||  strcmp(patterns->content[i], "*") == 0)
+                return 1;
+
         if (fnmatch(pattern, patterns->content[i], 0) == 0)
             return 1;
     }
