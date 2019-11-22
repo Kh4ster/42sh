@@ -5,9 +5,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "parameters_handler.h"
 #include "options.h"
+#include "../execution_handling/command_container.h"
+#include "../builtins/shopt.h"
 
 static int handle_file(char *file)
 {
@@ -23,19 +26,49 @@ static int handle_file(char *file)
     return 0;
 }
 
-static int handle_not_existing_option(char *argv[],
-                                        struct boot_params *options
-)
+/*
+** Usually the shopt is a call to a builtin with some parameters
+** Here the builin is "called" through a [+-]O option passed to the shell
+** To avoid wirting again the same code a "fake" shopt command is created
+** and then executed
+*/
+static int build_shopt_call(bool set, char *option)
+{
+    struct command_container *shopt_container = NULL;
+
+    if (set && option != NULL)       //set option
+        shopt_container = command_init(2, "shopt", "-s", option);
+
+    else if (!set && option != NULL) //unset option
+        shopt_container = command_init(2, "shopt", "-u", option);
+
+    else                            //just call shopt
+         shopt_container = command_init(0, "shopt");
+
+    int return_value = shopt(shopt_container->params);
+
+    command_destroy(&shopt_container);
+
+    optind++;
+
+    return return_value;
+}
+
+// a bad option can be a +O option or a file or juste a bad option
+static int handle_not_existing_option(char *argv[])
 {
     char *current_option = argv[optind];
     if (strcmp(current_option, "+O") == 0)
-        options->option_o = true;
+    {
+        if (build_shopt_call(false, argv[optind + 1]) == -1)
+            return -1;
+    }
     else
     {
         if (handle_file(current_option) == -1)
             return -1;
     }
-    optind++;
+    optind++; //cause not getopt case need to manally increase optind
     return 0;
 }
 
@@ -50,13 +83,14 @@ int handle_parameters(struct boot_params *options,
         {"ast-print", no_argument, NULL, 'A'},
         {"norc", no_argument, NULL, 'N'}
     };
+    optind = 1; //set at 1 (default value) cause multiple getopt
 
     while (optind < argc)
     {
         c = getopt_long(argc, argv, "NAOc:", long_opts, NULL);
         if (c  == -1)
         {
-            if (handle_not_existing_option(argv, options) == -1)
+            if (handle_not_existing_option(argv) == -1)
                 return -1;
         }
         else if (c == 'N')
@@ -64,7 +98,10 @@ int handle_parameters(struct boot_params *options,
         else if (c == 'A')
             options->option_a = true;
         else if (c == 'O')
-            options->option_o = true;
+        {
+            if (build_shopt_call(true, argv[optind]) == -1)
+                return -1;
+        }
         else if (c == 'c')
         {
             if (optarg == NULL)
