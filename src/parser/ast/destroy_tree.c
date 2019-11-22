@@ -41,6 +41,16 @@ static void free_redirection(struct redirection *redirection)
     free(redirection);
 }
 
+static void free_for(struct for_instruction *for_instruction)
+{
+    if (for_instruction->var_values)
+        array_list_destroy(for_instruction->var_values);
+
+    free(for_instruction->var_name);
+    destroy_tree(for_instruction->to_execute);
+    free(for_instruction);
+}
+
 extern void free_case_item(struct case_item *item)
 {
     array_list_destroy(item->patterns);
@@ -100,6 +110,8 @@ extern void destroy_tree(struct instruction *ast)
     case TOKEN_UNTIL:
         free_while(ast->data);
         break;
+    case TOKEN_FOR:
+        free_for(ast->data);
     case TOKEN_CASE:
         free_case_clause(ast->data);
         break;

@@ -176,6 +176,7 @@ static struct pipe_instruction* build_pipe(struct instruction *left,
 static struct instruction *parse_if(struct queue *lexer);
 static struct instruction *parse_while_clause(struct queue *lexer);
 static struct instruction *parse_compound_list_break(struct queue *lexer);
+static struct instruction *parse_for(struct queue *lexer);
 static struct instruction *parse_case_rule(struct queue *lexer);
 
 // see how it works exactly
@@ -187,6 +188,8 @@ static struct instruction *parse_shell_command(struct queue *lexer)
     if (NEXT_IS("while") || NEXT_IS("until"))
         return parse_while_clause(lexer);
 
+    if (NEXT_IS("for"))
+        return parse_for(lexer);
     if (NEXT_IS("case"))
         return parse_case_rule(lexer);
 
@@ -601,8 +604,20 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     return and_or;
 }
 
+static struct for_instruction *build_for_instruction(
+                                            char *var_name,
+                                            struct array_list *var_values,
+                                            struct instruction *to_execute)
+{
+    struct for_instruction *new_for = xmalloc(sizeof(struct for_instruction));
+    new_for->var_name = var_name;
+    new_for->var_values = var_values;
+    new_for->to_execute = to_execute;
+    return new_for;
+}
 
-static struct while_instruction *build_while_instruction(struct instruction *cond,
+static struct while_instruction *build_while_instruction(
+                                            struct instruction *cond,
                                             struct instruction *to_do)
 {
     struct while_instruction *while_i =
@@ -628,6 +643,57 @@ static struct instruction *parse_do_groupe(struct queue *lexer)
     return do_group;
 }
 
+static struct array_list *parse_for_var_values(struct queue *lexer)
+{
+    struct array_list *var_values = NULL;
+    while (NEXT_IS_OTHER() && !NEXT_IS("\n"))
+    {
+        if (var_values == NULL)
+            var_values = array_list_init();
+        array_list_append(var_values, strdup(token_lexer_head(lexer)->data));
+        EAT();
+    }
+    return var_values;
+}
+
+static struct instruction *parse_for(struct queue *lexer)
+{
+    if (!NEXT_IS("for"))
+        return NULL;
+    EAT();
+
+    if (next_is_end_of_instruction(lexer))
+        return NULL;
+
+    char *var_name = strdup(token_lexer_head(lexer)->data);
+    struct array_list *var_values = NULL;
+    EAT();
+
+    if (NEXT_IS(";"))
+        EAT();
+    else
+    {
+        while (NEXT_IS("\n"))
+            EAT();
+        if (NEXT_IS("in"))
+        {
+            EAT();
+            var_values = parse_for_var_values(lexer);
+            if (!NEXT_IS(";") && !NEXT_IS("\n"))
+            {
+                array_list_destroy(var_values);
+                free(var_name);
+                return NULL;
+            }
+            EAT();
+        }
+    }
+    while (NEXT_IS("\n"))
+        EAT();
+
+    return build_instruction(TOKEN_FOR, build_for_instruction(var_name,
+            var_values, parse_do_groupe(lexer)));
+}
 
 static struct instruction *parse_while_clause(struct queue *lexer)
 {

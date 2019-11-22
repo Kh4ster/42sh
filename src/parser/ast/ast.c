@@ -133,6 +133,24 @@ static int handle_until(struct instruction *ast)
 }
 
 
+static int handle_for(struct instruction *ast)
+{
+    struct for_instruction *instruction_for = ast->data;
+    struct array_list *var_values = instruction_for->var_values;
+    int return_value;
+
+    if (!var_values)
+        return 0;
+
+    for (size_t i = 0; i < var_values->nb_element; i++)
+    {
+        // assigne_variable(instruction_for->var_name, var_values->content[i]);
+        return_value = execute_ast(instruction_for->to_execute);
+    }
+
+    return return_value;
+}
+
 static int handle_pipe(struct instruction *ast)
 {
     struct pipe_instruction *pipe_instruction = ast->data;
@@ -232,6 +250,9 @@ extern int execute_ast(struct instruction *ast)
         break;
     case TOKEN_UNTIL:
         return_value = handle_until(ast);
+        break;
+    case TOKEN_FOR:
+        return_value = handle_for(ast);
         break;
     case TOKEN_CASE:
         return_value = handle_case(ast);
