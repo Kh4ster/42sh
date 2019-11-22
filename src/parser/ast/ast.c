@@ -30,13 +30,11 @@ static int handle_if(struct instruction *ast)
     if (execute_ast(if_struct->conditions) == 0)
     {
         struct instruction *to_execute = if_struct->to_execute;
-        execute_ast(to_execute);
-        return 0;
+        return execute_ast(to_execute);
     }
 
     struct instruction *else_clause = if_struct->else_container;
-    execute_ast(else_clause);
-    return 0;
+    return execute_ast(else_clause);
 }
 
 static int handle_and_or_instruction(struct instruction *ast)
@@ -207,5 +205,6 @@ extern int execute_ast(struct instruction *ast)
 
     if (ast->next != NULL)
         return_value = execute_ast(ast->next);
+
     return return_value;
 }
