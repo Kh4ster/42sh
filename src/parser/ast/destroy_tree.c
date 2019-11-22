@@ -112,6 +112,7 @@ extern void destroy_tree(struct instruction *ast)
         break;
     case TOKEN_FOR:
         free_for(ast->data);
+        break;
     case TOKEN_CASE:
         free_case_clause(ast->data);
         break;

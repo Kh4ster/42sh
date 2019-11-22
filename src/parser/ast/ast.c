@@ -142,7 +142,7 @@ static int handle_for(struct instruction *ast)
     if (!var_values)
         return 0;
 
-    for (size_t i = 0; i < var_values->nb_element; i++)
+    for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
         int error = glob(var_values->content[i], GLOB_NOSORT, NULL, &glob_c);
 
@@ -153,7 +153,7 @@ static int handle_for(struct instruction *ast)
             continue;
         }
 
-        for (size_t j = 0; j < glob_c.gl_pathc; j++)
+        for (size_t j = 0; j < glob_c.gl_pathc && !g_have_to_stop; j++)
         {
     //      assigne_variable(instruction_for->var_name, glob.gl_pathv[j]);
             return_value = execute_ast(instruction_for->to_execute);
