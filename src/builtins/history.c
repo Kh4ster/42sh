@@ -2,8 +2,25 @@
 #include <stdio.h>
 #include <readline/history.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "history.h"
+#include "../memory/memory.h"
+
+static char *get_homedir(void)
+{
+    char *homedir;
+    if ((homedir = strdup(getenv("HOME"))) == NULL)
+    {
+        struct passwd *pwd = getpwuid(getuid());
+        if (pwd == NULL)
+            return NULL;
+        homedir = strdup(pwd->pw_dir);
+    }
+    return homedir;
+}
 
 static int is_number(char *data)
 {
@@ -21,8 +38,9 @@ int handle_options(char **args, char *file_path)
     // handle options
     int r_opt = 0;
     int c_opt = 0;
-    for (char *arg = *args; arg != NULL; arg++)
+    for (int i = 1; args[i] != NULL; i++)
     {
+        char *arg = args[i];
         if (arg[0] == '-')
         {
             if (arg[1] == 'c')
@@ -32,9 +50,8 @@ int handle_options(char **args, char *file_path)
             else
             {
                 char *usage =
-                    "history: usage: history [-c] [-r] or history [n]";
-                fprintf(stderr, "history: -%c: invalid option\n%s", arg[1],
-                                                                        "ok");
+                    "history: usage: history [-c] [-r] or history [n]\n";
+                fprintf(stderr, "history: -%c: invalid option\n", arg[1]);
                 fprintf(stderr, "%s", usage);
                 return 2;
             }
@@ -71,34 +88,43 @@ int show_history(char *file_path, int nb_lines)
 
 int history(char **args)
 {
-    char *history_path = "~/.42sh_history";
+    int return_val = 0;
+    char *history_name = "/.42sh_history";
+    char *homedir = get_homedir();
+    homedir = xrealloc(homedir, strlen(homedir) + 1 + strlen(history_name));
+    char *history_path = strcat(homedir, history_name);
 
     if (args[1] == NULL)
     {
         //display full history
-        return show_history(history_path, -1);
+        return_val = show_history(history_path, -1);
     }
 
-    char *first_arg = args[1];
-    if (first_arg[0] == '-')
-    {
-        return handle_options(args, history_path);
-    }
-    else if (is_number(first_arg))
-    {
-        if (args[2] == NULL)
-            return show_history(history_path, atoi(first_arg));
-        else
-        {
-            fprintf(stderr, "history: too many arguments");
-            return 1;
-        }
-    }
     else
     {
-        fprintf(stderr, "history: numeric argument required");
-        return 1;
+        char *first_arg = args[1];
+        if (first_arg[0] == '-')
+        {
+            return_val = handle_options(args, history_path);
+        }
+        else if (is_number(first_arg))
+        {
+            if (args[2] == NULL)
+                return_val = show_history(history_path, atoi(first_arg));
+            else
+            {
+                fprintf(stderr, "history: too many arguments\n");
+                return_val = 1;
+            }
+        }
+        else
+        {
+            fprintf(stderr, "history: %s: numeric argument required\n",
+                    first_arg);
+            return_val = 1;
+        }
     }
 
-    return 0;
+    free(history_path);
+    return return_val;
 }
