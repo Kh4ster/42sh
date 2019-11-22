@@ -38,7 +38,6 @@ set(SRC_FILES
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
-    src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
     src/lexer/token_lexer.c
@@ -92,6 +91,7 @@ target_compile_options(common_options INTERFACE
     "-Wextra"
     "-pedantic"
     "-std=c99"
+    "-O0"
     #[[Active -Werror on build_release and sanitize on build_debug]]
     $<IF:$<CONFIG:Release>,-Werror,-fsanitize=address>
 )
