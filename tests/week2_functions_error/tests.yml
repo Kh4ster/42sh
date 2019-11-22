@@ -1,20 +1,27 @@
-- name: simple function exec with 'function' and ()
+- name: simple function syntax error 1
   options:
     - ../tests/week2_functions_error/test1.sh
   checks:
     - has_stderr
     - returncode
 
-- name: simple function exec without 'function' and syntax error
+- name: simple function syntax error 2
   options:
     - ../tests/week2_functions_error/test2.sh
   checks:
     - has_stderr
     - returncode
 
-- name: simple function exec without 'function' and syntax error 2
+- name: simple function syntax error 3
   options:
     - ../tests/week2_functions_error/test3.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: simple function syntax error 4
+  options:
+    - ../tests/week2_functions_error/test4.sh
   checks:
     - has_stderr
     - returncode

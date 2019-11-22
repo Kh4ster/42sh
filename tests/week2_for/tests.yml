@@ -7,6 +7,14 @@
 - name: for i in hvgv njn , 2 3; do echo ok; done
   stdin: for i in hvgv njn , 2 3; do echo ok; done
 
+- name: for i; do if tru; then echo ok; fi; done
+  stdin: for i; do if tru; then echo ok; fi; done
+
+- name: for i; do echo ok; donne; done
+  stdin: |
+    for i; do echo ok; donne
+    done
+
 - name: for i in; do echo; done
   stdin: for i in; do echo ok; done
 

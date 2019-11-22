@@ -1,5 +1,5 @@
-function test
+test (
 {
     echo false
 }
-echo papa
+test

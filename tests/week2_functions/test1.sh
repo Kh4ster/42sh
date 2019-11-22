@@ -1,5 +1,5 @@
-function toto
+function toto()
 {
-    echo $1
+    echo toto
 }
-toto 10
+toto
