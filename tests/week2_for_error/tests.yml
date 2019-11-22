@@ -1,0 +1,101 @@
+- name: for i in 1 2 3 do echo ok; done
+  stdin: for i in 1 2 3 do echo ok; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for iin 1 2 3; do echo ok; done
+  stdin: for iin 1 2 3; do echo ok; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i in *;; do echo toto; done
+  stdin: for i in *;; do echo toto; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i in hvgv njn , 2 3;; ; do echo ok; done
+  stdin: for i in hvgv njn , 2 3;; ; do echo ok; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i in hvgv njn , 2 3; ; do echo ok; done
+  stdin: for i in hvgv njn , 2 3; ; do echo ok; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i in; do echo; do
+  stdin: for i in; do echo ok; do
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for in 0; do ech ok; done
+  stdin: for i in 0; do ech ok; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i i toto; done if true then echo ok; fi; done
+  stdin: for i i toto; done if true then echo ok; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i intoto papa maman; do if true;; then echo ok; fi; done
+  stdin: for i in toto papa maman; do if true;; then echo ok; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i; do if ; then echo ok; fi; done
+  stdin: for i; do if ; then echo ok; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i do; if true; then echo ok; fi; done
+  stdin: for i do; if true; then echo ok; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i intoto; do if false; then echo ok; fi; done
+  stdin: for i intoto; do if false; then echo ok; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i in 1 2 3 4 5; do if true; then ech ok; else echo yes; fi; done
+  stdin: for i in 1 2 3 4 5; do if true; then ech ok; else echo yes; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for i in 1 2 3 4 5; do if false; thenecho ok; else echo yes; fi; done
+  stdin: for i in 1 2 3 4 5; do if false; thenecho ok; else echo yes; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for do if else fi; done 1
+  stdin: for i in 1 2 3 4 5; do if true; then echo ok; for toto in ecole; do ech toto in ecole; done else echo papa; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for do if else fi; done 2
+  stdin: for i in 1 2 3 4 5; do if false; then echo ok; for toto in ecole do echo toto in ecole; done else echo papa; fi; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name: for do if else fi command; done
+  stdin: for i in 1 2 3 4 5; do if true; then echo ok; for toto in ecole; do echo toto in ecole; done else echo papa; fi; ech true; done
+  checks:
+    - has_stderr
+    - returncode

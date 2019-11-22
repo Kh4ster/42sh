@@ -67,3 +67,10 @@ void token_queue_free(struct queue **token_queue);
 * @relates token_lexer
 */
 void token_queue_empty(struct queue *token_queue);
+
+/**
+* @brief get next next token
+* @param token_queue the queue
+* @relates token_lexer
+*/
+struct token_lexer *lexer_next_next(struct queue *token_queue);

@@ -22,8 +22,43 @@ enum token_parser_type
     TOKEN_REDIRECT_LEFT, /**< @brief token redirect left */
     TOKEN_REDIRECT_RIGHT, /**< @brief token redirect right */
     TOKEN_REDIRECT_APPEND_LEFT, /**< @brief token append left */
+    TOKEN_REDIRECT_LEFT_TO_FD,
+    TOKEN_REDIRECT_READ_WRITE,
+    TOKEN_DUP_FD, /**< @brief token fd duplication */
     TOKEN_COMMAND, /**< @brief token command */
-    TOKEN_ELSE /**< @brief token else */
+    TOKEN_ELSE, /**< @brief token else */
+    TOKEN_CASE,
+    TOKEN_HEREDOC,
+    TOKEN_HEREDOC_MINUS,
+    //TOKEN_FUNCTION, /**< @brief token function */
+    TOKEN_WHILE, /**< @brief token while */
+    TOKEN_UNTIL, /**< @brief token until */
+    TOKEN_FOR, /**< @brief token for */
+    TOKEN_PIPE /**< @brief token pipe */
+};
+
+struct for_instruction
+{
+    char *var_name;
+    struct array_list *var_values;
+    struct instruction *to_execute;
+};
+
+struct case_item {
+    struct array_list *patterns;
+    struct instruction *to_execute;
+    struct case_item *next;
+};
+
+struct case_clause {
+    char *pattern;
+    struct array_list *items;
+};
+
+struct while_instruction
+{
+    struct instruction *conditions;
+    struct instruction *to_execute;
 };
 
 /**
@@ -31,6 +66,16 @@ enum token_parser_type
 * @brief represent an "and" or "or" node in the ast
 */
 struct and_or_instruction
+{
+    struct instruction *left; /**< @brief left child to execute */
+    struct instruction *right; /**< @brief right child to execute */
+};
+
+/**
+* @struct pipe_instruction
+* @brief represent a pipe node in the ast
+*/
+struct pipe_instruction
 {
     struct instruction *left; /**< @brief left child to execute */
     struct instruction *right; /**< @brief right child to execute */
@@ -75,3 +120,12 @@ struct redirection
 * @return success : an ast, fail : NULL
 */
 struct instruction *parse_input(struct queue *lexer, int *is_end, int *error);
+
+/**
+* @brief build an instruction (exported for unit test)
+* @param type type of the data behind the void*
+* @param input_instr the instruction
+* @return return an instruction
+*/
+struct instruction *build_instruction(enum token_parser_type type,
+                                                            void *input_instr);

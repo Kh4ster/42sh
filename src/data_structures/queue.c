@@ -30,6 +30,18 @@ void queue_push(struct queue *queue, void *elt)
     queue->size += 1;
 }
 
+void queue_push_start(struct queue *queue, void *elt)
+{
+    if (queue == NULL)
+        queue = queue_init();
+    struct queue_item *new_l = xmalloc(sizeof(struct queue_item));
+
+    new_l->data = elt;
+    new_l->next = queue->head;
+    queue->head = new_l;
+    queue->size += 1;
+}
+
 void *queue_head(struct queue *queue)
 {
     assert(queue != NULL);

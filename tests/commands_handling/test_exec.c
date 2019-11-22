@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../../src/execution_handling/redirector.h"
 #include "../../src/execution_handling/command_container.h"
 #include "../../src/execution_handling/command_execution.h"
 #include "../../src/memory/memory.h"
@@ -61,4 +60,3 @@ Test(cmd_exec, tree_dir_notfound, .timeout = 0)
     cr_assert_eq(0, exec_cmd(cmd));
     command_destroy(&cmd);
 }
-

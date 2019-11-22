@@ -154,6 +154,7 @@ static void handle_quoting(struct token_lexer *new_token,
 {
     if (**cursor == '\'')
     {
+        (*cursor)++;
         char *end_quote = strchr(*cursor, '\'');
         #if 0
         while (end_quote == NULL)
@@ -168,6 +169,7 @@ static void handle_quoting(struct token_lexer *new_token,
     }
     else if (**cursor == '"')
     {
+        (*cursor)++;
         char *end_quote = get_delimiter(*cursor, "\"\\\0");
         while (*end_quote != '\"')
         {
@@ -187,7 +189,10 @@ static void handle_quoting(struct token_lexer *new_token,
 static void handle_io_number(char *cursor, struct queue *token_queue)
 {
     if (token_queue->size && (! strncmp(cursor, ">>", 2)
-            || ! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1)))
+            || ! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1)
+            || ! strncmp(cursor, ">&", 2) || ! strncmp(cursor, "<>", 2)
+            || !strncmp(cursor, "<&", 2) || ! strncmp(cursor, "<<", 2)
+            || !strncmp(cursor, "<<-", 3)))
     {
         char *is_delim = cursor - 1;
         if (strpbrk(is_delim, DELIMITERS) != is_delim)
@@ -205,12 +210,25 @@ static void handle_io_number(char *cursor, struct queue *token_queue)
 static int generate_token_aux(struct queue *token_queue, char *cursor,
         char **delim, struct token_lexer *new_token)
 {
-    if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
-            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0)
+    if (strncmp(cursor, "<<-", 3) == 0)
+    {
+        handle_io_number(cursor, token_queue);
+        set_token(new_token, TOKEN_OPERATOR, delim, 3);
+    }
+
+
+    else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
+            || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
+            || strncmp(cursor, ">&", 2) == 0 || strncmp(cursor, "<>", 2) == 0
+        || strncmp(cursor, "<&", 2) == 0 || strncmp(cursor, ">|", 2) == 0
+        || strncmp(cursor, "<<", 2) == 0)
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
     }
+
+    else if (strncmp(cursor, "|", 1) == 0)
+        set_token(new_token, TOKEN_OPERATOR, delim, 1);
 
     else if (! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1))
     {
@@ -224,7 +242,7 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
         (*delim) += 2;
     }
 
-    else if (*cursor == ';')
+    else if (*cursor == ';' || *cursor == '&')
     {
         set_token(new_token, TOKEN_END_OF_INSTRUCTION, delim, 1);
     }
@@ -314,7 +332,9 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     struct token_lexer *current_token = queue_head(token_queue);
     if (current_token != NULL)
         return current_token;
+
     char *next_line = get_next_line(g_env.prompt);
+
     if (next_line == NULL) // End Of File
     {
         current_token = xmalloc(sizeof(struct token_lexer));
@@ -324,15 +344,22 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
+        //add a new line token in the queue execpt if it's first call
         if (g_env.not_first_line && !is_interactive())
             queue_push(token_queue, create_newline_token(NULL));
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
+
+        /*
+        ** free line if not -c option, execpt if its parsing ressource
+        ** then even if 42sh binary was called with -c we want to free lines
+        */
         if (g_env.is_parsing_ressource || !g_env.options.option_c)
             free(next_line);
     }
+
     g_env.not_first_line = 1;
-    g_env.prompt = "> ";
+    g_env.prompt = "> "; //change prompt to ps2 avec lexing
     return current_token;
 }
 
@@ -360,4 +387,12 @@ void token_queue_empty(struct queue *token_queue)
         struct token_lexer *to_free = token_lexer_pop(token_queue);
         token_lexer_free(&to_free);
     }
+}
+
+struct token_lexer *lexer_next_next(struct queue *token_queue)
+{
+    struct token_lexer *head = queue_pop(token_queue);
+    struct token_lexer *next_next = queue_head(token_queue);
+    queue_push_start(token_queue, head);
+    return next_next;
 }

@@ -16,8 +16,9 @@ struct shell_environment g_env = {0};
 
 int is_interactive(void)
 {
-    if (g_env.options.option_c)
+    if (g_env.options.option_c) //otherwise terminal -c considered interactive
         return 0;
+
     int tty = rl_instream ? fileno(rl_instream) : fileno(stdin);
 
     return isatty(tty);
@@ -32,7 +33,12 @@ static void prep_terminal(int meta_flag)
 char *get_next_line(const char *prompt)
 {
     rl_prep_term_function = prep_terminal;
-    // if option c, returns NULL to exit the execution loop
+
+    /*
+    ** if option c we don't call readline and next get_next_line should r NULL
+    ** but we want to make a readline call if we are parsing the ressource file
+    ** even if -c option was use to call 42sh binary
+    */
     if (g_env.options.option_c && !g_env.is_parsing_ressource)
     {
         char *command = g_env.options.command_option_c;
@@ -41,9 +47,13 @@ char *get_next_line(const char *prompt)
     }
 
     if (!is_interactive())
+    {
+        rl_bind_key ('\t', rl_insert);
         prompt = NULL;
+    }
 
     char *new_line = readline(prompt);
+    rl_bind_key ('\t', rl_insert_completions);
     add_history(new_line);
     return new_line;
 }
