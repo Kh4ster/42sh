@@ -49,8 +49,6 @@ static int build_shopt_call(bool set, char *option)
 
     command_destroy(&shopt_container);
 
-    optind++;
-
     return return_value;
 }
 
@@ -62,13 +60,16 @@ static int handle_not_existing_option(char *argv[])
     {
         if (build_shopt_call(false, argv[optind + 1]) == -1)
             return -1;
+        optind++;
     }
     else
     {
         if (handle_file(current_option) == -1)
             return -1;
+        optind++;
+        optind++;
     }
-    optind++; //cause not getopt case need to manally increase optind
+
     return 0;
 }
 
