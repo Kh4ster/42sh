@@ -33,6 +33,24 @@ static int is_number(char *data)
     return 1;
 }
 
+unsigned int_width(int i)
+{
+    long i_l = i;
+    unsigned count = 1;
+    if (i < 0)
+    {
+        count += 1;
+        i_l = -i_l;
+    }
+    while (i_l > 9)
+    {
+        i_l = i_l / 10;
+        count += 1;
+    }
+    return count;
+}
+
+
 int handle_options(char **args, char *file_path)
 {
     // handle options
@@ -64,25 +82,20 @@ int handle_options(char **args, char *file_path)
     return 0;
 }
 
-int show_history(char *file_path, int nb_lines)
+int show_history(int nb_lines)
 {
-    FILE *history_file = fopen(file_path, "r");
-    if (history_file == NULL)
+    HIST_ENTRY **hist_elts = history_list();
+    if (hist_elts == NULL)
+        return 0;
+    int nb_digits_max = int_width(history_base + history_length);
+    int index_current = history_base + history_length - nb_lines;
+    for (int i = history_length - nb_lines; i < history_length; i++)
     {
-        fprintf(stderr, "history: couldn't open %s\n", file_path);
-        return 1;
+        fprintf(stdout, " %*d %s\n", nb_digits_max, index_current,
+                hist_elts[i]->line);
+        nb_lines--;
+        index_current++;
     }
-    char c = fgetc(history_file);
-    while (c != EOF && nb_lines != 0)
-    {
-        fprintf(stdout, "%c", c);
-        c = fgetc(history_file);
-        if (c == '\n' || c == EOF)
-            nb_lines -= 1;
-    }
-    if (c == '\n')
-        fprintf(stdout, "%c", c);
-    fclose(history_file);
     return 0;
 }
 
@@ -97,7 +110,7 @@ int history(char **args)
     if (args[1] == NULL)
     {
         //display full history
-        return_val = show_history(history_path, -1);
+        return_val = show_history(history_length);
     }
 
     else
@@ -110,7 +123,7 @@ int history(char **args)
         else if (is_number(first_arg))
         {
             if (args[2] == NULL)
-                return_val = show_history(history_path, atoi(first_arg));
+                return_val = show_history(atoi(first_arg));
             else
             {
                 fprintf(stderr, "history: too many arguments\n");
