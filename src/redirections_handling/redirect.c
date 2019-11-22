@@ -12,10 +12,12 @@
 #include "../execution_handling/command_execution.h"
 #include "../execution_handling/command_container.h"
 #include "../parser/ast/ast.h"
+#include "../input_output/get_next_line.h"
+
 
 static int redirect_stdin(struct redirection *redirection)
 {
-    int fd_saved = dup(0);
+    int fd_saved = dup(redirection->fd);
 
     if (fd_saved == -1)
     {
@@ -25,7 +27,7 @@ static int redirect_stdin(struct redirection *redirection)
 
     int filedes_file = open(redirection->file, O_RDONLY);
 
-    if (dup2(filedes_file, 0) == -1)
+    if (dup2(filedes_file, redirection->fd) == -1)
     {
         warn("could not redirect fd %d", redirection->fd);
         return 1;
@@ -33,7 +35,7 @@ static int redirect_stdin(struct redirection *redirection)
 
     int return_command = execute_ast(redirection->to_redirect);
 
-    dup2(fd_saved, 0);
+    dup2(fd_saved, redirection->fd);
     close(fd_saved);
     close(filedes_file);
     return return_command;
@@ -123,7 +125,7 @@ static int redirect_stdout_fd(struct redirection *redirection)
 
 static int redirect_stdin_read_write(struct redirection *redirection)
 {
-    int fd_saved = dup(0);
+    int fd_saved = dup(redirection->fd);
 
     if (fd_saved == -1)
     {
@@ -133,7 +135,7 @@ static int redirect_stdin_read_write(struct redirection *redirection)
 
     int filedes_file = open(redirection->file, O_RDWR | O_CREAT, 00666);
 
-    if (dup2(filedes_file, 0) == -1)
+    if (dup2(filedes_file, redirection->fd) == -1)
     {
         warn("could not redirect fd %d", redirection->fd);
         return 1;
@@ -141,7 +143,7 @@ static int redirect_stdin_read_write(struct redirection *redirection)
 
     int return_command = execute_ast(redirection->to_redirect);
 
-    dup2(fd_saved, 0);
+    dup2(fd_saved, redirection->fd);
     close(fd_saved);
     close(filedes_file); //close file fd
     return return_command;
@@ -169,26 +171,10 @@ static int redirect_dup_fd(struct redirection *redirection)
     return return_command;
 }
 
-
-static int handle_heredoc(struct redirection *redirection)
+static int redirect_std_to_std(struct redirection *redirection, int fd_redirect)
 {
-    char *delimiter = redirection->file;
-    FILE *temp = tmpfile();
 
-    char *current_line = readline("> ");
-
-    while (current_line &&
-            strncmp(delimiter, current_line, strlen(delimiter)) != 0)
-    {
-        fputs(current_line, temp);
-        fputc('\n', temp);
-        free(current_line);
-        current_line = readline("> ");
-    }
-    free(current_line);
-    rewind(temp);
-
-    int fd_saved = dup(0);
+    int fd_saved = dup(redirection->fd);
 
     if (fd_saved == -1)
     {
@@ -196,7 +182,7 @@ static int handle_heredoc(struct redirection *redirection)
         return 1;
     }
 
-    if (dup2(temp->_fileno, 0) == -1)
+    if (dup2(fd_redirect, redirection->fd) == -1)
     {
         warn("could not redirect fd %d", redirection->fd);
         return 1;
@@ -204,9 +190,79 @@ static int handle_heredoc(struct redirection *redirection)
 
     int return_command = execute_ast(redirection->to_redirect);
 
-    dup2(fd_saved, 0);
-    fclose(temp);
+    dup2(fd_saved, redirection->fd);
     close(fd_saved);
+    return return_command;
+}
+
+
+static int handle_heredoc(struct redirection *redirection)
+{
+    char *delimiter = redirection->file;
+    FILE *temp = tmpfile();
+
+    char *current_line = get_next_line("> ");
+
+    while (current_line &&
+            strncmp(delimiter, current_line, strlen(delimiter)) != 0)
+    {
+        fputs(current_line, temp);
+        fputc('\n', temp);
+        free(current_line);
+        current_line = get_next_line("> ");
+    }
+
+    if (!current_line)
+    {
+        warnx("warning: here document delimited by end of file (wanted toto)");
+    }
+
+    free(current_line);
+    rewind(temp);
+
+    int return_command = redirect_std_to_std(redirection, temp->_fileno);
+
+    fclose(temp);
+    return return_command;
+}
+
+static char *passe_tab(char *line)
+{
+    while (*line == '\t')
+        line++;
+
+    return line;
+}
+
+
+static int handle_redirect_minus(struct redirection *redirection)
+{
+    char *delimiter = redirection->file;
+    FILE *temp = tmpfile();
+
+    char *current_line = get_next_line("> ");
+
+    while (current_line &&
+            strncmp(delimiter, current_line, strlen(delimiter)) != 0)
+    {
+        char *cpy_line = passe_tab(current_line);
+        fputs(cpy_line, temp);
+        fputc('\n', temp);
+        free(current_line);
+        current_line = get_next_line("> ");
+    }
+
+    if (!current_line)
+    {
+        warnx("warning: here document delimited by end of file (wanted toto)");
+    }
+
+    free(current_line);
+    rewind(temp);
+
+    int return_command = redirect_std_to_std(redirection, temp->_fileno);
+
+    fclose(temp);
     return return_command;
 }
 
@@ -236,6 +292,9 @@ extern int redirections_handling(struct instruction *redirection)
             break;
         case TOKEN_HEREDOC:
             return handle_heredoc(redirect);
+            break;
+        case TOKEN_HEREDOC_MINUS:
+            return handle_redirect_minus(redirect);
             break;
         default:
             return 0;

@@ -93,6 +93,9 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
     if (! strcmp(token->data, "<<"))
         type = TOKEN_HEREDOC;
 
+    if (! strcmp(token->data, "<<-"))
+        type = TOKEN_HEREDOC_MINUS;
+
     return type;
 
 }
@@ -288,13 +291,19 @@ static struct instruction *__parse_redirection(struct queue *lexer)
 {
     int fd = parse_io_number(lexer);
 
-    if (fd == -1)
-        fd = 1;
-
     enum token_parser_type type;
 
     if ((type = is_redirection(lexer)) == 0)
         return NULL;
+
+    if (fd == -1)
+    {
+        if (type == TOKEN_REDIRECT_RIGHT || type == TOKEN_HEREDOC
+            || type == TOKEN_REDIRECT_READ_WRITE || type == TOKEN_HEREDOC_MINUS)
+            fd = 0;
+        else
+            fd = 1;
+    }
 
     struct token_lexer *token = token_lexer_head(lexer);
     char *cpy = strdup(token->data);

@@ -183,6 +183,8 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_REDIRECT_LEFT_TO_FD:
     case TOKEN_REDIRECT_READ_WRITE:
     case TOKEN_DUP_FD:
+    case TOKEN_HEREDOC:
+    case TOKEN_HEREDOC_MINUS:
         return_value = redirections_handling(ast);
         break;
     case TOKEN_WHILE:
@@ -193,9 +195,6 @@ extern int execute_ast(struct instruction *ast)
         break;
     case TOKEN_CASE:
         return_value = handle_case(ast);
-        break;
-    case TOKEN_HEREDOC:
-        return_value = redirections_handling(ast);
         break;
     default:
         return_value = 0;
