@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <err.h>
+#include <stdlib.h>
 
 #include "parser.h"
 #include "ast/ast.h"
@@ -90,6 +91,12 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
     if (!strcmp(token->data, ">|"))
         type = TOKEN_REDIRECT_LEFT;
 
+    if (! strcmp(token->data, "<<"))
+        type = TOKEN_HEREDOC;
+
+    if (! strcmp(token->data, "<<-"))
+        type = TOKEN_HEREDOC_MINUS;
+
     return type;
 
 }
@@ -162,9 +169,20 @@ static struct and_or_instruction* build_and_or(struct instruction *left,
     return and_or;
 }
 
+static struct pipe_instruction* build_pipe(struct instruction *left,
+                                    struct instruction *right
+)
+{
+    struct pipe_instruction *pipe = xmalloc(sizeof(*pipe));
+    pipe->left = left;
+    pipe->right = right;
+    return pipe;
+}
+
 static struct instruction *parse_if(struct queue *lexer);
 static struct instruction *parse_while_clause(struct queue *lexer);
 static struct instruction *parse_compound_list_break(struct queue *lexer);
+static struct instruction *parse_for(struct queue *lexer);
 static struct instruction *parse_case_rule(struct queue *lexer);
 
 // see how it works exactly
@@ -176,6 +194,8 @@ static struct instruction *parse_shell_command(struct queue *lexer)
     if (NEXT_IS("while") || NEXT_IS("until"))
         return parse_while_clause(lexer);
 
+    if (NEXT_IS("for"))
+        return parse_for(lexer);
     if (NEXT_IS("case"))
         return parse_case_rule(lexer);
 
@@ -285,13 +305,19 @@ static struct instruction *__parse_redirection(struct queue *lexer)
 {
     int fd = parse_io_number(lexer);
 
-    if (fd == -1)
-        fd = 1;
-
     enum token_parser_type type;
 
     if ((type = is_redirection(lexer)) == 0)
         return NULL;
+
+    if (fd == -1)
+    {
+        if (type == TOKEN_REDIRECT_RIGHT || type == TOKEN_HEREDOC
+            || type == TOKEN_REDIRECT_READ_WRITE || type == TOKEN_HEREDOC_MINUS)
+            fd = 0;
+        else
+            fd = 1;
+    }
 
     struct token_lexer *token = token_lexer_head(lexer);
     char *cpy = strdup(token->data);
@@ -398,14 +424,11 @@ static struct instruction *add_command_redirection(
     return redirection;
 }
 
-
-//simplified version of the grammar
-//here doesn't call eat cause we need the token data
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
     struct instruction *redirection = parse_redirection(lexer, NULL);
 
-    if (!NEXT_IS_OTHER() && !NEXT_IS_ASSIGNEMENT() && !redirection)
+    if (!NEXT_IS_OTHER() && !NEXT_IS_ASSIGNEMENT() && redirection == NULL)
     {
         return NULL;
     }
@@ -512,18 +535,31 @@ static struct instruction* parse_command(struct queue *lexer)
     return parse_redirection(lexer, command);
 }
 
-
-//not exactly grammar
 static struct instruction *parse_pipeline(struct queue *lexer)
 {
-    struct instruction *command = parse_command(lexer);
+    struct instruction *left = NULL;
+    struct instruction *right = NULL;
 
-    return command;
+    if ((left = parse_command(lexer)) == NULL)
+        return NULL;
+
+    struct instruction *root = left;
+    while (NEXT_IS("|"))
+    {
+        EAT();
+
+        while (NEXT_IS("\n"))
+            EAT();
+
+        if ((right = parse_command(lexer)) == NULL)
+            return free_instructions(1, root);
+
+        root = build_instruction(TOKEN_PIPE, build_pipe(root, right));
+    }
+
+    return root;
 }
 
-
-//not exactly grammar
-//for now handle the * recursively
 static struct instruction *parse_and_or(struct queue *lexer)
 {
     struct instruction *left = NULL;
@@ -543,11 +579,12 @@ static struct instruction *parse_and_or(struct queue *lexer)
             type = TOKEN_AND;
 
         token_lexer_free(&operator);
+
         while (NEXT_IS("\n"))
             EAT();
 
         if ((right = parse_pipeline(lexer)) == NULL)
-            return free_instructions(1, left);
+            return free_instructions(1, root);
 
         root = build_instruction(type, build_and_or(root, right));
     }
@@ -567,7 +604,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
-    if (NEXT_IS(";") || NEXT_IS("&"))
+    if (NEXT_IS(";") || NEXT_IS("&") || NEXT_IS("\n"))
     {
         EAT();
         and_or->next = parse_compound_list_break(lexer);
@@ -575,11 +612,24 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
 
     while (NEXT_IS("\n"))
         EAT();
+
     return and_or;
 }
 
+static struct for_instruction *build_for_instruction(
+                                            char *var_name,
+                                            struct array_list *var_values,
+                                            struct instruction *to_execute)
+{
+    struct for_instruction *new_for = xmalloc(sizeof(struct for_instruction));
+    new_for->var_name = var_name;
+    new_for->var_values = var_values;
+    new_for->to_execute = to_execute;
+    return new_for;
+}
 
-static struct while_instruction *build_while_instruction(struct instruction *cond,
+static struct while_instruction *build_while_instruction(
+                                            struct instruction *cond,
                                             struct instruction *to_do)
 {
     struct while_instruction *while_i =
@@ -605,6 +655,57 @@ static struct instruction *parse_do_groupe(struct queue *lexer)
     return do_group;
 }
 
+static struct array_list *parse_for_var_values(struct queue *lexer)
+{
+    struct array_list *var_values = NULL;
+    while (NEXT_IS_OTHER() && !NEXT_IS("\n"))
+    {
+        if (var_values == NULL)
+            var_values = array_list_init();
+        array_list_append(var_values, strdup(token_lexer_head(lexer)->data));
+        EAT();
+    }
+    return var_values;
+}
+
+static struct instruction *parse_for(struct queue *lexer)
+{
+    if (!NEXT_IS("for"))
+        return NULL;
+    EAT();
+
+    if (next_is_end_of_instruction(lexer))
+        return NULL;
+
+    char *var_name = strdup(token_lexer_head(lexer)->data);
+    struct array_list *var_values = NULL;
+    EAT();
+
+    if (NEXT_IS(";"))
+        EAT();
+    else
+    {
+        while (NEXT_IS("\n"))
+            EAT();
+        if (NEXT_IS("in"))
+        {
+            EAT();
+            var_values = parse_for_var_values(lexer);
+            if (!NEXT_IS(";") && !NEXT_IS("\n"))
+            {
+                array_list_destroy(var_values);
+                free(var_name);
+                return NULL;
+            }
+            EAT();
+        }
+    }
+    while (NEXT_IS("\n"))
+        EAT();
+
+    return build_instruction(TOKEN_FOR, build_for_instruction(var_name,
+            var_values, parse_do_groupe(lexer)));
+}
 
 static struct instruction *parse_while_clause(struct queue *lexer)
 {
@@ -893,8 +994,6 @@ static struct instruction *parse_if(struct queue *lexer)
                                                         else_container));
 }
 
-
-//for now doesn't handle comand;command
 static struct instruction *parse_list(struct queue *lexer)
 {
     struct instruction *and_or = parse_and_or(lexer);
@@ -911,15 +1010,8 @@ static struct instruction *parse_list(struct queue *lexer)
         tmp = tmp->next;
     }
 
-    if (and_or && (NEXT_IS(";") || NEXT_IS("&")))
-    {
-        EAT();
-        and_or->next = parse_list(lexer);
-    }
-
     return and_or;
 }
-
 
 static struct instruction *parser_error(struct instruction *ast, int *error)
 {
@@ -928,8 +1020,6 @@ static struct instruction *parser_error(struct instruction *ast, int *error)
     return NULL;
 }
 
-//for now doesn't handle if end with ; or with &
-//TOO LONG
 struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
 {
     if (NEXT_IS("\n"))
@@ -949,16 +1039,6 @@ struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
 
     if ((ast = parse_list(lexer)) == NULL)
         return parser_error(ast, error);
-
-/*
-    while (NEXT_IS(";") || NEXT_IS("&"))
-    {
-        EAT();
-        if ((tmp_ast->next = parse_and_or(lexer)) == NULL)
-            return free_instructions(1, ast);//if error we need to free all ast
-        tmp_ast = tmp_ast->next;
-    }
-*/
 
     if (NEXT_IS("\n"))
     {
