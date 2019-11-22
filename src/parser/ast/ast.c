@@ -2,6 +2,8 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <fnmatch.h>
+#include <string.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -157,13 +159,40 @@ static int handle_pipe(struct instruction *ast)
     return return_value;
 }
 
+static int check_patterns(char *pattern, struct array_list *patterns)
+{
+    for (size_t i = 0; i < patterns->nb_element; i++)
+    {
+        if (fnmatch(patterns->content[i], pattern, FNM_EXTMATCH) == 0)
+            return 1;
+    }
+
+    return 0;
+}
+
+
+static int handle_case(struct instruction *ast)
+{
+    struct case_clause *case_clause = ast->data;
+
+    for (size_t i = 0; i < case_clause->items->nb_element; i++)
+    {
+        struct case_item *curr_item = case_clause->items->content[i];
+        if (check_patterns(case_clause->pattern, curr_item->patterns))
+            return execute_ast(curr_item->to_execute);
+    }
+
+    return 0;
+}
+
+
 extern int execute_ast(struct instruction *ast)
 {
     if (!ast || ast->data == NULL)//for now to handle var assignement
-        return 1;
+        return 0;
 
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
-        errx(1, "an error occured while setting up a signal handler");
+        errx(1, "an error occurred while setting up a signal handler");
 
     int return_value;
 
@@ -185,6 +214,9 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_REDIRECT_LEFT:
     case TOKEN_REDIRECT_RIGHT:
     case TOKEN_REDIRECT_APPEND_LEFT:
+    case TOKEN_REDIRECT_LEFT_TO_FD:
+    case TOKEN_REDIRECT_READ_WRITE:
+    case TOKEN_DUP_FD:
         return_value = redirections_handling(ast);
         break;
     case TOKEN_WHILE:
@@ -193,16 +225,15 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_UNTIL:
         return_value = handle_until(ast);
         break;
-    case TOKEN_REDIRECT_LEFT_TO_FD:
-    case TOKEN_REDIRECT_READ_WRITE:
-    case TOKEN_DUP_FD:
-        return redirections_handling(ast);
+    case TOKEN_CASE:
+        return_value = handle_case(ast);
         break;
     default:
-        return_value = 1;
+        return_value = 0;
     }
 
     if (ast->next != NULL)
         return_value = execute_ast(ast->next);
+
     return return_value;
 }

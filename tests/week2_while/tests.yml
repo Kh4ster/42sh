@@ -1,5 +1,5 @@
 - name : while false and one command outside
-  stdin : while false; do echo false; done; echo simple
+  stdin : while false; do; echo false; done; echo simple while
 
 - name : while false do command done
   options:

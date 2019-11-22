@@ -39,19 +39,15 @@
     ech toto
   checks:
     - returncode
-    - has_stderr  
+    - has_stderr
 
 - name: many command lines
   stdin: |
     if true; then echo toto; fi
     if false; then echo papa; fi
-    if true; then echo papa; if false  
+    if true; then echo papa; if false
     ech toto
   checks:
     - stdout
     - returncode
-    - has_stderr  
-
-
-
-    
+    - has_stderr

@@ -27,6 +27,10 @@ enum token_parser_type
     TOKEN_DUP_FD, /**< @brief token fd duplication */
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
+    TOKEN_WHILE,
+    TOKEN_UNTIL,
+    TOKEN_FOR,
+    TOKEN_CASE,
     //TOKEN_FUNCTION, /**< @brief token function */
     TOKEN_WHILE, /**< @brief token while */
     TOKEN_UNTIL, /**< @brief token until */
@@ -34,6 +38,17 @@ enum token_parser_type
     TOKEN_PIPE /**< @brief token pipe */
 };
 
+
+struct case_item {
+    struct array_list *patterns;
+    struct instruction *to_execute;
+    struct case_item *next;
+};
+
+struct case_clause {
+    char *pattern;
+    struct array_list *items;
+};
 
 struct while_instruction
 {

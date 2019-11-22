@@ -4,6 +4,7 @@
 #include "../parser.h"
 #include "../../execution_handling/command_container.h"
 #include "destroy_tree.h"
+#include "../../data_structures/array_list.h"
 
 static void free_if (struct if_instruction *if_container)
 {
@@ -39,6 +40,24 @@ static void free_redirection(struct redirection *redirection)
     destroy_tree(redirection->to_redirect);
     free(redirection);
 }
+
+extern void free_case_item(struct case_item *item)
+{
+    array_list_destroy(item->patterns);
+    destroy_tree(item->to_execute);
+}
+
+
+extern void free_case_clause(struct case_clause *clause)
+{
+    for (size_t i = 0; i < clause->items->nb_element; i++)
+        free_case_item(clause->items->content[i]);
+
+    array_list_destroy(clause->items);
+    free(clause->pattern);
+    free(clause);
+}
+
 
 extern void destroy_tree(struct instruction *ast)
 {
@@ -79,6 +98,9 @@ extern void destroy_tree(struct instruction *ast)
     case TOKEN_WHILE:
     case TOKEN_UNTIL:
         free_while(ast->data);
+        break;
+    case TOKEN_CASE:
+        free_case_clause(ast->data);
         break;
     default:
         return;
