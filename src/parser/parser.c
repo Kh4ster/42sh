@@ -543,6 +543,7 @@ static struct instruction *parse_and_or(struct queue *lexer)
             type = TOKEN_AND;
 
         token_lexer_free(&operator);
+
         while (NEXT_IS("\n"))
             EAT();
 
@@ -567,7 +568,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     if ((and_or = parse_and_or(lexer)) == NULL)
         return NULL;
 
-    if (NEXT_IS(";") || NEXT_IS("&"))
+    if (NEXT_IS(";") || NEXT_IS("&") || NEXT_IS("\n"))
     {
         EAT();
         and_or->next = parse_compound_list_break(lexer);
@@ -575,6 +576,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
 
     while (NEXT_IS("\n"))
         EAT();
+
     return and_or;
 }
 
@@ -894,7 +896,6 @@ static struct instruction *parse_if(struct queue *lexer)
 }
 
 
-//for now doesn't handle comand;command
 static struct instruction *parse_list(struct queue *lexer)
 {
     struct instruction *and_or = parse_and_or(lexer);
@@ -911,15 +912,8 @@ static struct instruction *parse_list(struct queue *lexer)
         tmp = tmp->next;
     }
 
-    if (and_or && (NEXT_IS(";") || NEXT_IS("&")))
-    {
-        EAT();
-        and_or->next = parse_list(lexer);
-    }
-
     return and_or;
 }
-
 
 static struct instruction *parser_error(struct instruction *ast, int *error)
 {
@@ -928,8 +922,6 @@ static struct instruction *parser_error(struct instruction *ast, int *error)
     return NULL;
 }
 
-//for now doesn't handle if end with ; or with &
-//TOO LONG
 struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
 {
     if (NEXT_IS("\n"))
@@ -949,16 +941,6 @@ struct instruction* parse_input(struct queue *lexer, int *is_end, int *error)
 
     if ((ast = parse_list(lexer)) == NULL)
         return parser_error(ast, error);
-
-/*
-    while (NEXT_IS(";") || NEXT_IS("&"))
-    {
-        EAT();
-        if ((tmp_ast->next = parse_and_or(lexer)) == NULL)
-            return free_instructions(1, ast);//if error we need to free all ast
-        tmp_ast = tmp_ast->next;
-    }
-*/
 
     if (NEXT_IS("\n"))
     {
