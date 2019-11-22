@@ -1,3 +1,23 @@
+- name: for echo > file1 done > file 2
+  options:
+     - ../tests/week2_redirections/test1.sh
+
+- name: for echo >> file1 done > file 2
+  options:
+     - ../tests/week2_redirections/test2.sh
+
+- name: for echo >> file1 > file3 done > file2
+  options:
+     - ../tests/week2_redirections/test3.sh
+
+- name: for echo >> file1 >> file3 done > file 2
+  options:
+     - ../tests/week2_redirections/test4.sh
+
+- name: for echo >> file1 >> file3; cat file3 | cat >> file 4 done > file 2
+  options:
+     - ../tests/week2_redirections/test5.sh
+
 - name: Redirection Simple
   stdin: echo ok > toto; cat toto; rm toto
   checks:
