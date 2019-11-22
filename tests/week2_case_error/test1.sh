@@ -1,8 +1,7 @@
 case toto
-in papa
+in papa)
        echo toto
        ech tata
-       ;;
    *)
        echo papa
        ;;
