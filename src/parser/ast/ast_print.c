@@ -238,7 +238,7 @@ extern void print_ast(struct instruction *ast)
     if (!ast)
         return;
 
-    FILE *dot_ast = fopen("ast.dot", "a+");
+    FILE *dot_ast = fopen("ast.dot", "w");
 
     if (!dot_ast)
     {
