@@ -774,17 +774,23 @@ static struct instruction *parse_case_rule(struct queue *lexer)
     struct token_lexer *token = token_lexer_pop(lexer);
 
     if (!token || token->type != TOKEN_OTHER)
-        return free_instructions(1, token);
-
-    struct case_clause *clause = build_case_clause(token->data);
+    {
+        if (token)
+            token_lexer_free(&token);
+        return NULL;
+    }
 
     while (NEXT_IS("\n"))
         EAT();
 
     if (!NEXT_IS("in"))
-        return free_instructions(2, token, clause);
+    {
+        token_lexer_free(&token);
+        return NULL;
+    }
 
     EAT();
+    struct case_clause *clause = build_case_clause(token->data);
     token_lexer_free(&token);
 
     while (NEXT_IS("\n"))
