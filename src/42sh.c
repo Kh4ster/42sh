@@ -100,7 +100,7 @@ void free_all(struct queue *lexer)
     HIST_ENTRY **hist_elts = history_list();
     for (int i = 0; i < history_length - 1; i++)
         fprintf(history_file, "%s\n", hist_elts[i]->line);
-
+    fclose(history_file);
     free(history_path);
 }
 
