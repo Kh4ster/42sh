@@ -1,6 +1,6 @@
 - name: simple function syntax error 1
   options:
-    - ../tests/week2_functions_error/test1.sh
+   - ../tests/week2_functions_error/test1.sh
   checks:
     - has_stderr
     - returncode
