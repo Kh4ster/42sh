@@ -91,7 +91,7 @@ int show_history(int nb_lines)
     int index_current = history_base + history_length - nb_lines;
     for (int i = history_length - nb_lines; i < history_length; i++)
     {
-        fprintf(stdout, " %*d %s\n", nb_digits_max, index_current,
+        fprintf(stdout, " %*d  %s\n", nb_digits_max, index_current,
                 hist_elts[i]->line);
         nb_lines--;
         index_current++;
