@@ -220,7 +220,7 @@ extern int execute_ast(struct instruction *ast)
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
         errx(1, "an error occurred while setting up a signal handler");
 
-    int return_value;
+    int return_value = 0;
 
     switch (ast->type)
     {

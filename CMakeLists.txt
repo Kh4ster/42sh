@@ -38,7 +38,6 @@ set(SRC_FILES
     src/input_output/read.c
     src/input_output/write.c
     src/execution_handling/command_container.c
-    src/execution_handling/redirector.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
     src/lexer/token_lexer.c

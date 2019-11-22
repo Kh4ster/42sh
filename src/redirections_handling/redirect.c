@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <readline/readline.h>
 
-#include "../execution_handling/redirector.h"
 #include "redirect.h"
 #include "../parser/parser.h"
 #include "../execution_handling/command_execution.h"
