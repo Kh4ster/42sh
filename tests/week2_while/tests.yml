@@ -1,6 +1,78 @@
 - name : while false and one command outside
-  stdin : while false; do; echo false; done; echo simple while
+  stdin : while false; do echo false; done; echo simple while
 
-- name : while false do command done
+- name : while false and one bad command outside
+  stdin : while false; do echo false; done; ech simple while
+  checks:
+    - has_stderr
+    - returncode
+
+- name : syntax error 1
+  stdin : while; do echo false; done; ech simple while
+  checks:
+    - has_stderr
+    - returncode
+
+- name : syntax error 2
+  stdin : while true; d echo false; done; ech simple while
+  checks:
+    - has_stderr
+    - returncode
+
+- name : syntax error 3
+  stdin : while true; doecho false; done; ech simple while
+  checks:
+    - has_stderr
+    - returncode
+
+- name : syntax error 4
+  stdin : while true; do echo false done; ech simple while
+  checks:
+    - has_stderr
+    - returncode
+
+- name : syntax error 5
+  stdin : while true; do echo false; done ech simple while
+  checks:
+    - has_stderr
+    - returncode
+
+- name : syntax error 6
+  stdin : whilefalse; do echo false; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name : syntax error 7
+  stdin : while [false]; do echo false; done
+  checks:
+    - has_stderr
+    - returncode
+
+- name : while true && false
+  stdin : while true && false; do echo false; done
+
+- name : while true && false || false
+  stdin : while true && false || false; do echo false; done
+
+- name : while false || true && false || false && true
+  stdin : while false || true && false || false && true; do echo false; done
+
+- name : while condition into parenthesis
+  stdin : while (false); do echo false; done
+
+- name : complex while 1
   options:
     - ../tests/week2_while/test1.sh
+  checks:
+    - stdout
+    - has_stderr
+    - returncode
+
+- name : complex while 2
+  options:
+    - ../tests/week2_while/test2.sh
+  checks:
+    - stdout
+    - has_stderr
+    - returncode

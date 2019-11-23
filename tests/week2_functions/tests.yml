@@ -10,3 +10,14 @@
   options:
     - ../tests/week2_functions/test3.sh
 
+- name: complex function 2
+  options:
+    - ../tests/week2_functions/test4.sh
+
+- name: complex function 3
+  options:
+    - ../tests/week2_functions/test4.sh
+
+- name: complex function 4
+  options:
+    - ../tests/week2_functions/test5.sh
