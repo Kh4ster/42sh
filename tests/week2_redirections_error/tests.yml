@@ -32,22 +32,22 @@
 
 #HEREDOCS
 - name: HEREDOCS tee newfile <<< EOF
+  expected_returncode: 2
+  checks:
+    - has_stderr
   options:
      - ../tests/week2_redirections/test1.sh
-  checks:
-   - has_stderr
-   - returncode
 
 - name: HEREDOCS tee newfile ><< EOF
   options:
      - ../tests/week2_redirections/test2.sh
+  expected_returncode: 2
   checks:
-   - has_stderr
-   - returncode
+    -has_stderr
 
 - name: HEREDOCS tee newfile <<<- EOF
   options:
      - ../tests/week2_redirections/test3.sh
+  expected_returncode: 2
   checks:
-   - has_stderr
-   - returncode
+    - has_stderr

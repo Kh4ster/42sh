@@ -47,7 +47,10 @@ static int redirect_stdout(struct redirection *redirection)
     int filedes_file = open(redirection->file, O_WRONLY | O_CREAT | O_TRUNC,
                                                                     00666);
     if (filedes_file == -1)
-        err(1, "could not open file");
+    {
+        warn("could not open file");
+        return 1;
+    }
 
     if (dup2(filedes_file, redirection->fd) == -1)
     {
@@ -76,7 +79,10 @@ static int redirect_stdout_append(struct redirection *redirection)
     int filedes_file = open(redirection->file, O_WRONLY | O_APPEND | O_CREAT,
                                                                         00666);
     if (filedes_file == -1)
-        err(1, "could not open file");
+    {
+        warn("could not open file");
+        return 1;
+    }
 
     if (dup2(filedes_file, redirection->fd) == -1)
     {
@@ -200,14 +206,6 @@ static int handle_heredoc(struct redirection *redirection)
     char *delimiter = redirection->file;
     FILE *temp = tmpfile();
 
-    if (g_env.current_line && strcmp(g_env.current_line, delimiter) != 0)
-    {
-        fputs(g_env.current_line, temp);
-        fputc('\n', temp);
-        free(g_env.current_line);
-        g_env.current_line = NULL;
-    }
-
     char *current_line = get_next_line("> ");
 
     while (current_line &&
@@ -221,7 +219,8 @@ static int handle_heredoc(struct redirection *redirection)
 
     if (!current_line)
     {
-        warnx("warning: here document delimited by end of file (wanted toto)");
+        warnx("warning: here document delimited by end of file (wanted %s)",
+                                    delimiter);
     }
 
     free(current_line);
@@ -247,14 +246,6 @@ static int handle_redirect_minus(struct redirection *redirection)
     char *delimiter = redirection->file;
     FILE *temp = tmpfile();
 
-    if (g_env.current_line && strcmp(g_env.current_line, delimiter) != 0)
-    {
-        fputs(g_env.current_line, temp);
-        fputc('\n', temp);
-        free(g_env.current_line);
-        g_env.current_line = NULL;
-    }
-
     char *current_line = get_next_line("> ");
 
     while (current_line &&
@@ -269,7 +260,8 @@ static int handle_redirect_minus(struct redirection *redirection)
 
     if (!current_line)
     {
-        warnx("warning: here document delimited by end of file (wanted toto)");
+        warnx("warning: here document delimited by end of file (wanted %s)",
+                                    delimiter);
     }
 
     free(current_line);
