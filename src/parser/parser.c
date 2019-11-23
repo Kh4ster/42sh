@@ -532,7 +532,8 @@ static struct instruction* parse_command(struct queue *lexer)
         command = parse_funcdec(lexer);
     else //simple command
     {
-        if (!NEXT_IS_OTHER() && !is_redirection(lexer))
+        if (!NEXT_IS_OTHER() && !is_redirection(lexer)
+                                                    && !NEXT_IS_ASSIGNEMENT())
             return NULL;
         command = parse_simple_command(lexer);
     }
