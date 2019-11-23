@@ -101,6 +101,7 @@ static int handle_not_existing_option(char *argv[])
         if (build_shopt_call(false, argv[optind + 1]) == -1)
             return -1;
         optind++;
+        optind++;
     }
     else
     {
