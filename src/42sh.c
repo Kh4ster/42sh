@@ -171,7 +171,8 @@ int main(int argc, char *argv[])
         g_env.prompt = "42sh$ ";
         struct instruction *ast = parse_input(lexer, &is_end, &error);
 
-        return_code = execute_and_print_ast(ast);
+        if (ast)
+            return_code = execute_and_print_ast(ast);
 
         destroy_tree(ast);
 
