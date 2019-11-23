@@ -443,8 +443,12 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     if (NEXT_IS_ASSIGNEMENT())
     {
-        EAT();
-        return build_instruction(TOKEN_COMMAND, NULL);
+        struct token_lexer *token = token_lexer_head(lexer);
+        if (token->data[0] != '=') //just =value, is considered a command
+        {
+            EAT();
+            return build_instruction(TOKEN_COMMAND, NULL);
+        }
     }
 
     struct token_lexer *token = token_lexer_pop(lexer);
@@ -532,7 +536,8 @@ static struct instruction* parse_command(struct queue *lexer)
         command = parse_funcdec(lexer);
     else //simple command
     {
-        if (!NEXT_IS_OTHER() && !is_redirection(lexer))
+        if (!NEXT_IS_OTHER() && !is_redirection(lexer)
+                                                    && !NEXT_IS_ASSIGNEMENT())
             return NULL;
         command = parse_simple_command(lexer);
     }
@@ -544,9 +549,19 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 {
     struct instruction *left = NULL;
     struct instruction *right = NULL;
+    bool not = false;
+
+    if (NEXT_IS("!"))
+    {
+        EAT();
+        not = true;
+    }
 
     if ((left = parse_command(lexer)) == NULL)
         return NULL;
+
+    if (not)
+        left->type = TOKEN_NOT;
 
     struct instruction *root = left;
     while (NEXT_IS("|"))

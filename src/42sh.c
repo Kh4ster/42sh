@@ -96,11 +96,15 @@ void free_all(struct queue *lexer)
     char *history_path = get_history_file_path();
     FILE *history_file = fopen(history_path, "w");
     if (history_file == NULL)
+    {
+        free(history_path);
         return;
+    }
     HIST_ENTRY **hist_elts = history_list();
     for (int i = 0; i < history_length - 1; i++)
         fprintf(history_file, "%s\n", hist_elts[i]->line);
     fclose(history_file);
+    history_truncate_file(history_path, 2000);
     free(history_path);
 }
 
@@ -120,6 +124,8 @@ static void init_hash_maps_and_history(struct hash_map *functions,
     g_env.builtins = builtins;
     hash_init(functions, NB_SLOTS);
     init_builtins_hash_map(g_env.builtins);
+    g_env.options.option_expand_aliases = true;
+    g_env.options.option_sourcepath = true;
 
     // History
     char *history_path = get_history_file_path();
@@ -144,14 +150,14 @@ static int execute_and_print_ast(struct instruction *ast)
 
 int main(int argc, char *argv[])
 {
+    struct hash_map functions; //declared on the stack no need to be freed
+    struct hash_map builtins;
+    init_hash_maps_and_history(&functions, &builtins);
+
     if (handle_parameters(&g_env.options, argc, argv) == -1)
         errx(2, "invalid option or file");
 
     handle_signal();
-
-    struct hash_map functions; //declared on the stack no need to be freed
-    struct hash_map builtins;
-    init_hash_maps_and_history(&functions, &builtins);
 
     handle_ressource_files();
 
