@@ -69,10 +69,16 @@ static int build_shopt_call(bool set, char *option)
     struct command_container *shopt_container = NULL;
 
     if (set && option != NULL)       //set option
+    {
         shopt_container = command_init(2, "shopt", "-s", option);
+        optind++;
+    }
 
     else if (!set && option != NULL) //unset option
+    {
         shopt_container = command_init(2, "shopt", "-u", option);
+        optind++;
+    }
 
     else                            //just call shopt
     {
