@@ -99,9 +99,10 @@ static int build_shopt_call(bool set, char *option)
 }
 
 /*
-** -1 error
+** 127 no file
 ** 0 shopt ok
 ** 1 file ok
+** 2 bad shopt
 */
 static int handle_not_existing_option(char *argv[])
 {
@@ -109,12 +110,12 @@ static int handle_not_existing_option(char *argv[])
     if (strcmp(current_option, "+O") == 0)
     {
         if (build_shopt_call(false, argv[optind]) != 0)
-            return -1;
+            return 2;
     }
     else
     {
         if (handle_file(current_option) == -1)
-            return -1;
+            return 127;
         else
             return 1;
     }
@@ -140,10 +141,12 @@ int handle_parameters(struct boot_params *options,
         c = getopt_long(argc, argv, "-NAO::c:", long_opts, NULL);
         if (c  == 1)
         {
-            if ((return_value = handle_not_existing_option(argv)) == -1)
-                return -1;
+            if ((return_value = handle_not_existing_option(argv)) == 0)
+                continue; //ok
             else if (return_value == 1)
-                return 1; //if it's a file we want to exit now
+                return 0;
+            else
+                return return_value;
         }
         else if (c == 'N')
             options->option_n = true;
@@ -151,18 +154,18 @@ int handle_parameters(struct boot_params *options,
             options->option_a = true;
         else if (c == 'O')
         {
-            if (build_shopt_call(true, argv[optind]) != 0)
-                return -1;
+            if ((return_value = build_shopt_call(true, argv[optind])) != 0)
+                return 2;
         }
         else if (c == 'c')
         {
             if (optarg == NULL)
-                return -1;
+                return 2;
             options->option_c = true;
             options->command_option_c = optarg;
         }
         else if (c == '?')
-            return -1;
+            return 2;
     }
-    return 1;
+    return 0;
 }
