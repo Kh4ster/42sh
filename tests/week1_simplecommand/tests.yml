@@ -1,6 +1,9 @@
 - name: echo toto
   stdin: echo toto
 
+- name: echo toto | echo papa
+  stdin: echo toto | echo papa
+
 - name: echo toto;
   stdin: echo toto;
 
