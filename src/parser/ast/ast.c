@@ -244,6 +244,9 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_COMMAND:
         return_value = handle_commands(ast);
         break;
+    case TOKEN_NOT:
+        return_value = !(handle_commands(ast));
+        break;
     case TOKEN_IF:
         return_value = handle_if(ast);
         break;

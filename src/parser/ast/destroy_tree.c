@@ -92,6 +92,7 @@ extern void destroy_tree(struct instruction *ast)
         destroy_tree(pipe->right);
         free(pipe);
         break;
+    case TOKEN_NOT:
     case TOKEN_COMMAND:
         free_command(ast->data);
         break;
