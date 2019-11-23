@@ -1,3 +1,11 @@
+#- name script.sh -O
+#- stdin: |
+#     ./42sh
+#     script.sh -O
+#  checks:
+#    - returncode
+#    - has_stderr
+
 - name: -c shopt -u jiods
   options:
      - "-c"
