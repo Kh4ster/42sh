@@ -104,6 +104,7 @@ void free_all(struct queue *lexer)
     for (int i = 0; i < history_length - 1; i++)
         fprintf(history_file, "%s\n", hist_elts[i]->line);
     fclose(history_file);
+    history_truncate_file(history_path, 2000);
     free(history_path);
 }
 
