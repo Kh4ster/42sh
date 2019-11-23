@@ -443,8 +443,12 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     if (NEXT_IS_ASSIGNEMENT())
     {
-        EAT();
-        return build_instruction(TOKEN_COMMAND, NULL);
+        struct token_lexer *token = token_lexer_head(lexer);
+        if (token->data[0] != '=')
+        {
+            EAT();
+            return build_instruction(TOKEN_COMMAND, NULL);
+        }
     }
 
     struct token_lexer *token = token_lexer_pop(lexer);
