@@ -200,6 +200,14 @@ static int handle_heredoc(struct redirection *redirection)
     char *delimiter = redirection->file;
     FILE *temp = tmpfile();
 
+    if (g_env.current_line && strcmp(g_env.current_line, delimiter) != 0)
+    {
+        fputs(g_env.current_line, temp);
+        fputc('\n', temp);
+        free(g_env.current_line);
+        g_env.current_line = NULL;
+    }
+
     char *current_line = get_next_line("> ");
 
     while (current_line &&
@@ -239,10 +247,18 @@ static int handle_redirect_minus(struct redirection *redirection)
     char *delimiter = redirection->file;
     FILE *temp = tmpfile();
 
+    if (g_env.current_line && strcmp(g_env.current_line, delimiter) != 0)
+    {
+        fputs(g_env.current_line, temp);
+        fputc('\n', temp);
+        free(g_env.current_line);
+        g_env.current_line = NULL;
+    }
+
     char *current_line = get_next_line("> ");
 
     while (current_line &&
-            strncmp(delimiter, current_line, strlen(delimiter)) != 0)
+            strcmp(delimiter, current_line) != 0)
     {
         char *cpy_line = passe_tab(current_line);
         fputs(cpy_line, temp);
