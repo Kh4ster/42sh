@@ -36,7 +36,7 @@
     toto) echo ok>titi
     esac
   stdin: cat titi
-  stdin: rm toto
+  stdin: rm titi
 
 - name: case toto in toto) echo ok;; titi) echo bad; esac > titi
   stdin: case toto in toto) echo ok;; titi) echo bad; esac > titi
