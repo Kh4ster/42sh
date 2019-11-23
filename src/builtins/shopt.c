@@ -22,7 +22,7 @@ static bool is_shopt_var(char *opt_name)
         "sourcepath",
         "xpg_echo"
     };
-    static const size_t size_array = sizeof(options) / sizeof(char*);
+    static const size_t size_array = sizeof(options) / sizeof(char *);
 
     for (size_t i = 0; i < size_array; ++i)
         if (strcmp(opt_name, options[i]) == 0)
@@ -128,7 +128,7 @@ static int handle_option_no_var(char *opt_name)
         "sourcepath",
         "xpg_echo"
     };
-    static const size_t size_array = sizeof(options) / sizeof(char*);
+    static const size_t size_array = sizeof(options) / sizeof(char *);
 
     bool val_options[] =
     {
