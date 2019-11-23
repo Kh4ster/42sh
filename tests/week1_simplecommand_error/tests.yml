@@ -1,3 +1,9 @@
+- name: SATAN's COMMAND -> cat /dev/urandom | ./42sh
+  stdin: cat /dev/urandom | ./42sh
+  checks:
+    - has_stderr
+    - returncode
+
 - name: command_notfound
   stdin: ./abcd toto
   checks:
@@ -126,5 +132,3 @@
   checks:
     - has_stderr
     - returncode
-
-
