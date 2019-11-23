@@ -74,14 +74,17 @@ def test(binary, test_case, timeout, args):
 
     for check in test_case.get("checks", ["stderr", "stdout", "returncode"]):
         if check == "stdout":
-            assert ref.stdout == student.stdout, \
-                f"stdout differs:\n{diff(ref.stdout, student.stdout)}"
+            ref_stdout = test_case.get("expected_stdout", ref.stdout)
+            assert ref_stdout == student.stdout, \
+                f"stdout differs:\n{diff(ref_stdout, student.stdout)}"
         elif check == "stderr":
-            assert ref.stderr == student.stderr, \
-                f"stderr differs:\n{diff(ref.stderr, student.stderr)}"
+            ref_stderr = test_case.get("expected_stderr", ref.stderr)
+            assert ref_stderr == student.stderr, \
+                f"stderr differs:\n{diff(ref_stderr, student.stderr)}"
         elif check == "returncode":
-            assert ref.returncode == student.returncode, \
-                f"Exited with {student.returncode}, expected {ref.returncode}"
+            ref_returncode = test_case.get("expected_returncode", ref.returncode)
+            assert ref_returncode == student.returncode, \
+                f"Exited with {student.returncode}, expected {ref_returncode}"
         elif check == "has_stderr":
             assert student.stderr != "", \
                 "The code should print an error message on stderr"

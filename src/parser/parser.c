@@ -224,7 +224,6 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 
         return to_execute;
     }
-    assert(0);
     return NULL;
 }
 
@@ -246,7 +245,13 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
     EAT();
-    EAT(); //cause for now it's two tokens for ()
+    
+    if (!NEXT_IS(")"))
+    {
+        token_lexer_free(&func_name);
+        return NULL;
+    }
+    EAT();
 
     while (NEXT_IS("\n"))
         EAT();

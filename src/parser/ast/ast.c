@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <glob.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -36,13 +37,11 @@ static int handle_if(struct instruction *ast)
     if (execute_ast(if_struct->conditions) == 0)
     {
         struct instruction *to_execute = if_struct->to_execute;
-        execute_ast(to_execute);
-        return 0;
+        return execute_ast(to_execute);
     }
 
     struct instruction *else_clause = if_struct->else_container;
-    execute_ast(else_clause);
-    return 0;
+    return execute_ast(else_clause);
 }
 
 static int handle_and_or_instruction(struct instruction *ast)
@@ -138,14 +137,28 @@ static int handle_for(struct instruction *ast)
     struct for_instruction *instruction_for = ast->data;
     struct array_list *var_values = instruction_for->var_values;
     int return_value;
+    glob_t glob_c;
 
     if (!var_values)
         return 0;
 
-    for (size_t i = 0; i < var_values->nb_element; i++)
+    for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
-        // assigne_variable(instruction_for->var_name, var_values->content[i]);
-        return_value = execute_ast(instruction_for->to_execute);
+        int error = glob(var_values->content[i], GLOB_NOSORT, NULL, &glob_c);
+
+        if (error == GLOB_NOMATCH)
+        {
+        //  assigne_variable(instruction_for->var_name, var_values->content[i]);
+            return_value = execute_ast(instruction_for->to_execute);
+            continue;
+        }
+
+        for (size_t j = 0; j < glob_c.gl_pathc && !g_have_to_stop; j++)
+        {
+    //      assigne_variable(instruction_for->var_name, glob.gl_pathv[j]);
+            return_value = execute_ast(instruction_for->to_execute);
+        }
+        globfree(&glob_c);
     }
 
     return return_value;
