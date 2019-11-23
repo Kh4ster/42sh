@@ -48,6 +48,30 @@
 - name: HEREDOCS tee newfile <<<- EOF
   options:
      - ../tests/week2_redirections/test3.sh
-  expected_returncode: 2
+  checks:
+   - has_stderr
+   - returncode
+#
+- name: ech toto <& 3
+  stdin: ech toto <&3
   checks:
     - has_stderr
+    - returncode
+
+- name: ech toto <& 2
+  stdin: ech toto <& 2
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ech toto <& 1
+  stdin: ech toto <& 1
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ech toto <& 0
+  stdin: ech toto <& 0
+  checks:
+    - has_stderr
+    - returncode
