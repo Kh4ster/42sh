@@ -333,10 +333,12 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     if (current_token != NULL)
         return current_token;
 
+    free(g_env.current_line);
     char *next_line = get_next_line(g_env.prompt);
 
     if (next_line == NULL) // End Of File
     {
+        g_env.current_line = NULL;
         current_token = xmalloc(sizeof(struct token_lexer));
         current_token->type = TOKEN_EOF;
         current_token->data = strdup("ouais");
@@ -344,6 +346,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
+        g_env.current_line = strdup(next_line);
         //add a new line token in the queue execpt if it's first call
         if (g_env.not_first_line && !is_interactive())
             queue_push(token_queue, create_newline_token(NULL));

@@ -69,10 +69,16 @@ static int build_shopt_call(bool set, char *option)
     struct command_container *shopt_container = NULL;
 
     if (set && option != NULL)       //set option
+    {
         shopt_container = command_init(2, "shopt", "-s", option);
+        optind++;
+    }
 
     else if (!set && option != NULL) //unset option
+    {
         shopt_container = command_init(2, "shopt", "-u", option);
+        optind++;
+    }
 
     else                            //just call shopt
     {
@@ -92,23 +98,25 @@ static int build_shopt_call(bool set, char *option)
     return return_value;
 }
 
-// a bad option can be a +O option or a file or juste a bad option
+/*
+** -1 error
+** 0 shopt ok
+** 1 file ok
+*/
 static int handle_not_existing_option(char *argv[])
 {
-    char *current_option = argv[optind];
+    char *current_option = optarg;
     if (strcmp(current_option, "+O") == 0)
     {
-        if (build_shopt_call(false, argv[optind + 1]) == -1)
+        if (build_shopt_call(false, argv[optind]) != 0)
             return -1;
-        optind++;
-        optind++;
     }
     else
     {
         if (handle_file(current_option) == -1)
             return -1;
-        optind++;
-        optind++;
+        else
+            return 1;
     }
 
     return 0;
@@ -120,6 +128,7 @@ int handle_parameters(struct boot_params *options,
 )
 {
     char c;
+    int return_value;
     static const struct option long_opts[] =
     {
         {"ast-print", no_argument, NULL, 'A'},
@@ -128,11 +137,13 @@ int handle_parameters(struct boot_params *options,
 
     while (optind < argc)
     {
-        c = getopt_long(argc, argv, "NAOc:", long_opts, NULL);
-        if (c  == -1)
+        c = getopt_long(argc, argv, "-NAO::c:", long_opts, NULL);
+        if (c  == 1)
         {
-            if (handle_not_existing_option(argv) == -1)
+            if ((return_value = handle_not_existing_option(argv)) == -1)
                 return -1;
+            else if (return_value == 1)
+                return 1; //if it's a file we want to exit now
         }
         else if (c == 'N')
             options->option_n = true;
@@ -140,7 +151,7 @@ int handle_parameters(struct boot_params *options,
             options->option_a = true;
         else if (c == 'O')
         {
-            if (build_shopt_call(true, argv[optind]) == -1)
+            if (build_shopt_call(true, argv[optind]) != 0)
                 return -1;
         }
         else if (c == 'c')
