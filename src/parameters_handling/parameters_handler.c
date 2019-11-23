@@ -95,20 +95,16 @@ static int build_shopt_call(bool set, char *option)
 // a bad option can be a +O option or a file or juste a bad option
 static int handle_not_existing_option(char *argv[])
 {
-    char *current_option = argv[optind];
+    char *current_option = optarg;
     if (strcmp(current_option, "+O") == 0)
     {
-        if (build_shopt_call(false, argv[optind + 1]) == -1)
+        if (build_shopt_call(false, argv[optind]) == -1)
             return -1;
-        optind++;
-        optind++;
     }
     else
     {
         if (handle_file(current_option) == -1)
             return -1;
-        optind++;
-        optind++;
     }
 
     return 0;
@@ -128,8 +124,8 @@ int handle_parameters(struct boot_params *options,
 
     while (optind < argc)
     {
-        c = getopt_long(argc, argv, "NAOc:", long_opts, NULL);
-        if (c  == -1)
+        c = getopt_long(argc, argv, "-NAO::c:", long_opts, NULL);
+        if (c  == 1)
         {
             if (handle_not_existing_option(argv) == -1)
                 return -1;
