@@ -1,0 +1,5 @@
+function()
+{
+    echo toto
+}
+echo

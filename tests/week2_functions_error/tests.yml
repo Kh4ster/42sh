@@ -25,3 +25,17 @@
   checks:
     - has_stderr
     - returncode
+
+- name: simple function syntax error 5
+  options:
+    - ../tests/week2_functions_error/test5.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: simple function syntax error 6
+  options:
+    - ../tests/week2_functions_error/test6.sh
+  checks:
+    - has_stderr
+    - returncode
