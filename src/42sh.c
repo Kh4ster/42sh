@@ -154,8 +154,10 @@ int main(int argc, char *argv[])
     struct hash_map builtins;
     init_hash_maps_and_history(&functions, &builtins);
 
-    if (handle_parameters(&g_env.options, argc, argv) == -1)
-        errx(2, "invalid option or file");
+    int return_code = 0;
+
+    if ((return_code = handle_parameters(&g_env.options, argc, argv)) != 0)
+        errx(return_code, "invalid option or file");
 
     handle_signal();
 
@@ -163,7 +165,6 @@ int main(int argc, char *argv[])
 
     int is_end = 0;
     struct queue *lexer = queue_init();
-    int return_code = 0;
 
     while (42)
     {
