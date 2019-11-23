@@ -39,6 +39,7 @@
    - has_stderr
    - returncode
 #
+
 - name: ech toto <& 3
   stdin: ech toto <& 3
   checks:

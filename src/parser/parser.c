@@ -196,6 +196,7 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 
     if (NEXT_IS("for"))
         return parse_for(lexer);
+
     if (NEXT_IS("case"))
         return parse_case_rule(lexer);
 
@@ -308,9 +309,15 @@ static int parse_io_number(struct queue *lexer)
 
 static struct instruction *__parse_redirection(struct queue *lexer)
 {
+    if (lexer->size == 0)
+        return NULL;
+
     int fd = parse_io_number(lexer);
 
     enum token_parser_type type;
+
+    if (lexer->size == 0)
+        return NULL;
 
     if ((type = is_redirection(lexer)) == 0)
         return NULL;
@@ -323,18 +330,12 @@ static struct instruction *__parse_redirection(struct queue *lexer)
         else
             fd = 1;
     }
-
-    struct token_lexer *token = token_lexer_head(lexer);
-    char *cpy = strdup(token->data);
-
-    free(cpy);
     EAT(); //eat the redirection token
 
-    token = token_lexer_head(lexer);
-
-    if (token->type != TOKEN_OTHER || strcmp(token->data, "\n") == 0)
+    if (lexer->size == 0 || !NEXT_IS_OTHER() || NEXT_IS("\n"))
         return build_instruction(type, build_redirection(fd, NULL));
 
+    struct token_lexer *token = token_lexer_head(lexer);
     char *file = strdup(token->data);
     EAT(); //eat file token
 
@@ -372,7 +373,11 @@ static struct instruction *parse_redirection(struct queue *lexer,
         }
 
         redirection2 = redirection;
-        redirection = __parse_redirection(lexer);
+
+        if (lexer->size > 0)
+            redirection = __parse_redirection(lexer);
+        else
+            redirection = NULL;
     }
 
     return tmp;
@@ -678,6 +683,7 @@ static struct instruction *parse_do_groupe(struct queue *lexer)
 static struct array_list *parse_for_var_values(struct queue *lexer)
 {
     struct array_list *var_values = NULL;
+
     while (NEXT_IS_OTHER() && !NEXT_IS("\n"))
     {
         if (var_values == NULL)
@@ -685,6 +691,7 @@ static struct array_list *parse_for_var_values(struct queue *lexer)
         array_list_append(var_values, strdup(token_lexer_head(lexer)->data));
         EAT();
     }
+
     return var_values;
 }
 
