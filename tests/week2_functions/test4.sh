@@ -1,13 +1,13 @@
-function test()
+test()
 {
     echo function
     if false;then
-        echo bad;
+        echo caca;
     elif false;then
-        echo bad
+        echo caca
     else
-        echo good;
-    fi
-}
 
+        echo good;
+fi
+}
 test a b c; echo ok; echo 1 && echo 3

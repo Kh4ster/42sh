@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "parameters_handler.h"
+#include "../input_output/get_next_line.h"
 #include "options.h"
 #include "../execution_handling/command_container.h"
 #include "../builtins/shopt.h"
@@ -24,6 +25,37 @@ static int handle_file(char *file)
 
     close(fd);
     return 0;
+}
+
+static void print_pipable_shopt(void)
+{
+    static const char *options[] =
+    {
+        "ast_print",
+        "dotglob",
+        "expand_aliases",
+        "extglob",
+        "nocaseglob",
+        "nullglob",
+        "sourcepath",
+        "xpg_echo"
+    };
+    static const size_t size_array = sizeof(options) / sizeof(char*);
+
+    bool val_options[] =
+    {
+        g_env.options.option_a,
+        g_env.options.option_dot_glob,
+        g_env.options.option_expand_aliases,
+        g_env.options.option_extglob,
+        g_env.options.option_nocaseglob,
+        g_env.options.option_nullglob,
+        g_env.options.option_sourcepath,
+        g_env.options.option_xpg_echo
+    };
+
+    for (size_t i = 0; i < size_array; ++i)
+        printf("shopt %s %s\n", (val_options[i]) ? "-s" : "-u", options[i]);
 }
 
 /*
@@ -43,13 +75,19 @@ static int build_shopt_call(bool set, char *option)
         shopt_container = command_init(2, "shopt", "-u", option);
 
     else                            //just call shopt
-         shopt_container = command_init(0, "shopt");
+    {
+        if (set)
+            shopt_container = command_init(0, "shopt");
+        else
+        {
+            print_pipable_shopt();
+            return 0;
+        }
+    }
 
     int return_value = shopt(shopt_container->params);
 
     command_destroy(&shopt_container);
-
-    optind++;
 
     return return_value;
 }
@@ -62,13 +100,17 @@ static int handle_not_existing_option(char *argv[])
     {
         if (build_shopt_call(false, argv[optind + 1]) == -1)
             return -1;
+        optind++;
+        optind++;
     }
     else
     {
         if (handle_file(current_option) == -1)
             return -1;
+        optind++;
+        optind++;
     }
-    optind++; //cause not getopt case need to manally increase optind
+
     return 0;
 }
 
@@ -83,7 +125,6 @@ int handle_parameters(struct boot_params *options,
         {"ast-print", no_argument, NULL, 'A'},
         {"norc", no_argument, NULL, 'N'}
     };
-    optind = 1; //set at 1 (default value) cause multiple getopt
 
     while (optind < argc)
     {

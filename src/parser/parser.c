@@ -224,7 +224,6 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 
         return to_execute;
     }
-    assert(0);
     return NULL;
 }
 
@@ -246,7 +245,13 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
     EAT();
-    EAT(); //cause for now it's two tokens for ()
+    
+    if (!NEXT_IS(")"))
+    {
+        token_lexer_free(&func_name);
+        return NULL;
+    }
+    EAT();
 
     while (NEXT_IS("\n"))
         EAT();
@@ -527,7 +532,8 @@ static struct instruction* parse_command(struct queue *lexer)
         command = parse_funcdec(lexer);
     else //simple command
     {
-        if (!NEXT_IS_OTHER() && !is_redirection(lexer))
+        if (!NEXT_IS_OTHER() && !is_redirection(lexer)
+                                                    && !NEXT_IS_ASSIGNEMENT())
             return NULL;
         command = parse_simple_command(lexer);
     }
@@ -539,9 +545,19 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 {
     struct instruction *left = NULL;
     struct instruction *right = NULL;
+    bool not = false;
+
+    if (NEXT_IS("!"))
+    {
+        EAT();
+        not = true;
+    }
 
     if ((left = parse_command(lexer)) == NULL)
         return NULL;
+
+    if (not)
+        left->type = TOKEN_NOT;
 
     struct instruction *root = left;
     while (NEXT_IS("|"))
