@@ -1,4 +1,5 @@
-/**
+/** @file
+* @brief data_structure representing a string
 * @author Coder : nicolas.blin
 * @author Tester : nicolas.blin
 * @author Reviewer : pierrick.made
