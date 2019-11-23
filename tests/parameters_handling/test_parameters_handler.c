@@ -1,5 +1,7 @@
 #include <criterion/criterion.h>
 #include <string.h>
+#include <unistd.h>
+#include <getopt.h>
 
 #include "../../src/parameters_handling/options.h"
 #include "../../src/parameters_handling/parameters_handler.h"
@@ -111,7 +113,7 @@ Test(arguments, option_pluso_bad_param)
     cr_assert_eq(-1, handle_parameters(&options, 3, argv), "return val should be -1");
 }
 
-Test(arguments, option_minuxo_good_param)
+Test(arguments, option_minuso_bad_param)
 {
     struct boot_params options = {0};
     char *argv[] = {"42sh", "-O", "jio", NULL};
@@ -124,6 +126,7 @@ Test(arguments, option_minuso_good_param)
     cr_assert_eq(false, g_env.options.option_nocaseglob);
     cr_assert_eq(1, handle_parameters(&(g_env.options), 3, argv), "return val should be 1");
     cr_assert_eq(true, g_env.options.option_nocaseglob);
+    optind = 1;
     char *argv2[] = {"42sh", "+O", "nocaseglob", NULL};
     cr_assert_eq(1, handle_parameters(&(g_env.options), 3, argv2), "return val should be 1");
     cr_assert_eq(false, g_env.options.option_nocaseglob);
