@@ -1,0 +1,41 @@
+- name: -c shopt -u jiods
+  options:
+     - "-c"
+     - "shopt -u jiods"
+  checks:
+     - returncode
+     - has_stderr
+
+- name: -c shopt -u jiods
+  options:
+     - "-c"
+     - "shopt -u jiods"
+  checks:
+     - returncode
+     - has_stderr
+
+- name: -c shopt -rze
+  options:
+     - "-c"
+     - "shopt -rze"
+  checks:
+     - returncode
+     - has_stderr
+
+- name: ./42sh +O jiodsq
+- stdin: ./42sh +O jiodsq
+  checks:
+     - returncode
+     - has_stderr
+
+- name: ./42sh -O jiodsq
+- stdin: ./42sh -O jiodsq
+  checks:
+     - returncode
+     - has_stderr
+
+- name: ./42sh -O ast_print script.sh
+- stdin: echo shopt > script.sh; ./42sh -O ast_print script.sh; rm script.sh; rm ast.dot
+  checks:
+     - stdout
+     - returncode

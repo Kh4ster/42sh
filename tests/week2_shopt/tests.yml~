@@ -1,0 +1,4 @@
+- name: -c shopt -u jiods
+  options:
+     - "c"
+     - "shopt"
