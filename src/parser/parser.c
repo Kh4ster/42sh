@@ -544,9 +544,19 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 {
     struct instruction *left = NULL;
     struct instruction *right = NULL;
+    bool not = false;
+
+    if (NEXT_IS("!"))
+    {
+        EAT();
+        not = true;
+    }
 
     if ((left = parse_command(lexer)) == NULL)
         return NULL;
+
+    if (not)
+        left->type = TOKEN_NOT;
 
     struct instruction *root = left;
     while (NEXT_IS("|"))
