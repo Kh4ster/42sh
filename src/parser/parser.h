@@ -35,7 +35,9 @@ enum token_parser_type
     TOKEN_WHILE, /**< @brief token while */
     TOKEN_UNTIL, /**< @brief token until */
     TOKEN_FOR, /**< @brief token for */
-    TOKEN_PIPE /**< @brief token pipe */
+    TOKEN_PIPE, /**< @brief token pipe */
+    TOKEN_VAR_DECLARATION, /**< @brief token var declaration */
+    TOKEN_FUNC_DEF /**< @brief token func definition */
 };
 
 struct for_instruction
