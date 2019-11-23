@@ -133,3 +133,48 @@
   stdin: cat tutu
   stdin: cat toto
   stdin: rm tata titi tutu toto
+
+- name: ech toto 2<file
+  stdin: touch file; ech toto 2>file; rm file
+
+- name: ech toto 1<file
+  stdin: touch file; ech toto 2>file; rm file
+
+- name: ech toto 0<file
+  stdin: touch file; ech toto 2>file; rm file
+
+#DOUBLE REDIRECTION
+
+- name: Redirection append
+  stdin: |
+    echo good >> toto
+    echo papa >> toto
+    cat toto
+    rm toto
+
+#HEREDOCS
+- name: HEREDOCS cat << toto
+  options:
+     - ../tests/week2_redirections/test6.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS tee newfile << EOF
+  options:
+     - ../tests/week2_redirections/test7.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS tee newfile <<- EOF
+  options:
+     - ../tests/week2_redirections/test8.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS <<- End_of_file >file
+  options:
+     - ../tests/week2_redirections/test9.sh
+
