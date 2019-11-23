@@ -322,8 +322,8 @@ struct queue *lexer(char *line, struct queue *token_queue)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
-    if (is_interactive())
-        queue_push(token_queue, create_newline_token(NULL));
+
+    queue_push(token_queue, create_newline_token(NULL));
     return token_queue;
 }
 
@@ -346,10 +346,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
-        g_env.current_line = strdup(next_line);
-        //add a new line token in the queue execpt if it's first call
-        if (g_env.not_first_line && !is_interactive())
-            queue_push(token_queue, create_newline_token(NULL));
+        // add a new line token in the queue execpt if it's first call
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
 
@@ -361,8 +358,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
             free(next_line);
     }
 
-    g_env.not_first_line = 1;
-    g_env.prompt = "> "; //change prompt to ps2 avec lexing
+    g_env.prompt = "> "; //change prompt to ps2 with lexing
     return current_token;
 }
 
