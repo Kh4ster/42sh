@@ -33,6 +33,10 @@
   options:
     - ../tests/week1_if/test8.sh
 
+- name: if else if fi fi with varable assignements
+  options:
+    - ../tests/week1_if/test9.sh
+
 - name: 2 command lines
   stdin: |
     if true; then echo toto; fi
