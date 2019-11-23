@@ -1,3 +1,4 @@
+var=papa
 			test()
 {
     echo function
@@ -6,6 +7,7 @@
     elif false;then
         echo bad
     else
+        var=maman
 echo good;
 fi
 

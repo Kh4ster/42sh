@@ -88,3 +88,43 @@
     - stdout
     - has_stderr
     - returncode
+
+#pipes
+
+- name: PIPES command_notfound 1
+  stdin: ech ok | echo ok | echo ok
+  checks:
+    - has_stderr
+    - returncode
+
+- name: PIPES command_notfound 2
+  stdin: echo ok | ech ok | echo ok
+  checks:
+    - has_stderr
+    - returncode
+
+- name: PIPES command_notfound 3
+  stdin: echo ok | echo ok | ech ok
+  checks:
+    - has_stderr
+    - returncode
+
+- name: PIPES command_notfound 4
+  stdin: ech ok | ech ok | echo ok
+  checks:
+    - has_stderr
+    - returncode
+
+- name: PIPES command_notfound 5
+  stdin: echo ok | ech ok | ech ok
+  checks:
+    - has_stderr
+    - returncode
+
+- name: PIPES command_notfound 6
+  stdin: ech ok | echo ok | ech ok
+  checks:
+    - has_stderr
+    - returncode
+
+

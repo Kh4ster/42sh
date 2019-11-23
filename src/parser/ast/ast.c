@@ -126,7 +126,7 @@ static int handle_while(struct instruction *ast)
 static int handle_until(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
-    int return_value = 1;
+    int return_value = 0;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions))
         return_value = execute_ast(while_instruction->to_execute);
