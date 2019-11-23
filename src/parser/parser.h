@@ -29,12 +29,15 @@ enum token_parser_type
     TOKEN_ELSE, /**< @brief token else */
     TOKEN_CASE,
     TOKEN_HEREDOC,
+    TOKEN_NOT,
     TOKEN_HEREDOC_MINUS,
     //TOKEN_FUNCTION, /**< @brief token function */
     TOKEN_WHILE, /**< @brief token while */
     TOKEN_UNTIL, /**< @brief token until */
     TOKEN_FOR, /**< @brief token for */
-    TOKEN_PIPE /**< @brief token pipe */
+    TOKEN_PIPE, /**< @brief token pipe */
+    TOKEN_VAR_DECLARATION, /**< @brief token var declaration */
+    TOKEN_FUNC_DEF /**< @brief token func definition */
 };
 
 struct for_instruction

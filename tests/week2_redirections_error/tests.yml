@@ -24,15 +24,30 @@
   stdin: cat toto
   stdin: rm toto
 
-#DOUBLE REDIRECTION
-
-- name: Redirection append
-  stdin: |
-    echo good >> toto
-    echo papa >> toto
-    cat toto
-    rm toto
-  checks: |
-    - stdout
+- name: ech toto 2<file
+  stdin: ech toto 2<file
+  checks:
     - returncode
     - has_stderr
+
+#HEREDOCS
+- name: HEREDOCS tee newfile <<< EOF
+  options:
+     - ../tests/week2_redirections/test1.sh
+  checks:
+   - has_stderr
+   - returncode
+
+- name: HEREDOCS tee newfile ><< EOF
+  options:
+     - ../tests/week2_redirections/test2.sh
+  checks:
+   - has_stderr
+   - returncode
+
+- name: HEREDOCS tee newfile <<<- EOF
+  options:
+     - ../tests/week2_redirections/test3.sh
+  checks:
+   - has_stderr
+   - returncode

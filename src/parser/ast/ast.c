@@ -65,6 +65,8 @@ static int handle_and_or_instruction(struct instruction *ast)
 static bool is_func(struct instruction *ast)
 {
     struct command_container *command = ast->data;
+    if (command == NULL) //var assignement case
+        return false;
     return hash_find(g_env.functions, command->command) != NULL;
 }
 
@@ -78,6 +80,8 @@ static int exec_func(struct instruction *ast)
 static bool is_builtin(struct instruction *ast)
 {
     struct command_container *command = ast->data;
+    if (command == NULL) //var assignement case
+        return false;
     return hash_find_builtin(g_env.builtins, command->command) != NULL;
 }
 
@@ -122,7 +126,7 @@ static int handle_while(struct instruction *ast)
 static int handle_until(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
-    int return_value = 1;
+    int return_value = 0;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions))
         return_value = execute_ast(while_instruction->to_execute);
@@ -227,7 +231,7 @@ static int handle_case(struct instruction *ast)
 
 extern int execute_ast(struct instruction *ast)
 {
-    if (!ast || ast->data == NULL)//for now to handle var assignement
+    if (!ast)
         return 0;
 
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
@@ -243,6 +247,9 @@ extern int execute_ast(struct instruction *ast)
         break;
     case TOKEN_COMMAND:
         return_value = handle_commands(ast);
+        break;
+    case TOKEN_NOT:
+        return_value = !(handle_commands(ast));
         break;
     case TOKEN_IF:
         return_value = handle_if(ast);

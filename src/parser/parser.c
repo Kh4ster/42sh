@@ -139,11 +139,11 @@ static struct redirection *build_redirection(int fd, char *file)
     return redirect;
 }
 
-static struct instruction* build_empty_instruction(void)
+static struct instruction* build_funcdef_instruction(void)
 {
     struct instruction *instruction = xmalloc(sizeof(*instruction));
     instruction->data = NULL;
-    instruction->type = TOKEN_COMMAND;
+    instruction->type = TOKEN_FUNC_DEF;
     instruction->next = NULL;
     return instruction;
 }
@@ -245,7 +245,7 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
     EAT();
-    
+
     if (!NEXT_IS(")"))
     {
         token_lexer_free(&func_name);
@@ -264,7 +264,7 @@ static struct instruction *parse_funcdec(struct queue *lexer)
 
     hash_insert(g_env.functions, func_name->data, to_execute);
     free(func_name);
-    return  build_empty_instruction();
+    return  build_funcdef_instruction();
 }
 
 //missing other shell command
@@ -443,8 +443,12 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     if (NEXT_IS_ASSIGNEMENT())
     {
-        EAT();
-        return build_instruction(TOKEN_COMMAND, NULL);
+        struct token_lexer *token = token_lexer_head(lexer);
+        if (token->data[0] != '=') //just =value, is considered a command
+        {
+            EAT();
+            return build_instruction(TOKEN_VAR_DECLARATION, NULL);
+        }
     }
 
     struct token_lexer *token = token_lexer_pop(lexer);
@@ -532,7 +536,8 @@ static struct instruction* parse_command(struct queue *lexer)
         command = parse_funcdec(lexer);
     else //simple command
     {
-        if (!NEXT_IS_OTHER() && !is_redirection(lexer))
+        if (!NEXT_IS_OTHER() && !is_redirection(lexer)
+                                                    && !NEXT_IS_ASSIGNEMENT())
             return NULL;
         command = parse_simple_command(lexer);
     }
@@ -544,9 +549,19 @@ static struct instruction *parse_pipeline(struct queue *lexer)
 {
     struct instruction *left = NULL;
     struct instruction *right = NULL;
+    bool not = false;
+
+    if (NEXT_IS("!"))
+    {
+        EAT();
+        not = true;
+    }
 
     if ((left = parse_command(lexer)) == NULL)
         return NULL;
+
+    if (not)
+        left->type = TOKEN_NOT;
 
     struct instruction *root = left;
     while (NEXT_IS("|"))
