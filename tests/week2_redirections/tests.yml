@@ -235,3 +235,6 @@
 - name: for i in *; do cat <<- toto; done text with tab
   options:
     - ../tests/week2_redirections/test14.sh
+- name: HEREDOC in for clause
+  options:
+    - ../tests/week2_redirections/test15.sh

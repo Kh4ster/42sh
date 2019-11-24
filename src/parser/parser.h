@@ -5,6 +5,7 @@
 * @author Reviewer : nicolas.blin cloe.lacombe pierrick.made
 */
 
+#include <stdio.h>
 #include "../data_structures/queue.h"
 
 #pragma once
@@ -132,6 +133,7 @@ struct redirection
     int fd; /**< @brief io number */
     char *file; /**< @brief file to use for redirection */
     struct instruction *to_redirect; /**< @brief command to execute */
+    FILE *temp_file; /**< @brief only for heredocs */
 };
 
 /**
