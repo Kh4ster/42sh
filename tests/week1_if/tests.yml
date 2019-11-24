@@ -55,3 +55,9 @@
     - stdout
     - returncode
     - has_stderr
+
+- name: if in a if
+  stdin: if if echo ok; then echo good; fi; then echo gooood; fi;
+
+- name: for in a if
+  stdin: if for i in *; do echo ok; done; then echo good; fi
