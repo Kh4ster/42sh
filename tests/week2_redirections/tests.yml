@@ -199,14 +199,27 @@
    - stdout
    - returncode
 
-- name: HEREDOCS tee newfile <<- EOF
+- name: HEREDOCS tee newfile << EOF with a tab
+  options:
+     - ../tests/week2_redirections/test11.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS tee newfile <<- EOF with a tab
   options:
      - ../tests/week2_redirections/test8.sh
   checks:
    - stdout
    - returncode
 
-- name: HEREDOCS <<- End_of_file >file
+- name: HEREDOCS tee newfile <<- EOF with multiple tabs
+  options:
+     - ../tests/week2_redirections/test10.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS <<- End_of_file >file with a tab
   options:
      - ../tests/week2_redirections/test9.sh
-
