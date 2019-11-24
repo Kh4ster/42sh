@@ -5,7 +5,7 @@
 #include "error.h"
 #include "../lexer/token_lexer.h"
 
-inline void handle_parser_errors(struct queue *lexer)
+void handle_parser_errors(struct queue *lexer)
 {
     if (g_env.is_parsing_ressource || is_interactive())
     {

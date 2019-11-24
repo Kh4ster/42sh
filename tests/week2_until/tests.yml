@@ -1,0 +1,19 @@
+- name: simple until 1
+  options:
+    - ../tests/week2_until/test1.sh
+
+- name: simple until 2
+  options:
+    - ../tests/week2_until/test2.sh
+
+- name: simple until 3
+  options:
+    - ../tests/week2_until/test3.sh
+
+- name: simple until 4
+  options:
+    - ../tests/week2_until/test4.sh
+  checks:
+    - has_stderr
+    - stdout
+    - returncode

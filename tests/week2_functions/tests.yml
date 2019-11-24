@@ -21,3 +21,11 @@
 - name: complex function 4
   options:
     - ../tests/week2_functions/test5.sh
+
+- name: complex function 5
+  options:
+    - ../tests/week2_functions/test6.sh
+
+- name: complex function 6
+  options:
+    - ../tests/week2_functions/test7.sh

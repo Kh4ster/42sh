@@ -207,17 +207,18 @@ static void handle_io_number(char *cursor, struct queue *token_queue)
     }
 }
 
-static int generate_token_aux(struct queue *token_queue, char *cursor,
+static int generate_token_redirection(struct queue *token_queue, char *cursor,
         char **delim, struct token_lexer *new_token)
 {
     if (strncmp(cursor, "<<-", 3) == 0)
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 3);
+        return 1;
     }
 
 
-    else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
+    if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
             || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
             || strncmp(cursor, ">&", 2) == 0 || strncmp(cursor, "<>", 2) == 0
         || strncmp(cursor, "<&", 2) == 0 || strncmp(cursor, ">|", 2) == 0
@@ -225,18 +226,31 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
+        return 1;
     }
 
-    else if (strncmp(cursor, "|", 1) == 0)
+    if (strncmp(cursor, "|", 1) == 0)
+    {
         set_token(new_token, TOKEN_OPERATOR, delim, 1);
+        return 1;
+    }
 
     else if (! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1))
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 1);
+        return 1;
     }
+    return 0;
+}
 
-    else if (strncmp(cursor, "\\n", 2) == 0)
+static int generate_token_aux(struct queue *token_queue, char *cursor,
+        char **delim, struct token_lexer *new_token)
+{
+    if (generate_token_redirection(token_queue, cursor, delim, new_token))
+        return 1;
+
+    if (strncmp(cursor, "\\n", 2) == 0)
     {
         new_token = create_newline_token(new_token);
         (*delim) += 2;
@@ -322,8 +336,8 @@ struct queue *lexer(char *line, struct queue *token_queue)
             queue_push(token_queue, token_found);
         cursor = delim;
     }
-    if (is_interactive())
-        queue_push(token_queue, create_newline_token(NULL));
+
+    queue_push(token_queue, create_newline_token(NULL));
     return token_queue;
 }
 
@@ -333,10 +347,12 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     if (current_token != NULL)
         return current_token;
 
+    free(g_env.current_line);
     char *next_line = get_next_line(g_env.prompt);
 
     if (next_line == NULL) // End Of File
     {
+        g_env.current_line = NULL;
         current_token = xmalloc(sizeof(struct token_lexer));
         current_token->type = TOKEN_EOF;
         current_token->data = strdup("ouais");
@@ -344,9 +360,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
-        //add a new line token in the queue execpt if it's first call
-        if (g_env.not_first_line && !is_interactive())
-            queue_push(token_queue, create_newline_token(NULL));
+        // add a new line token in the queue execpt if it's first call
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
 
@@ -358,8 +372,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
             free(next_line);
     }
 
-    g_env.not_first_line = 1;
-    g_env.prompt = "> "; //change prompt to ps2 avec lexing
+    g_env.prompt = "> "; //change prompt to ps2 with lexing
     return current_token;
 }
 

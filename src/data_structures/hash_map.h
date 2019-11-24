@@ -1,7 +1,7 @@
 /**
 * @author Coder : nicolas.blin
 * @author Tester : nicolas.blin
-* @author Reviewer :
+* @author Reviewer : pierrick.made
 */
 
 #pragma once

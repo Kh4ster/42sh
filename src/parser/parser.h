@@ -1,9 +1,8 @@
 /** @file
 * @brief
-* @author Coder : nicolas.blin
-* @author Tester :
-* @author Reviewer :
-* @author Integrator :
+* @author Coder : nicolas.blin cloe.lacombe pierrick.made
+* @author Tester : zakaria.ben-allal
+* @author Reviewer : nicolas.blin cloe.lacombe pierrick.made
 */
 
 #include "../data_structures/queue.h"
@@ -27,17 +26,22 @@ enum token_parser_type
     TOKEN_DUP_FD, /**< @brief token fd duplication */
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
-    TOKEN_CASE,
-    TOKEN_HEREDOC,
-    TOKEN_NOT,
+    TOKEN_CASE, /**< @brief token case */
+    TOKEN_HEREDOC, /**< @brief token here doc */
+    TOKEN_NOT, /**< @brief token not */
     TOKEN_HEREDOC_MINUS,
-    //TOKEN_FUNCTION, /**< @brief token function */
     TOKEN_WHILE, /**< @brief token while */
     TOKEN_UNTIL, /**< @brief token until */
     TOKEN_FOR, /**< @brief token for */
-    TOKEN_PIPE /**< @brief token pipe */
+    TOKEN_PIPE, /**< @brief token pipe */
+    TOKEN_VAR_DECLARATION, /**< @brief token var declaration */
+    TOKEN_FUNC_DEF /**< @brief token func definition */
 };
 
+/**
+* @struct for_instruction
+* @brief represent an for node in the ast
+*/
 struct for_instruction
 {
     char *var_name;
@@ -45,21 +49,35 @@ struct for_instruction
     struct instruction *to_execute;
 };
 
-struct case_item {
-    struct array_list *patterns;
-    struct instruction *to_execute;
-    struct case_item *next;
+/**
+* @struct case_item
+* @brief represent an case item for the case clause
+*/
+struct case_item
+{
+    struct array_list *patterns; /**< @brief patterns to match */
+    struct instruction *to_execute; /**< @brief commands to execute */
+    struct case_item *next; /**< @brief next item */
 };
 
-struct case_clause {
-    char *pattern;
-    struct array_list *items;
+/**
+* @struct case_clause
+* @brief represent a case node in the ast
+*/
+struct case_clause
+{
+    char *pattern; /**< @brief pattern to match */
+    struct array_list *items; /**< @brief items */
 };
 
+/**
+* @struct and_or_instruction
+* @brief represent a while node in the ast
+*/
 struct while_instruction
 {
-    struct instruction *conditions;
-    struct instruction *to_execute;
+    struct instruction *conditions; /**< @brief conditions to test */
+    struct instruction *to_execute; /**< @brief commands to execute */
 };
 
 /**

@@ -1,9 +1,8 @@
 /** @file
 * @brief Data_structure of token used and returned by lexer
 * @author Coder : pierrick.made
-* @author Tester :
-* @author Reviewer :
-* @author Integrator :
+* @author Tester : pierrick.made & zakaria.ben-allal
+* @author Reviewer : cloe.lacombe
 */
 
 #pragma once

@@ -1,12 +1,24 @@
 - name: echo toto
   stdin: echo toto
 
+- name: echo toto | echo papa
+  stdin: echo toto | echo papa
+
+- name: echo toto;
+  stdin: echo toto;
+
+- name: neg_echo toto
+  stdin: ! echo toto
+
 - name: ls
   options:
     - ../tests/week1_simplecommand/test1.sh
 
 - name: tree
   stdin: tree
+
+- name: neg_tree
+  stdin: ! tree
 
 - name: tree dir_not_fond
   stdin: test dfdvfvf
@@ -40,7 +52,7 @@
 - name: echo 1 && echo 2 && echo 3
   stdin: echo 1 && echo 2 && echo 3
 
-- name: echo && || (\n)*
+- name: ok=; echo && || (\n)*
   options:
     - ../tests/week1_simplecommand/test4.sh
   checks:
@@ -69,6 +81,20 @@
 
 - name: ech ok; echo ok
   stdin: ech ok; echo ok
+  checks:
+    - has_stderr
+    - stdout
+    - returncode
+
+- name: ech ok; neg_echo ok
+  stdin: ech ok; ! echo ok
+  checks:
+    - has_stderr
+    - stdout
+    - returncode
+
+- name : =ok; echo toto || echo papa && echo maman
+  stdin: =ok; echo toto || echo papa && echo maman
   checks:
     - has_stderr
     - stdout

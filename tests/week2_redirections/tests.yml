@@ -24,6 +24,9 @@
     - stdout
     - returncode
 
+- name: echo toto < 0
+  stdin: touch 0; echo toto < 0; rm 0
+
 - name: Redirection within an if case
   stdin: if echo ok > toto; cat toto; then echo "food"; fi; rm toto
   checks:
@@ -133,3 +136,77 @@
   stdin: cat tutu
   stdin: cat toto
   stdin: rm tata titi tutu toto
+
+- name: ech toto 2<file
+  stdin: touch file; ech toto 2>file; rm file
+
+- name: ech toto 1<file
+  stdin: touch file; ech toto 2>file; rm file
+
+- name: ech toto 0<file
+  stdin: touch file; ech toto 2>file; rm file
+
+- name: echo toto <> 3
+  stdin: echo toto <> 3; cat 3; rm 3
+
+- name: ech toto <> 3
+  stdin: ech toto <> 3; cat 3; rm 3
+  checks:
+    - returncode
+    - has_stderr
+    - stdout
+
+- name: ech toto >| 3
+  stdin: ech toto >| 3; cat 3; rm 3
+  checks:
+    - returncode
+    - has_stderr
+    - stdout
+
+- name: echo toto >| 3
+  stdin: echo toto >| 3; cat 3; rm 3
+
+- name: echo toto &> 3
+  stdin: echo toto &> 3; cat 3; rm 3
+
+- name: ech toto &> 3
+  stdin: ech toto &> 3; cat 3; rm 3
+  checks:
+    - returncode
+    - has_stderr
+
+#DOUBLE REDIRECTION
+
+- name: Redirection append
+  stdin: |
+    echo good >> toto
+    echo papa >> toto
+    cat toto
+    rm toto
+
+#HEREDOCS
+- name: HEREDOCS cat << toto
+  options:
+     - ../tests/week2_redirections/test6.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS tee newfile << EOF
+  options:
+     - ../tests/week2_redirections/test7.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS tee newfile <<- EOF
+  options:
+     - ../tests/week2_redirections/test8.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS <<- End_of_file >file
+  options:
+     - ../tests/week2_redirections/test9.sh
+

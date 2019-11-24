@@ -2,7 +2,7 @@
 * @brief Handle entry parameters given to 42sh binary
 * @author Coder : nicolas.blin & zakaria.ben-allal
 * @author Tester : nicolas.blin
-* @author Reviewer : nicolas.blin
+* @author Reviewer : nicolas.blin & pierrick.made
 * @author Integrator :
 */
 
