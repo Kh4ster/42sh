@@ -76,3 +76,7 @@
     - stdout
     - has_stderr
     - returncode
+
+- name: cat in a while
+  options:
+    - ../tests/week2_while/test3.sh
