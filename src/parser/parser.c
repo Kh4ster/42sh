@@ -91,10 +91,10 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
     if (!strcmp(token->data, ">|"))
         type = TOKEN_REDIRECT_LEFT;
 
-    if (! strcmp(token->data, "<<"))
+    if (!strcmp(token->data, "<<"))
         type = TOKEN_HEREDOC;
 
-    if (! strcmp(token->data, "<<-"))
+    if (!strcmp(token->data, "<<-"))
         type = TOKEN_HEREDOC_MINUS;
 
     return type;
@@ -185,8 +185,7 @@ static struct instruction *parse_compound_list_break(struct queue *lexer);
 static struct instruction *parse_for(struct queue *lexer);
 static struct instruction *parse_case_rule(struct queue *lexer);
 
-// see how it works exactly
-static struct instruction *parse_shell_command(struct queue *lexer)
+static struct instruction *parse_control_structure(struct queue *lexer)
 {
     if (NEXT_IS("if"))
         return parse_if(lexer);
@@ -199,6 +198,34 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 
     if (NEXT_IS("case"))
         return parse_case_rule(lexer);
+
+    return NULL; //impossible
+}
+
+static bool next_is_control_structure(struct queue *lexer)
+{
+    static const char *shell_command[] =
+    {
+        "if",
+        "for",
+        "while",
+        "until",
+        "case"
+    };
+    size_t size_array = sizeof(shell_command) / sizeof(char *);
+
+    for (size_t i = 0; i < size_array; ++i)
+    {
+        if (NEXT_IS(shell_command[i]))
+            return true;
+    }
+    return false;
+}
+
+static struct instruction *parse_shell_command(struct queue *lexer)
+{
+    if (next_is_control_structure(lexer))
+        return parse_control_structure(lexer);
 
     struct instruction *to_execute = NULL;
     if (NEXT_IS("{"))
@@ -231,10 +258,10 @@ static struct instruction *parse_shell_command(struct queue *lexer)
 static struct instruction *parse_funcdec(struct queue *lexer)
 {
     struct instruction *to_execute = NULL;
+
     if (NEXT_IS("function"))
-    {
         EAT();
-    }
+
     if (!NEXT_IS_OTHER())
         return NULL;
 
@@ -268,7 +295,6 @@ static struct instruction *parse_funcdec(struct queue *lexer)
     return  build_funcdef_instruction();
 }
 
-//missing other shell command
 static bool is_shell_command(struct queue *lexer)
 {
     static const char *shell_command[] =
@@ -345,9 +371,9 @@ static struct instruction *__parse_redirection(struct queue *lexer)
 
 static bool redirection_not_valid(struct instruction *redirection);
 
-
 static struct instruction *parse_redirection(struct queue *lexer,
-                                        struct instruction *command)
+                                        struct instruction *command
+)
 {
     struct instruction *redirection = __parse_redirection(lexer);
 
@@ -383,8 +409,6 @@ static struct instruction *parse_redirection(struct queue *lexer,
     return tmp;
 }
 
-
-//maybe write it better ?
 static bool next_is_end_of_instruction(struct queue *lexer)
 {
     struct token_lexer *token = token_lexer_head(lexer);
@@ -394,21 +418,12 @@ static bool next_is_end_of_instruction(struct queue *lexer)
     if (strcmp(token->data, "\n") == 0)
         return true;
 
-/*
-    if (is_redirection(lexer))
-        return true;
-*/
-/*
-    if (NEXT_IS_NUMBER())
-        return true;
-*/
-
     if (NEXT_IS("(") || NEXT_IS(")"))
         return true;
 
     return token->type == TOKEN_END_OF_INSTRUCTION
             || token->type == TOKEN_EOF
-            || (token->type == TOKEN_OPERATOR && ! is_redirection(lexer));
+            || (token->type == TOKEN_OPERATOR && !is_redirection(lexer));
 }
 
 
@@ -421,7 +436,8 @@ static struct command_container *build_simple_command(char *simple_command,
 
 
 static struct instruction *add_command_redirection(
-                    struct instruction *redirection, struct instruction *cmd)
+                    struct instruction *redirection, struct instruction *cmd
+)
 {
     struct redirection *redirect = redirection->data;
 
@@ -644,7 +660,8 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
 static struct for_instruction *build_for_instruction(
                                             char *var_name,
                                             struct array_list *var_values,
-                                            struct instruction *to_execute)
+                                            struct instruction *to_execute
+)
 {
     struct for_instruction *new_for = xmalloc(sizeof(struct for_instruction));
     new_for->var_name = var_name;
@@ -655,7 +672,8 @@ static struct for_instruction *build_for_instruction(
 
 static struct while_instruction *build_while_instruction(
                                             struct instruction *cond,
-                                            struct instruction *to_do)
+                                            struct instruction *to_do
+)
 {
     struct while_instruction *while_i =
                         xmalloc(sizeof(struct while_instruction));
@@ -787,7 +805,6 @@ static int next_is_end_of_case_item(struct queue *lexer)
     return NEXT_IS(";;") || NEXT_IS("(") || NEXT_IS(")") || NEXT_IS("esac");
 }
 
-
 static struct case_item *parse_case_item(struct queue *lexer, int *error)
 {
     if (NEXT_IS("("))
@@ -848,7 +865,8 @@ static struct case_item *parse_case_item(struct queue *lexer, int *error)
 
 
 static struct instruction *parse_case_clause(struct queue *lexer,
-                                struct case_clause *case_clause, int *error)
+                                struct case_clause *case_clause, int *error
+)
 {
     struct case_item *first_item = parse_case_item(lexer, error);
 
@@ -892,6 +910,11 @@ static struct instruction *parse_case_clause(struct queue *lexer,
     return build_instruction(TOKEN_CASE, case_clause);
 }
 
+static void skip_new_line(struct queue *lexer)
+{
+    while (NEXT_IS("\n"))
+        EAT();
+}
 
 static struct instruction *parse_case_rule(struct queue *lexer)
 {
@@ -908,8 +931,7 @@ static struct instruction *parse_case_rule(struct queue *lexer)
         return NULL;
     }
 
-    while (NEXT_IS("\n"))
-        EAT();
+    skip_new_line(lexer);
 
     if (!NEXT_IS("in"))
     {
