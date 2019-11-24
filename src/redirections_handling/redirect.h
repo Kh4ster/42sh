@@ -19,4 +19,4 @@
 ** @return 0 if no problem happend, error code otherwise
 */
 
-extern int redirections_handling(struct instruction *redirection);
+extern int redirections_handling(struct instruction *redirection, int execute);

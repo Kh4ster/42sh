@@ -266,7 +266,7 @@ extern int execute_ast(struct instruction *ast)
     case TOKEN_HEREDOC:
     case TOKEN_HEREDOC_MINUS:
     case TOKEN_OVERWRITE:
-        return_value = redirections_handling(ast);
+        return_value = redirections_handling(ast, 1);
         break;
     case TOKEN_WHILE:
         return_value = handle_while(ast);
