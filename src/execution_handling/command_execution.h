@@ -2,8 +2,7 @@
 * @brief executes commands stored in command_container structure
 * @author Coder : zakaria.ben-allal
 * @author Tester : zakaria.ben-allal
-* @author Reviewer :
-* @author Integrator :
+* @author Reviewer : pierrick.made & nicolas.blin
 */
 
 #pragma once

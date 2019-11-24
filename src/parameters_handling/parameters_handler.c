@@ -60,8 +60,8 @@ static void print_pipable_shopt(void)
 
 /*
 ** Usually the shopt is a call to a builtin with some parameters
-** Here the builin is "called" through a [+-]O option passed to the shell
-** To avoid wirting again the same code a "fake" shopt command is created
+** Here the builtin is "called" through a [+-]O option passed to the shell
+** To avoid writing again the same code a "fake" shopt command is created
 ** and then executed
 */
 static int build_shopt_call(bool set, char *option)
@@ -123,6 +123,27 @@ static int handle_not_existing_option(char *argv[])
     return 0;
 }
 
+static int is_N_or_A_opt(struct boot_params *options, char c)
+{
+    if (c == 'N')
+    {
+        options->option_n = true;
+        return 1;
+    }
+    if (c == 'A')
+    {
+        options->option_a = true;
+        return 1;
+    }
+    return 0;
+}
+
+static void set_c_option(struct boot_params *options)
+{
+    options->option_c = true;
+    options->command_option_c = optarg;
+}
+
 int handle_parameters(struct boot_params *options,
                         int argc,
                         char *argv[]
@@ -148,24 +169,22 @@ int handle_parameters(struct boot_params *options,
             else
                 return return_value;
         }
-        else if (c == 'N')
-            options->option_n = true;
-        else if (c == 'A')
-            options->option_a = true;
-        else if (c == 'O')
+        else if (!is_N_or_A_opt(options, c))
         {
-            if ((return_value = build_shopt_call(true, argv[optind])) != 0)
+            if (c == 'O')
+            {
+                if ((return_value = build_shopt_call(true, argv[optind])) != 0)
+                    return 2;
+            }
+            else if (c == 'c')
+            {
+                if (optarg == NULL)
+                    return 2;
+                set_c_option(options);
+            }
+            else if (c == '?')
                 return 2;
         }
-        else if (c == 'c')
-        {
-            if (optarg == NULL)
-                return 2;
-            options->option_c = true;
-            options->command_option_c = optarg;
-        }
-        else if (c == '?')
-            return 2;
     }
     return 0;
 }
