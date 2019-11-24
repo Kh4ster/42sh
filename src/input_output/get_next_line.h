@@ -25,6 +25,7 @@ struct shell_environment
     struct hash_map *functions; /**< @brief hashmap containing functions */
     struct hash_map *builtins; /**< @brief hashmap containing builtins */
     char *current_line; /**< @brief last line took by readline */
+    int noclobber_set;
 };
 
 /**

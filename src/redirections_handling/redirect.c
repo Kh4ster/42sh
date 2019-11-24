@@ -15,7 +15,6 @@
 #include "../parser/ast/ast.h"
 #include "../input_output/get_next_line.h"
 
-
 static int redirect_stdin(struct redirection *redirection)
 {
     int fd_saved = dup(redirection->fd);
@@ -42,8 +41,25 @@ static int redirect_stdin(struct redirection *redirection)
     return return_command;
 }
 
-static int redirect_stdout(struct redirection *redirection)
+static int file_exist(char *file)
 {
+    struct stat statbuf;
+
+    if (stat(file, &statbuf) == -1)
+        return 0;
+
+    return 1;
+}
+
+
+static int redirect_stdout(struct redirection *redirection, int overwrite)
+{
+    if (!overwrite && file_exist(redirection->file) && g_env.noclobber_set)
+    {
+        warnx("Can not override file : file exist");
+        return 1;
+    }
+
     int fd_saved = dup(redirection->fd);
 
     int filedes_file = open(redirection->file, O_WRONLY | O_CREAT | O_TRUNC,
@@ -283,7 +299,10 @@ extern int redirections_handling(struct instruction *redirection)
     switch(redirection->type)
     {
         case TOKEN_REDIRECT_LEFT:
-            return redirect_stdout(redirect);
+            return redirect_stdout(redirect, 0);
+            break;
+        case TOKEN_OVERWRITE:
+            return redirect_stdout(redirect, 1);
             break;
         case TOKEN_REDIRECT_APPEND_LEFT:
             return redirect_stdout_append(redirect);

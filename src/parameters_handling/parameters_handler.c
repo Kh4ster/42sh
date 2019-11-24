@@ -39,6 +39,7 @@ static void print_pipable_shopt(void)
         "nullglob",
         "sourcepath",
         "xpg_echo"
+        "noclobber"
     };
     static const size_t size_array = sizeof(options) / sizeof(char*);
 
@@ -106,6 +107,10 @@ static int build_shopt_call(bool set, char *option)
 static int handle_not_existing_option(char *argv[])
 {
     char *current_option = optarg;
+
+    if (strcmp(current_option, "+o") == 0)
+        return 1;
+
     if (strcmp(current_option, "+O") == 0)
     {
         if (build_shopt_call(false, argv[optind]) != 0)
@@ -137,7 +142,7 @@ int handle_parameters(struct boot_params *options,
 
     while (optind < argc)
     {
-        c = getopt_long(argc, argv, "-NAO::c:", long_opts, NULL);
+        c = getopt_long(argc, argv, "-NAO::c:o;", long_opts, NULL);
         if (c  == 1)
         {
             if ((return_value = handle_not_existing_option(argv)) == -1)
