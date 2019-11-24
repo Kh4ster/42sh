@@ -14,6 +14,7 @@
 #include "../execution_handling/command_container.h"
 #include "../data_structures/array_list.h"
 #include "../data_structures/hash_map.h"
+#include "../redirections_handling/redirect.c"
 
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)
@@ -389,6 +390,10 @@ static struct instruction *parse_redirection(struct queue *lexer,
         //to make difference between no redirection and bad grammar
         if (redirection_not_valid(redirection))
             return free_instructions(2, command, redirection);
+    
+        if (redirection->type == TOKEN_HEREDOC
+                || redirection->type == TOKEN_HEREDOC_MINUS)
+            redirections_handling(redirection, 0);
 
         struct redirection *redirect = redirection->data;
         redirect->to_redirect = command;
