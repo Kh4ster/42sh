@@ -33,6 +33,50 @@ static void sigint_handler(int signum)
     }
 }
 
+
+static void is_noclobber(int argc, char **argv)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "+o") == 0)
+        {
+            if (i < argc - 1 && strcmp("noclobber", argv[i + 1]) == 0)
+            {
+                g_env.noclobber_set = 0;
+                return;
+            }
+
+            if (i == argc - 1)
+            {
+                puts("set +o noclobber");
+                return;
+            }
+            errx(2, "Invalid option");
+        }
+
+        if (strcmp(argv[i], "-o") == 0)
+        {
+            if (i < argc - 1 && strcmp("noclobber", argv[i + 1]) == 0)
+            {
+                g_env.noclobber_set = 1;
+                return;
+            }
+
+            if (i == argc - 1)
+            {
+                if (g_env.noclobber_set)
+                    puts("noclobber    on");
+                else
+                    puts("noclobber    off");
+                return;
+            }
+
+            errx(2, "invalid option");
+        }
+
+    }
+}
+
 static void execute_shell(void)
 {
     int is_end = 0;
@@ -164,6 +208,7 @@ int main(int argc, char *argv[])
     if ((return_code = handle_parameters(&g_env.options, argc, argv)) != 0)
         errx(return_code, "invalid option or file");
 
+    is_noclobber(argc, argv);
     handle_signal();
 
     handle_ressource_files();

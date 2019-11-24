@@ -109,6 +109,7 @@ extern void destroy_tree(struct instruction *ast)
     case TOKEN_DUP_FD:
     case TOKEN_HEREDOC:
     case TOKEN_HEREDOC_MINUS:
+    case TOKEN_OVERWRITE:
         free_redirection(ast->data);
         break;
     case TOKEN_WHILE:
