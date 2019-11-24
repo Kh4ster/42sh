@@ -38,6 +38,10 @@ static void free_redirection(struct redirection *redirection)
 {
     free(redirection->file);
     destroy_tree(redirection->to_redirect);
+
+    if (redirection->temp_file)
+        fclose(redirection->temp_file);
+
     free(redirection);
 }
 

@@ -136,6 +136,7 @@ static struct redirection *build_redirection(int fd, char *file)
     redirect->to_redirect = NULL;
     redirect->fd = fd;
     redirect->file = file;
+    redirect->temp_file = NULL;
     return redirect;
 }
 

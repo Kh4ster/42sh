@@ -227,3 +227,7 @@
 - name: HEREDOC in if clause
   options:
     - ../tests/week2_redirections/test12.sh
+
+- name: HEREDOC in for clause
+  options:
+    - ../tests/week2_redirections/test13.sh
