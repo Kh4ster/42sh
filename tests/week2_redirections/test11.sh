@@ -1,4 +1,4 @@
-tee newfile <<- EOF
+tee newfile << EOF
 	line 1
 line 2
 line 3
