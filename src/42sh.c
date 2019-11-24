@@ -42,7 +42,7 @@ static void is_noclobber(int argc, char **argv)
         {
             if (i < argc - 1 && strcmp("noclobber", argv[i + 1]) == 0)
             {
-                g_env.noclobber_set = 1;
+                g_env.noclobber_set = 0;
                 return;
             }
 
@@ -58,9 +58,10 @@ static void is_noclobber(int argc, char **argv)
         {
             if (i < argc - 1 && strcmp("noclobber", argv[i + 1]) == 0)
             {
-                g_env.noclobber_set = 0;
+                g_env.noclobber_set = 1;
                 return;
             }
+
             if (i == argc - 1)
             {
                 if (g_env.noclobber_set)
@@ -69,6 +70,7 @@ static void is_noclobber(int argc, char **argv)
                     puts("noclobber    off");
                 return;
             }
+
             errx(2, "invalid option");
         }
 

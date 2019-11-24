@@ -187,6 +187,8 @@ int handle_parameters(struct boot_params *options,
                     return 2;
                 set_c_option(options);
             }
+            else if (c == 'o')
+                return 0;
             else if (c == '?')
                 return 2;
         }
