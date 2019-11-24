@@ -86,8 +86,13 @@ static void handle_ressource_files(void)
     }
 }
 
-void free_all(struct queue *lexer)
+void end_call_and_free_all(struct queue *lexer)
 {
+    // Have a \n on ctrl-d in interactive mode
+    if (is_interactive())
+        puts("");
+
+    // Free all
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
     free(lexer);
@@ -166,7 +171,7 @@ int main(int argc, char *argv[])
     int is_end = 0;
     struct queue *lexer = queue_init();
 
-    while (42)
+    while (42 && !is_end)
     {
         int error = 0;
         g_env.prompt = "42sh$ ";
@@ -179,17 +184,11 @@ int main(int argc, char *argv[])
 
         handle_signal();
 
-        if (is_end)
-            break;
-
-        else if (error)
+        if (!is_end && error)
             handle_parser_errors(lexer);
     }
 
-    free_all(lexer);
-
-    if (is_interactive()) //to have a \n on ctrl-d in interactive mode
-        puts("");
+    end_call_and_free_all(lexer);
 
     return return_code;
 }

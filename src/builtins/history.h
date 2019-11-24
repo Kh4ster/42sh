@@ -1,9 +1,8 @@
 /** @file
 * @brief builtin history with -c (clear) and (-r) restore options
 * @author Coder : pierrick.made
-* @author Tester :
-* @author Reviewer :
-* @author Integrator :
+* @author Tester : pierrick.made
+* @author Reviewer : nicolas.blin & pierrick.made
 */
 
 #pragma once

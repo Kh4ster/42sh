@@ -13,7 +13,7 @@ static size_t hash(const char *key, size_t table_size)
 
     size_t hash_value = 0;
     size_t p_pow = 1;
-    for (size_t i = 0; key[i]; ++i) 
+    for (size_t i = 0; key[i]; ++i)
     {
         hash_value = (hash_value + (key[i] - 'a' + 1) * p_pow) % table_size;
         p_pow = (p_pow * p) % table_size;

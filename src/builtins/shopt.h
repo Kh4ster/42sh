@@ -1,17 +1,15 @@
 /** @file
-* @brief SHOPT
+* @brief SHOPT builtin
 * @author Coder : nicolas.blin
 * @author Tester : nicolas.blin
-* @author Reviewer :
-* @author Integrator :
+* @author Reviewer : pierrick.made & nicolas.blin
 */
 
 #pragma once
 
 /**
-* @brief returns an initialized command container
-* @brief filled with given parameters(for unitary tests only)
-* @param options all the options
-* @return 0 : success ; -1 : error
+* @brief builtin shopt following man bash
+* @param options, arguments given to shopt
+* @return good: 0, bad_option: 2, bad_opt_arg_name: 1
 */
 int shopt(char *options[]);

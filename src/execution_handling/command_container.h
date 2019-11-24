@@ -3,7 +3,6 @@
 * @author Coder : nicolas.blin & zakaria.ben-allal
 * @author Tester : zakaria.ben-allal
 * @author Reviewer : nicolas.blin
-* @author Integrator :
 */
 
 #pragma once
