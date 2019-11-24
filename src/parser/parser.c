@@ -89,7 +89,7 @@ static enum token_parser_type token_is_redirection (struct token_lexer *token)
         type = TOKEN_DUP_FD;
 
     if (!strcmp(token->data, ">|"))
-        type = TOKEN_REDIRECT_LEFT;
+        type = TOKEN_OVERWRITE;
 
     if (!strcmp(token->data, "<<"))
         type = TOKEN_HEREDOC;
