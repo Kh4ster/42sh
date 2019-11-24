@@ -2,15 +2,15 @@
 * @brief Data_structure representing a queue (FIFO)
 * @author Coder : pierrick.made
 * @author Tester : pierrick.made
-* @author Reviewer :
-* @author Integrator :
+* @author Reviewer : nicolas.blin
 */
 
 #pragma once
 
 # include <stddef.h>
 
-/** @struct queue_item
+/**
+* @struct queue_item
 * @brief Contains an item of the queue
 */
 struct queue_item
@@ -19,7 +19,8 @@ struct queue_item
     struct queue_item *next; /**< @brief pointer to next item of the queue */
 };
 
-/** @struct queue
+/**
+* @struct queue
 * @brief Basic queue (FIFO) principle
 */
 struct queue

@@ -207,17 +207,18 @@ static void handle_io_number(char *cursor, struct queue *token_queue)
     }
 }
 
-static int generate_token_aux(struct queue *token_queue, char *cursor,
+static int generate_token_redirection(struct queue *token_queue, char *cursor,
         char **delim, struct token_lexer *new_token)
 {
     if (strncmp(cursor, "<<-", 3) == 0)
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 3);
+        return 1;
     }
 
 
-    else if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
+    if (strncmp(cursor, "&&", 2) == 0 || strncmp(cursor, "||", 2) == 0
             || strncmp(cursor, ";;", 2) == 0 || strncmp(cursor, ">>", 2) == 0
             || strncmp(cursor, ">&", 2) == 0 || strncmp(cursor, "<>", 2) == 0
         || strncmp(cursor, "<&", 2) == 0 || strncmp(cursor, ">|", 2) == 0
@@ -225,18 +226,31 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 2);
+        return 1;
     }
 
-    else if (strncmp(cursor, "|", 1) == 0)
+    if (strncmp(cursor, "|", 1) == 0)
+    {
         set_token(new_token, TOKEN_OPERATOR, delim, 1);
+        return 1;
+    }
 
     else if (! strncmp(cursor, ">", 1) || ! strncmp(cursor, "<", 1))
     {
         handle_io_number(cursor, token_queue);
         set_token(new_token, TOKEN_OPERATOR, delim, 1);
+        return 1;
     }
+    return 0;
+}
 
-    else if (strncmp(cursor, "\\n", 2) == 0)
+static int generate_token_aux(struct queue *token_queue, char *cursor,
+        char **delim, struct token_lexer *new_token)
+{
+    if (generate_token_redirection(token_queue, cursor, delim, new_token))
+        return 1;
+
+    if (strncmp(cursor, "\\n", 2) == 0)
     {
         new_token = create_newline_token(new_token);
         (*delim) += 2;
