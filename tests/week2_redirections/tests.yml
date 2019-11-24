@@ -227,3 +227,11 @@
 - name: HEREDOC in if clause
   options:
     - ../tests/week2_redirections/test12.sh
+
+- name: for i in *; do cat << toto; done text
+  options:
+    - ../tests/week2_redirections/test13.sh
+
+- name: for i in *; do cat <<- toto; done text with tab
+  options:
+    - ../tests/week2_redirections/test14.sh
