@@ -1,7 +1,4 @@
-cat << toto << titi > tete ; echo ok
-coucou
+for i in *; do cat <<- toto; done
+		titi
+	tata
 toto
-hey
-titi
-cat tete
-rm tete

@@ -1,3 +1,4 @@
-for i in  1 2 3 *; do cat << toto; done
-coucou
+for i in *; do cat << toto; done
+titi
+tata
 toto
