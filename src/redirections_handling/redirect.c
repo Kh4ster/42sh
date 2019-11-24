@@ -220,7 +220,7 @@ static int redirect_std_to_std(struct redirection *redirection, int fd_redirect)
 }
 
 
-static int handle_heredoc(struct redirection *redirection)
+static int handle_heredoc(struct redirection *redirection, int execute)
 {
     char *delimiter = redirection->file;
     FILE *temp = redirection->temp_file;
@@ -249,10 +249,14 @@ static int handle_heredoc(struct redirection *redirection)
         free(current_line);
         rewind(temp);
     }
-
-    int return_command = redirect_std_to_std(redirection, temp->_fileno);
-    rewind(temp);
-    return return_command;
+    if (execute)
+    {
+        int return_command = redirect_std_to_std(redirection, temp->_fileno);
+        rewind(temp);
+        return return_command;
+    }
+    else
+        return 0;
 }
 
 static char *passe_tab(char *line)
@@ -264,7 +268,7 @@ static char *passe_tab(char *line)
 }
 
 
-static int handle_redirect_minus(struct redirection *redirection)
+static int handle_redirect_minus(struct redirection *redirection, int execute)
 {
     char *delimiter = redirection->file;
     FILE *temp = redirection->temp_file;
@@ -294,13 +298,18 @@ static int handle_redirect_minus(struct redirection *redirection)
         rewind(temp);
     }
 
-    int return_command = redirect_std_to_std(redirection, temp->_fileno);
-    rewind(temp);
-    return return_command;
+    if (execute)
+    {
+        int return_command = redirect_std_to_std(redirection, temp->_fileno);
+        rewind(temp);
+        return return_command;
+    }
+    else
+        return 0;
 }
 
 
-extern int redirections_handling(struct instruction *redirection)
+extern int redirections_handling(struct instruction *redirection, int execute)
 {
     struct redirection *redirect = redirection->data;
     switch(redirection->type)
@@ -327,10 +336,10 @@ extern int redirections_handling(struct instruction *redirection)
             return redirect_dup_fd(redirect);
             break;
         case TOKEN_HEREDOC:
-            return handle_heredoc(redirect);
+            return handle_heredoc(redirect, execute);
             break;
         case TOKEN_HEREDOC_MINUS:
-            return handle_redirect_minus(redirect);
+            return handle_redirect_minus(redirect, execute);
             break;
         default:
             return 0;
