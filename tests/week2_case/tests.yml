@@ -42,3 +42,16 @@
   stdin: case toto in toto) echo ok;; titi) echo bad; esac > titi
   stdin: cat titi
   stdin: rm titi
+
+- name: case * in
+  options:
+    - ../tests/week2_case/test3.sh
+
+- name: case several patterns
+  options:
+    - ../tests/week2_case/test4.sh
+
+- name: case with redirections
+  options:
+    - ../tests/week2_case/test5.sh
+
