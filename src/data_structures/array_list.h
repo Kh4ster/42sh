@@ -1,9 +1,8 @@
 /** @file
 * @brief Variable length data structure
 * @author Coder : nicolas.blin
-* @author Tester :
-* @author Reviewer :
-* @author Integrator :
+* @author Tester : nicolas.blin
+* @author Reviewer : pierrick.made
 */
 
 #ifndef ARRAY_LIST_H

@@ -4,7 +4,9 @@
 #include <err.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <readline/readline.h>
+#include <fcntl.h>
+#include <string.h>
+#include <errno.h>
 
 #include "redirect.h"
 #include "../parser/parser.h"
@@ -107,14 +109,15 @@ static int redirect_stdout_append(struct redirection *redirection)
 static int redirect_stdout_fd(struct redirection *redirection)
 {
     int fd_to_redirect = atoi(redirection->file);
-    int fd_saved = dup(redirection->fd);
+    struct stat statbuf;
 
-    if (dup2(fd_to_redirect, redirection->fd) == -1)
+    if (fstat(fd_to_redirect, &statbuf) == -1)
     {
-        warn("could not redirect fd %d", redirection->fd);
+        warn("%d", fd_to_redirect);
         return 1;
     }
 
+    int fd_saved = dup(redirection->fd);
     int return_commande = 0;
 
     if (redirection->to_redirect != NULL)
@@ -158,14 +161,15 @@ static int redirect_stdin_read_write(struct redirection *redirection)
 static int redirect_dup_fd(struct redirection *redirection)
 {
     int fd_where_redirect = atoi(redirection->file);
+    struct stat statbuf;
 
-    int fd_saved = dup(redirection->fd);
-
-    if (dup2(fd_where_redirect, redirection->fd) == -1)
+    if (fstat(fd_where_redirect, &statbuf) == -1)
     {
-        warn("could not redirect fd %d", redirection->fd);
+        warn("%d", fd_where_redirect);
         return 1;
     }
+
+    int fd_saved = dup(redirection->fd);
 
     int return_command = execute_ast(redirection->to_redirect);
 
@@ -178,7 +182,6 @@ static int redirect_dup_fd(struct redirection *redirection)
 
 static int redirect_std_to_std(struct redirection *redirection, int fd_redirect)
 {
-
     int fd_saved = dup(redirection->fd);
 
     if (fd_saved == -1)
