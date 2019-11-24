@@ -223,4 +223,3 @@
 - name: HEREDOCS <<- End_of_file >file with a tab
   options:
      - ../tests/week2_redirections/test9.sh
-
