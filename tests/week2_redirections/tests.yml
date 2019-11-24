@@ -173,7 +173,7 @@
   stdin: ech toto &> 3; cat 3; rm 3
   checks:
     - returncode
-    - has_stdout
+    - has_stderr
 
 #DOUBLE REDIRECTION
 
