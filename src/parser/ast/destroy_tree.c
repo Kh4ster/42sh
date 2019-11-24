@@ -38,6 +38,10 @@ static void free_redirection(struct redirection *redirection)
 {
     free(redirection->file);
     destroy_tree(redirection->to_redirect);
+
+    if (redirection->temp_file)
+        fclose(redirection->temp_file);
+
     free(redirection);
 }
 
@@ -109,6 +113,7 @@ extern void destroy_tree(struct instruction *ast)
     case TOKEN_DUP_FD:
     case TOKEN_HEREDOC:
     case TOKEN_HEREDOC_MINUS:
+    case TOKEN_OVERWRITE:
         free_redirection(ast->data);
         break;
     case TOKEN_WHILE:
