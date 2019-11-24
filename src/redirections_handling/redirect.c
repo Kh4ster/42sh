@@ -223,31 +223,35 @@ static int redirect_std_to_std(struct redirection *redirection, int fd_redirect)
 static int handle_heredoc(struct redirection *redirection)
 {
     char *delimiter = redirection->file;
-    FILE *temp = tmpfile();
+    FILE *temp = redirection->temp_file;
 
-    char *current_line = get_next_line("> ");
-
-    while (current_line &&
-            strncmp(delimiter, current_line, strlen(delimiter)) != 0)
+    if (!temp)
     {
-        fputs(current_line, temp);
-        fputc('\n', temp);
+        temp = tmpfile();
+        char *current_line = get_next_line("> ");
+
+        while (current_line &&
+                strncmp(delimiter, current_line, strlen(delimiter)) != 0)
+        {
+            fputs(current_line, temp);
+            fputc('\n', temp);
+            free(current_line);
+            current_line = get_next_line("> ");
+        }
+
+        if (!current_line)
+        {
+            warnx("warning: here document delimited by end of file (wanted %s)",
+                    delimiter);
+        }
+
+        redirection->temp_file = temp;
         free(current_line);
-        current_line = get_next_line("> ");
+        rewind(temp);
     }
-
-    if (!current_line)
-    {
-        warnx("warning: here document delimited by end of file (wanted %s)",
-                                    delimiter);
-    }
-
-    free(current_line);
-    rewind(temp);
 
     int return_command = redirect_std_to_std(redirection, temp->_fileno);
-
-    fclose(temp);
+    rewind(temp);
     return return_command;
 }
 
@@ -263,32 +267,35 @@ static char *passe_tab(char *line)
 static int handle_redirect_minus(struct redirection *redirection)
 {
     char *delimiter = redirection->file;
-    FILE *temp = tmpfile();
+    FILE *temp = redirection->temp_file;
 
-    char *current_line = get_next_line("> ");
-
-    while (current_line &&
-            strcmp(delimiter, current_line) != 0)
+    if (!temp)
     {
-        char *cpy_line = passe_tab(current_line);
-        fputs(cpy_line, temp);
-        fputc('\n', temp);
+        temp = tmpfile();
+        char *current_line = get_next_line("> ");
+
+        while (current_line &&
+                strcmp(delimiter, current_line) != 0)
+        {
+            char *cpy_line = passe_tab(current_line);
+            fputs(cpy_line, temp);
+            fputc('\n', temp);
+            free(current_line);
+            current_line = get_next_line("> ");
+        }
+
+        if (!current_line)
+        {
+            warnx("warning: here document delimited by end of file (wanted %s)",
+                    delimiter);
+        }
+        redirection->temp_file = temp;
         free(current_line);
-        current_line = get_next_line("> ");
+        rewind(temp);
     }
-
-    if (!current_line)
-    {
-        warnx("warning: here document delimited by end of file (wanted %s)",
-                                    delimiter);
-    }
-
-    free(current_line);
-    rewind(temp);
 
     int return_command = redirect_std_to_std(redirection, temp->_fileno);
-
-    fclose(temp);
+    rewind(temp);
     return return_command;
 }
 
