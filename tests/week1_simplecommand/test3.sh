@@ -1,5 +1,5 @@
 booba=nico
-echo 3
+echo 3 #papa
 ls
 echo 2
 tree
@@ -8,5 +8,5 @@ tree ..
 find ..
 echo 0
 echo toto
-echo echo echo 0
+echo echo echo 0 #end
 tree

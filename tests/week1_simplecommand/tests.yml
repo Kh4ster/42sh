@@ -30,7 +30,7 @@
 - name: echo tree echo ls toto
   stdin: echo tree echo ls toto
 
-- name: many_commands
+- name: many_commands with comments
   options:
     - ../tests/week1_simplecommand/test3.sh
   checks:
