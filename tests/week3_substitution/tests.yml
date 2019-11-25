@@ -1,0 +1,8 @@
+- name: complex command sub exec 1
+  stdin: echo $(var=test; echo $var) $var
+
+- name: complex command sub exec 2
+  stdin: echo $(var=test; $(var=echo; echo $var) $var) $var
+
+- name: complex command sub exec 3
+  stdin: echo $(var=test; $(var=echo; echo $var) $var) $var
