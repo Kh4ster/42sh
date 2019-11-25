@@ -5,6 +5,7 @@
 * @author Reviewer : nicolas.blin cloe.lacombe pierrick.made
 */
 
+#include <stdio.h>
 #include "../data_structures/queue.h"
 
 #pragma once
@@ -24,6 +25,7 @@ enum token_parser_type
     TOKEN_REDIRECT_LEFT_TO_FD,
     TOKEN_REDIRECT_READ_WRITE,
     TOKEN_DUP_FD, /**< @brief token fd duplication */
+    TOKEN_OVERWRITE,
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
     TOKEN_CASE, /**< @brief token case */
@@ -131,6 +133,7 @@ struct redirection
     int fd; /**< @brief io number */
     char *file; /**< @brief file to use for redirection */
     struct instruction *to_redirect; /**< @brief command to execute */
+    FILE *temp_file; /**< @brief only for heredocs */
 };
 
 /**

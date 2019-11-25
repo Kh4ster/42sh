@@ -199,14 +199,47 @@
    - stdout
    - returncode
 
-- name: HEREDOCS tee newfile <<- EOF
+- name: HEREDOCS tee newfile << EOF with a tab
+  options:
+     - ../tests/week2_redirections/test11.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS tee newfile <<- EOF with a tab
   options:
      - ../tests/week2_redirections/test8.sh
   checks:
    - stdout
    - returncode
 
-- name: HEREDOCS <<- End_of_file >file
+- name: HEREDOCS tee newfile <<- EOF with multiple tabs
+  options:
+     - ../tests/week2_redirections/test10.sh
+  checks:
+   - stdout
+   - returncode
+
+- name: HEREDOCS <<- End_of_file >file with a tab
   options:
      - ../tests/week2_redirections/test9.sh
 
+- name: HEREDOC in if clause
+  options:
+    - ../tests/week2_redirections/test12.sh
+
+- name: for i in *; do cat << toto; done text
+  options:
+    - ../tests/week2_redirections/test13.sh
+
+- name: for i in *; do cat <<- toto; done text with tab
+  options:
+    - ../tests/week2_redirections/test14.sh
+
+- name: HEREDOC in for clause
+  options:
+    - ../tests/week2_redirections/test15.sh
+
+- name: HEREDOC several chaining heredocs
+  options:
+      - ../tests/week2_redirections/test16.sh
