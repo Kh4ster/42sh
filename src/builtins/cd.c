@@ -27,7 +27,9 @@ static char *xstrdup(char *str)
 
 static void handle_error_chdir(int errno_chdir, char *path)
 {
-    if (errno_chdir == EACCES)
+    if (errno_chdir == 0)
+        return;
+    else if (errno_chdir == EACCES)
         fprintf(stderr, "cd: %s: Access denied.\n", path);
     else if (errno_chdir == ENAMETOOLONG)
         fprintf(stderr, "cd: %s: Path is too long.\n", path);
@@ -66,11 +68,12 @@ int my_chdir(char *dir)
         return 1;
     }
     strcat(path, g_env.pwd);
+    strcat(path, "/");
     strcat(path, dir);
 
     if (chdir(path) == -1)
     {
-        handle_error_chdir(errno, path);
+        handle_error_chdir(errno, dir);
         free(path);
         return 1;
     }
@@ -96,31 +99,10 @@ int cd(char **args)
     if (args[2] == NULL)
     {
         // go to dir given in args
-        return my_chdir(args[2]);
+        return my_chdir(args[1]);
     }
 
     // too many arguments
-    fprintf(stderr, "cd: too many arguments");
+    fprintf(stderr, "cd: Too many arguments.\n");
     return 1;
-}
-
-int main()
-{
-    char *current_dir = xmalloc(MAX_PATH_LENGTH);
-    current_dir = getcwd(current_dir, MAX_PATH_LENGTH);
-    if (current_dir == NULL)
-    {
-        fprintf(stderr, "cd: error while searching for current dir.\n");
-        return 1;
-    }
-    printf("current_dir : %s\n", current_dir);
-    char *args[] = {"cd", NULL};
-    cd(args);
-    current_dir = getcwd(current_dir, 4096);
-    printf("current_dir : %s\n", current_dir);
-    char *args2[] = {"cd", "../memory", NULL};
-    cd(args2);
-    current_dir = getcwd(current_dir, 4096);
-    printf("current_dir : %s\n", current_dir);
-    free(current_dir);
 }
