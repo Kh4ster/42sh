@@ -14,6 +14,11 @@
 char *get_history_file_path(void);
 
 /**
+* @brief write current historic to history_file
+*/
+void write_history_file(void);
+
+/**
 * @brief replicating the behavior of history builtin (cf. man bash-builtins)
 * @param args array of arguments given to history builtins
 * @return success : 0 , fail : same behavior as history builtin

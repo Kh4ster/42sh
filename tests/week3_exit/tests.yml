@@ -4,6 +4,9 @@
 - name: exit 42
   stdin: exit 42
 
+- name: exit 424242
+  stdin: exit 424242
+
 - name: exit -42
   stdin: exit -42
 
@@ -98,5 +101,22 @@
 - name: if false else exit 42
   stdin: if false; then echo toto; else exit 42; fi
 
-- name: if true else exit 42
+- name: if true ech toto exit 42 else fi
   stdin: if true; then ech toto; exit 42; else exit 42; fi
+  checks:
+    - has_stderr
+    - returncode
+
+- name: if true else fi
+  options:
+    - ../tests/week3_exit/test1.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: if false else fi
+  options:
+    - ../tests/week3_exit/test1.sh
+  checks:
+    - has_stderr
+    - returncode
