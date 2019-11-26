@@ -38,6 +38,54 @@ void handle_options(char **args, int *index, int *opt_e, int *opt_n)
     }
 }
 
+void handle_escape_aux(char *c)
+{
+    if (*c == 'a')
+        fprintf(stdout, "\a");
+    else if (*c == 'b')
+        fprintf(stdout, "\b");
+    else if (*c == 'e')
+        fprintf(stdout, "%c", 27);
+    else if (*c == 'f')
+        fprintf(stdout, "\f");
+    else if (*c == 'n')
+        fprintf(stdout, "\n");
+    else if (*c == 'r')
+        fprintf(stdout, "\r");
+    else if (*c == 't')
+        fprintf(stdout, "\t");
+    else if (*c == 'v')
+        fprintf(stdout, "\v");
+    else if (*c == 'x' || *c == '0')
+        fprintf(stdout, "TODO"); // octal and hexa to do
+    else
+        fprintf(stdout, "%c", *c);
+}
+
+int print_with_backslash_escapes(char *arg)
+{
+    for (char *c = arg; *c != '\0'; c++)
+    {
+        if (*c == '\\' && *(c + 1) != '\0')
+        {
+            c++;
+            if (*c == '\\')
+                fprintf(stdout, "\\");
+            else if (*c == 'c')
+            {
+                return 1;
+                break;
+            }
+            else
+                handle_escape_aux(c);
+        }
+
+        else
+            fprintf(stdout, "%c", *c);
+    }
+    return 0;
+}
+
 int echo(char **args)
 {
     // options e, n and E of echo
@@ -54,24 +102,21 @@ int echo(char **args)
     while (args[index] != NULL)
     {
         if (opt_e)
-            printf("%s", args[index]); //print_opt_e(args);
+        {
+            if (print_with_backslash_escapes(args[index]) == 1)
+                return 0; // \c was called (no more output must be printed)
+        }
         else
-            printf("%s", args[index]);
+            fprintf(stdout, "%s", args[index]);
 
         index++;
 
         // print space if next arg is not NULL
-        printf("%s", args[index] != NULL ? " " : "");
+        fprintf(stdout, "%s", args[index] != NULL ? " " : "");
     }
 
     // print trailing newline if option n not set
-    printf("%s", opt_n ? "" : "\n");
+    fprintf(stdout, "%s", opt_n ? "" : "\n");
 
     return 0;
-}
-
-int main(int argc, char **argv)
-{
-    echo(argv);
-    (void)argc;
 }
