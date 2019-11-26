@@ -21,6 +21,92 @@
 
 bool g_have_to_stop = 0; //to break in case of signal
 
+//to really understand take this example $(echo $(echo ok))
+static char *expand_nested_command(char *cursor, char *to_expand)
+{
+    char *result = expand(cursor);
+    char *end = cursor;
+    end += strlen(end); //move to \0 set in recursive call (matching ))
+    end++; //skip \0
+    *cursor = 0; //set $ to \0
+
+    char *new_to_expand = xcalloc(strlen(to_expand)
+                                    + strlen(result)
+                                    + strlen(end));
+
+    new_to_expand = strcat(to_expand, to_expand);
+    new_to_expand = strcat(to_expand, result);
+    new_to_expand = strcat(to_expand, end);
+    return new_to_expand;
+}
+
+static char *expand_cmd(char *to_expand)
+{
+    to_expand++; //skip $
+    to_expand++; //skip (get_result_from_42sh
+
+    char *cursor = to_expand;
+    while ((cursor = strpbrk(cursor, "$)")) != NULL && *cursor != ')')
+    {
+        if (*cursor == '$') //recursive call to expand command
+            to_expand = expand_nested_command(cursor, to_expand);
+    }
+    if (cursor == NULL) //case no )
+        handle_parser_errors(NULL); //null might cause problem
+    *cursor = 0; //replace ) with 0
+
+    return get_result_from_42sh(to_expand);
+}
+
+static char *expand(char *to_expand)
+{
+    if (to_expand[0] == '$' && to_expand[1] == '(')
+        return expand_cmd(to_expand);
+    assert(0); //not handled
+    return NULL;
+}
+
+static void fill_command_and_params(struct command_container *command,
+                                                                char *expansion
+)
+{
+    command->command = strtok_r(expansion, " ", &expansion);
+
+    int argc = 0;
+    while (command->params[argc] != NULL)
+        argc++;
+    //we want to add what comes after the command in our parameters
+    char **new_params = xmalloc(sizeof(char*) * (argc + 1));
+    new_params[0] = expansion;
+    argc = 1;
+    while (command->params[argc - 1] != NULL)
+    {
+        new_params[argc] = command->params[argc - 1];
+        argc++;
+    }
+    free(command->params);
+    command->params = new_params;
+}
+
+static bool is_multiple_words(char *expansion)
+{
+    return strpbrk(expansion, " ") != NULL;
+}
+
+static void handle_expand_command(struct command_container *command)
+{
+    char *expansion = expand(command->command);
+
+    if (is_multiple_words(expansion)) //var="echo ok ok ..."
+        fill_command_and_params(command, expansion);
+    else
+        command->command = expansion;
+
+    //it's ok to expand var="echo ok ok" in the parameters, not need to create
+    for (size_t i = 0; command->params[i] != NULL; ++i)
+        command->params[i] = expand(command->params[i]);
+}
+
 void handle_sigint(int signal)
 {
     if (signal == SIGINT)
