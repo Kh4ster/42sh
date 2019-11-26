@@ -1,0 +1,102 @@
+- name: exit
+  stdin: exit
+
+- name: exit 42
+  stdin: exit 42
+
+- name: exit -42
+  stdin: exit -42
+
+- name: exit toto
+  stdin: exit toto
+  checks:
+    - has_stderr
+    - returncode
+
+- name: exit fafaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  stdin: exit fafaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  checks:
+    - has_stderr
+    - returncode
+
+- name: exit 42 42
+  stdin: exit 42 42
+  checks:
+    - has_stderr
+    - returncode
+
+- name: exit 42 toto
+  stdin: exit 42 toto
+  checks:
+    - has_stderr
+    - returncode
+
+- name: exit toto 42
+  stdin: exit toto 42
+  checks:
+    - has_stderr
+    - returncode
+
+- name: echo toto exit
+  stdin: echo toto; exit
+
+- name: echo toto exit 42
+  stdin: echo toto; exit 42
+
+- name: echo toto exit 42 42
+  stdin: echo toto; exit 42 42
+  checks:
+    - stdout
+    - has_stderr
+    - returncode
+
+- name: echo toto exit toto
+  stdin: echo toto; exit toto
+  checks:
+    - stdout
+    - has_stderr
+    - returncode
+
+- name: echo toto exit 42 toto
+  stdin: echo toto; exit 42 toto
+  checks:
+    - stdout
+    - has_stderr
+    - returncode
+
+- name: echo toto exit toto 42
+  stdin: echo toto; exit toto 42
+  checks:
+    - stdout
+    - has_stderr
+    - returncode
+
+- name: ech toto exit
+  stdin: ech toto; exit
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ech toto exit 42
+  stdin: ech toto; exit 42
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ech toto exit 42 toto
+  stdin: ech toto; exit 42 toto
+  checks:
+    - has_stderr
+    - returncode
+
+- name: ech toto exit toto 42
+  stdin: ech toto; exit toto 42
+  checks:
+    - has_stderr
+    - returncode
+
+- name: if false else exit 42
+  stdin: if false; then echo toto; else exit 42; fi
+
+- name: if true else exit 42
+  stdin: if true; then ech toto; exit 42; else exit 42; fi
