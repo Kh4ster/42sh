@@ -24,7 +24,7 @@ int exit_builtin(char **argv)
         char return_value = strtol(argv[1], &endptr, 10);
 
         if (argv[2] != NULL && *endptr == 0)
-        {        
+        {
             fprintf(stderr, "too many arguments\n");
 
             if (g_env.last_return_value == 0)
@@ -32,12 +32,12 @@ int exit_builtin(char **argv)
             else
                return g_env.last_return_value;
         }
-        
+
         if (*endptr != 0)
             errx(2, "numeric argument required");
-        
+
         else
-            exit((return_value + g_env.last_return_value));
+            exit(return_value);
     }
     else
         return -1;
