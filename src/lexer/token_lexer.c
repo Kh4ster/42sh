@@ -7,6 +7,9 @@
 #include "../memory/memory.h"
 #include "token_lexer.h"
 #include "../input_output/get_next_line.h"
+#include "../execution_handling/command_container.h"
+#include "../execution_handling/command_execution.h"
+#include "../error/error.h"
 
 #define DELIMITERS " \\\n\t&|<>$\"\'`$();"
 
@@ -281,22 +284,64 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
     return 1;
 }
 
+static void handle_sub_commands(char **cursor);
+
+static char *get_command(char **cursor, char **end)
+{
+    *cursor += 1; //skip $
+    *cursor += 1; //skip (
+    *end = *cursor;
+
+    while ((*end = strpbrk(*end, "$)")) != NULL && **end != ')')
+    {
+        if (**end == '$') //recursive call to expand command
+            handle_sub_commands(end);
+    }
+    if (*end == NULL) //case no )
+        handle_parser_errors(NULL); //null might cause problem
+    **end = 0; //go before the erase the )
+
+    char *cmd = strdup(*cursor);
+    cmd[*end - *cursor] = 0; //remove the end at )
+
+    return cmd;
+}
+
+static char *expand_cmd(char *result, char *end)
+{
+    char *new_cursor = xmalloc(strlen(result) + strlen(end) + 1);
+    *new_cursor = 0;
+    strcat(new_cursor, result);
+    return strcat(new_cursor, end);
+}
+
+static void handle_sub_commands(char **cursor)
+{
+    //CARE, CHANGE CURSOR WITHOUT CHANGING CURRENT LINE
+    char *end = *cursor;
+    char *command = get_command(cursor, &end);
+    char *result = get_result_from_42sh(command);
+    *cursor = expand_cmd(result, *end);
+    free(command);
+    free(result);
+}
+
 static struct token_lexer *generate_token(struct queue *token_queue,
-                                    char *cursor,
+                                    char **cursor,
                                     char **delim
 )
 {
-    if (*cursor == '\0')
+    if (**cursor == '\0')
         return NULL;
 
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
-    if (cursor != *delim) // word pointed by cursor is not a delimiter
+    if (*cursor != *delim) // word pointed by cursor is not a delimiter
     {
-        new_token = create_other_or_keyword_token(new_token, cursor, delim);
+        new_token = create_other_or_keyword_token(new_token, *cursor, delim);
     }
 
-    else if (*cursor == '\"' || *cursor == '\'')
+    else if (**cursor == '\"' || **cursor == '\'')
     {
         handle_quoting(new_token, delim);
     }
@@ -306,15 +351,15 @@ static struct token_lexer *generate_token(struct queue *token_queue,
     {
         handle_escape(delim);
     }
-
-    else if (*cursor == '$' || *cursor == '`')
-    {
-        // handle_sub_commands(delim);
-    }
     #endif /* 0 */
+    else if (**cursor == '$' || **cursor == '`')
+    {
+        handle_sub_commands(cursor);
+        return generate_token(token_queue, cursor, delim);
+    }
 
     else
-        if (!generate_token_aux(token_queue, cursor, delim, new_token))
+        if (!generate_token_aux(token_queue, *cursor, delim, new_token))
             return NULL;
 
     return new_token;
@@ -330,7 +375,7 @@ struct queue *lexer(char *line, struct queue *token_queue)
     while (cursor != NULL && *cursor != '\0')
     {
         char *delim = get_delimiter(cursor, DELIMITERS);
-        struct token_lexer *token_found = generate_token(token_queue, cursor,
+        struct token_lexer *token_found = generate_token(token_queue, &cursor,
                 &delim);
         if (token_found != NULL)
             queue_push(token_queue, token_found);

@@ -4,7 +4,6 @@
 
 #include "command_container.h"
 #include "../memory/memory.h"
-#include "../data_structures/array_list.h"
 #include "command_execution.h"
 
 struct command_container *command_init(size_t nb_args, char *command, ...)
