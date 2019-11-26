@@ -24,6 +24,7 @@
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
 #include "builtins/history.h"
+#include "builtins/source.h"
 
 static void sigint_handler(int signum)
 {
@@ -77,43 +78,6 @@ static void is_noclobber(int argc, char **argv)
     }
 }
 
-static void execute_shell(void)
-{
-    int is_end = 0;
-    struct queue *lexer = queue_init();
-    int error = 0;
-
-    while (42)
-    {
-        g_env.prompt = "42sh$ ";
-        struct instruction *ast = parse_input(lexer, &is_end, &error);
-        execute_ast(ast);
-        destroy_tree(ast);
-        if (is_end)
-            break;
-        else if (error)
-        {
-            handle_parser_errors(lexer);
-            error = 0; //set error back to 0 for interactive mode
-        }
-    }
-    free(lexer);
-}
-
-static void execute_ressource_file(char *name)
-{
-    int fd = open(name, O_RDONLY);
-    if (fd != -1)
-    {
-        dup2(0, 10);
-        dup2(fd, 0);
-        close(fd);
-        execute_shell();
-        dup2(10, 0);
-        close(10);
-    }
-}
-
 static void handle_ressource_files(void)
 {
     if (!g_env.options.option_n)
@@ -162,6 +126,7 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_init(builtins, NB_SLOTS);
     hash_insert_builtin(builtins, "shopt", shopt);
     hash_insert_builtin(builtins, "history", history);
+    hash_insert_builtin(builtins, "source", source);
 }
 
 static void init_hash_maps_and_history(struct hash_map *functions,

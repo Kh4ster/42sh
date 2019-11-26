@@ -51,6 +51,7 @@ set(SRC_FILES
     src/redirections_handling/redirect.c
     src/builtins/shopt.c
     src/builtins/history.c
+    src/builtins/source.c
 )
 
 # ---- List of test files (unit tests) ----
