@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "parameters_handling/parameters_handler.h"
 #include "parameters_handling/options.h"
@@ -26,6 +27,7 @@
 #include "builtins/history.h"
 #include "builtins/cd.h"
 #include "builtins/exit.h"
+#include "builtins/export.h"
 
 static void sigint_handler(int signum)
 {
@@ -154,6 +156,7 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "history", history);
     hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
+    hash_insert_builtin(builtins, "export", export_builtin);
 }
 
 static void init_hash_maps_and_history(struct hash_map *functions,
@@ -189,8 +192,10 @@ static int execute_and_print_ast(struct instruction *ast)
     return execute_ast(ast);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[], char *env[])
 {
+    strcpy(*g_env.envvar, *env);
+
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
     init_hash_maps_and_history(&functions, &builtins);
