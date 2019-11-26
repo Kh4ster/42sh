@@ -17,28 +17,22 @@ int exit_builtin(char **argv)
     {
         exit(g_env.last_return_value);
     }
+    int base = 10;
+    char *error;
+    char return_value = strtol(argv[1], &error, base);
 
-    if (argv[0] != NULL && argv[1] != NULL)
+    if (argv[2] != NULL && *error == 0)
     {
-        char *endptr;
-        char return_value = strtol(argv[1], &endptr, 10);
-
-        if (argv[2] != NULL && *endptr == 0)
-        {
-            fprintf(stderr, "too many arguments\n");
+        fprintf(stderr, "too many arguments\n");
 
             if (g_env.last_return_value == 0)
-               return 1;
+                return 1;
             else
-               return g_env.last_return_value;
-        }
-
-        if (*endptr != 0)
-            errx(2, "numeric argument required");
-
-        else
-            exit(return_value);
+                return g_env.last_return_value;
     }
+    if (*error != 0)
+        errx(2, "numeric argument required");
+
     else
-        return -1;
+        exit(return_value);
 }
