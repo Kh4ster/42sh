@@ -142,20 +142,7 @@ void end_call_and_free_all(struct queue *lexer)
     hash_free(g_env.builtins);
     free(lexer);
 
-    // History write to file
-    char *history_path = get_history_file_path();
-    FILE *history_file = fopen(history_path, "w");
-    if (history_file == NULL)
-    {
-        free(history_path);
-        return;
-    }
-    HIST_ENTRY **hist_elts = history_list();
-    for (int i = 0; i < history_length - 1; i++)
-        fprintf(history_file, "%s\n", hist_elts[i]->line);
-    fclose(history_file);
-    history_truncate_file(history_path, 2000);
-    free(history_path);
+    write_history_file();
 }
 
 static void init_builtins_hash_map(struct hash_map *builtins)

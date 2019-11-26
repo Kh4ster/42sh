@@ -107,6 +107,23 @@ char *get_history_file_path(void)
     return strcat(homedir, history_name);
 }
 
+void write_history_file(void)
+{
+    char *history_path = get_history_file_path();
+    FILE *history_file = fopen(history_path, "w");
+    if (history_file == NULL)
+    {
+        free(history_path);
+        return;
+    }
+    HIST_ENTRY **hist_elts = history_list();
+    for (int i = 0; i < history_length - 1; i++)
+        fprintf(history_file, "%s\n", hist_elts[i]->line);
+    fclose(history_file);
+    history_truncate_file(history_path, 2000);
+    free(history_path);
+}
+
 int history(char **args)
 {
     int return_val = 0;
