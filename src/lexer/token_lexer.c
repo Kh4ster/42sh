@@ -152,6 +152,42 @@ static void handle_comments(struct queue *token_queue,
     free(new_token);
 }
 
+char *find_corresponding_bracket(char **cursor)
+{
+    int counter_bracket = 1;
+    while (**cursor != '\0' && counter_bracket != 0)
+    {
+        //TODO skip_quoting()
+        if (**cursor == '(')
+            counter_bracket++;
+        else if (**cursor == ')')
+            counter_bracket--;
+        (*cursor)++;
+    }
+    return *cursor;
+}
+
+static void handle_dollar(struct token_lexer *new_token, char **cursor)
+{
+    // keep beginning of the dollar expression
+    char *token_start = *cursor;
+
+    // skip dollar
+    (*cursor)++;
+
+    if (**cursor == '\0')
+        set_token(new_token, TOKEN_OTHER, cursor, 1);
+    else if (**cursor == '(')
+    {
+        (*cursor)++;
+        char *end_bracket = find_corresponding_bracket(cursor);
+        set_token(new_token, TOKEN_OTHER, &token_start,
+                end_bracket - token_start);
+    }
+    (*cursor)++;
+    //TODO ! other expansions
+}
+
 static void handle_quoting(struct token_lexer *new_token,
         char **cursor)
 {
@@ -312,12 +348,11 @@ static struct token_lexer *generate_token(struct queue *token_queue,
     #endif /* 0 */
     else if (*cursor == '$' || *cursor == '`')
     {
-        handle_sub_commands(cursor);
-        return generate_token(token_queue, cursor, delim);
+        handle_dollar(new_token, delim);
     }
 
     else
-        if (!generate_token_aux(token_queue, *cursor, delim, new_token))
+        if (!generate_token_aux(token_queue, cursor, delim, new_token))
             return NULL;
 
     return new_token;
@@ -333,7 +368,7 @@ struct queue *lexer(char *line, struct queue *token_queue)
     while (cursor != NULL && *cursor != '\0')
     {
         char *delim = get_delimiter(cursor, DELIMITERS);
-        struct token_lexer *token_found = generate_token(token_queue, &cursor,
+        struct token_lexer *token_found = generate_token(token_queue, cursor,
                 &delim);
         if (token_found != NULL)
             queue_push(token_queue, token_found);
