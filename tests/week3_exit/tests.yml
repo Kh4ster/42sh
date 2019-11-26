@@ -113,3 +113,10 @@
   checks:
     - has_stderr
     - returncode
+
+- name: if false else fi
+  options:
+    - ../tests/week3_exit/test1.sh
+  checks:
+    - has_stderr
+    - returncode
