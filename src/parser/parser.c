@@ -489,7 +489,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         if (is_redirection(lexer) || NEXT_IS_NUMBER())
         {
             struct instruction *redirection2 =
-                                parse_redirection(lexer, redirection);
+                                parse_redirection(lexer, NULL);
 
             if (redirection)
                 redirection = add_command_redirection(redirection, redirection2);

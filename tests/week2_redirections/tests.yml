@@ -243,3 +243,12 @@
 - name: HEREDOC several chaining heredocs
   options:
       - ../tests/week2_redirections/test16.sh
+
+- name: double redire
+  options:
+    - ../tests/week2_redirections/test17.sh
+
+- name: echo coucou > toto; cat < toto > tata;
+  options:
+    - ../tests/week2_redirections/test18.sh
+
