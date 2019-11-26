@@ -62,3 +62,20 @@
   checks:
     - has_stderr
     - returncode
+
+#directory redirections
+
+- name: redirect in directory 1
+  stdin: mkdir dir; > dir
+  checks:
+    - returncode
+    - has_stderr
+  stdin: rm -r dir
+
+- name: redirect in directory 2
+  stdin: mkdir dir; > dir echo toto >toto
+  checks:
+    - returncode
+    - has_stderr
+  stdin: rm -r dir
+

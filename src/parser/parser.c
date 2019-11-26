@@ -390,7 +390,7 @@ static struct instruction *parse_redirection(struct queue *lexer,
         //to make difference between no redirection and bad grammar
         if (redirection_not_valid(redirection))
             return free_instructions(2, command, redirection);
-    
+
         if (redirection->type == TOKEN_HEREDOC
                 || redirection->type == TOKEN_HEREDOC_MINUS)
             redirections_handling(redirection, 0);
@@ -489,7 +489,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         if (is_redirection(lexer) || NEXT_IS_NUMBER())
         {
             struct instruction *redirection2 =
-                                parse_redirection(lexer, redirection);
+                                parse_redirection(lexer, NULL);
 
             if (redirection)
                 redirection = add_command_redirection(redirection, redirection2);

@@ -52,6 +52,7 @@ set(SRC_FILES
     src/builtins/cd.c
     src/builtins/shopt.c
     src/builtins/history.c
+    src/builtins/exit.c
 )
 
 # ---- List of test files (unit tests) ----
