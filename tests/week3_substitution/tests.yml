@@ -1,8 +1,33 @@
-- name: complex command sub exec 1
+- name: complex command substitution and execution 1
   stdin: echo $(var=test; echo $var) $var
 
-- name: complex command sub exec 2
+- name: complex command substitution and execution 2
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var
 
-- name: complex command sub exec 3
-  stdin: echo $(var=test; $(var=echo; echo $var) $var) $var
+- name: complex command substitution and execution 3
+  stdin: echo $(var=test; $(var=echo; echo $var) $var) $var + $((5+3))
+
+- name: complex command substitution and execution 4
+  stdin: $(echo $(echo "("))
+
+- name: complex command substitution and execution 5
+  stdin: echo $(echo $(echo ok))
+
+- name: complex command substitution and execution 6
+  stdin: $(echo $(echo "("))
+
+- name: complex command substitution and execution 7
+  stdin: echo $( $(echo echo | $(echo cat) '())'))
+
+- name: complex command substitution and execution 8
+  stdin: echo $(ls)
+
+- name: comlex command substitution and execution error 9
+  options:
+    - ../tests/week_substitution/test1.sh
+
+- name: comlex command substitution and execution error
+  stdin: echo $( echo ) )
+  checks:
+    - returncode
+    - has_stderr
