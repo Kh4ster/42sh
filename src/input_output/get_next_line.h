@@ -26,7 +26,7 @@ struct shell_environment
     struct hash_map *builtins; /**< @brief hashmap containing builtins */
     char *current_line; /**< @brief last line took by readline */
     int noclobber_set; /**< @brief handle noclobber variable */
-    int last_return_value; /** @brief last returned value */
+    char last_return_value; /** @brief last returned value */
 };
 
 /**

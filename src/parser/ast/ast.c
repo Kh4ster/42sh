@@ -283,7 +283,7 @@ extern int execute_ast(struct instruction *ast)
     default:
         return_value = 0;
     }
-
+    g_env.last_return_value = return_value;
     if (ast->next != NULL)
         return_value = execute_ast(ast->next);
 

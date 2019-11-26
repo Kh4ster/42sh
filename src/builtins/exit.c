@@ -6,7 +6,7 @@
 
 #include "../input_output/get_next_line.h"
 
-int exit_builtin(char *argv[])
+int exit_builtin(char **argv)
 {
     assert(argv && (strcmp(argv[0], "exit") == 0));
 
@@ -21,20 +21,24 @@ int exit_builtin(char *argv[])
     if (argv[0] != NULL && argv[1] != NULL)
     {
         char *endptr;
-        long int return_value = strtol(argv[1], &endptr, 10);
+        char return_value = strtol(argv[1], &endptr, 10);
 
-        if (argv[2] != NULL && endptr == NULL)
-        {
+        if (argv[2] != NULL && *endptr == 0)
+        {        
+            fprintf(stderr, "too many arguments\n");
+
             if (g_env.last_return_value == 0)
-                errx(1, "too many arguments");
+               return 1;
             else
-                errx(g_env.last_return_value, "too many arguments");
+               return g_env.last_return_value;
         }
-
-        if (endptr != NULL)
-            errx(2, "numeric argument required\n");
-
+        
+        if (*endptr != 0)
+            errx(2, "numeric argument required");
+        
         else
-            exit((return_value + g_env.last_return_value) % 256);
+            exit((return_value + g_env.last_return_value));
     }
+    else
+        return -1;
 }
