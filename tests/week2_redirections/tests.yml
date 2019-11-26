@@ -96,6 +96,30 @@
     - stdout
     - returncode
 
+- name: echo 2> if
+  stdin: echo 2> if; cat if; rm if
+
+- name: echo 2> while
+  stdin: echo 2> while; cat while; rm while
+
+- name: echo 2> for
+  stdin: echo 2> for; cat for; rm for
+
+- name: echo 2> case
+  stdin: echo 2> case; cat case; rm case
+
+- name: echo toto 2> if > toto
+  stdin: echo toto 2> if > toto; cat if toto; rm if toto
+
+- name: echo toto 2> while > toto
+  stdin: echo toto 2> while > toto; cat while toto; rm while toto
+
+- name: echo toto 2> for > toto
+  stdin: echo toto 2> for > toto; cat for toto; rm for toto
+
+- name: echo toto 2> case > toto
+  stdin: echo toto 2> case > toto; cat case toto; rm case toto
+
 - name: toto ech ok > titi > tutu 2>&1 echo ok
   stdin: toto ech ok > titi > tutu 2>&1 echo ok
   checks:
