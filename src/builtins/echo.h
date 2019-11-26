@@ -12,4 +12,4 @@
 * @param args array of arguments given to echo builtins
 * @return success : 0 , fail : same behavior as echo builtin
 */
-int echo(int argc, char **args);
+int echo(char **args);
