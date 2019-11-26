@@ -49,6 +49,7 @@ set(SRC_FILES
     src/error/error.c
     src/parser/ast/ast_print.c
     src/redirections_handling/redirect.c
+    src/builtins/cd.c
     src/builtins/shopt.c
     src/builtins/history.c
     src/builtins/exit.c

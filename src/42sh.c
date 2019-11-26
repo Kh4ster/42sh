@@ -24,6 +24,7 @@
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
 #include "builtins/history.h"
+#include "builtins/cd.h"
 #include "builtins/exit.h"
 
 static void sigint_handler(int signum)
@@ -140,6 +141,7 @@ void end_call_and_free_all(struct queue *lexer)
     // Free all
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
+    free(g_env.pwd);
     free(lexer);
 
     write_history_file();
@@ -150,6 +152,7 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_init(builtins, NB_SLOTS);
     hash_insert_builtin(builtins, "shopt", shopt);
     hash_insert_builtin(builtins, "history", history);
+    hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
 }
 
