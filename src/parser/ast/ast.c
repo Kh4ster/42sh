@@ -18,6 +18,7 @@
 #include "../../redirections_handling/redirect.h"
 #include "../../data_structures/hash_map.h"
 #include "../../input_output/get_next_line.h"
+#include "../../builtins/break.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
@@ -116,7 +117,21 @@ static int handle_while(struct instruction *ast)
     int return_value = 0;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
+    {
         return_value = execute_ast(while_instruction->to_execute);
+
+        if (g_env.breaks > 0)
+        {
+            g_env.breaks--;
+            break;
+        }
+
+        if (g_env.continues > 0)
+        {
+            g_env.continues--;
+            continue;
+        }
+    }
 
     g_have_to_stop = false;
     return return_value;
@@ -129,7 +144,22 @@ static int handle_until(struct instruction *ast)
     int return_value = 0;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions))
+    {
         return_value = execute_ast(while_instruction->to_execute);
+
+        if (g_env.breaks > 0)
+        {
+            g_env.breaks--;
+            break;
+        }
+
+        if (g_env.continues > 0)
+        {
+            g_env.continues--;
+            continue;
+        }
+
+    }
 
     g_have_to_stop = false;
     return return_value;
@@ -154,6 +184,13 @@ static int handle_for(struct instruction *ast)
         {
         //  assigne_variable(instruction_for->var_name, var_values->content[i]);
             return_value = execute_ast(instruction_for->to_execute);
+
+            if (g_env.breaks > 0)
+            {
+                g_env.breaks--;
+                break;
+            }
+
             continue;
         }
 
@@ -161,12 +198,26 @@ static int handle_for(struct instruction *ast)
         {
     //      assigne_variable(instruction_for->var_name, glob.gl_pathv[j]);
             return_value = execute_ast(instruction_for->to_execute);
+
+            if (g_env.breaks > 0)
+            {
+                g_env.breaks--;
+                break;
+            }
+
+            if (g_env.continues > 0)
+            {
+                g_env.continues--;
+                continue;
+            }
         }
+
         globfree(&glob_c);
     }
 
     return return_value;
 }
+
 
 static int handle_pipe(struct instruction *ast)
 {
@@ -284,7 +335,7 @@ extern int execute_ast(struct instruction *ast)
         return_value = 0;
     }
 
-    if (ast->next != NULL)
+    if (ast->next != NULL && !g_env.breaks && !g_env.continues)
         return_value = execute_ast(ast->next);
 
     return return_value;

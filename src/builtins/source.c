@@ -56,6 +56,8 @@ extern int source(char **argv)
         warnx("source: filename argument required");
         return 2;
     }
+    g_env.is_parsing_ressource = 1;
     execute_ressource_file(argv[1]);
+    g_env.is_parsing_ressource = 0;
     return 0;
 }

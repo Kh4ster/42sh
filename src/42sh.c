@@ -25,6 +25,7 @@
 #include "builtins/shopt.h"
 #include "builtins/history.h"
 #include "builtins/source.h"
+#include "builtins/break.h"
 
 static void sigint_handler(int signum)
 {
@@ -127,6 +128,8 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "shopt", shopt);
     hash_insert_builtin(builtins, "history", history);
     hash_insert_builtin(builtins, "source", source);
+    hash_insert_builtin(builtins, "break", has_break);
+    hash_insert_builtin(builtins, "continue", has_continue);
 }
 
 static void init_hash_maps_and_history(struct hash_map *functions,
