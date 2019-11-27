@@ -1,0 +1,11 @@
+- name: Break in for loop
+  stdin: for i in 1 2 3; do break; echo ok; done
+
+- name: Break in while loop
+  stdin: while echo ok; do echo ok; break; echo ok; done
+
+- name: break 2 in 3 loops
+  stdin: for i in 1 2 3; do while echo ok; do echo ok; for i in 1 2 3; do echo $i; break 2; done; echo ok; done; echo coucou; done
+
+- name: break & continue mix
+  stdin: for i in true false true; do if $i; then continue; else break; fi; echo ok; done
