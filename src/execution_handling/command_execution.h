@@ -20,3 +20,5 @@
 * @return -1 if execvp fails
 */
 int exec_cmd(struct instruction *cmd_container);
+
+char *get_result_from_42sh(char *command);
