@@ -14,7 +14,7 @@
 #include "../execution_handling/command_container.h"
 #include "../data_structures/array_list.h"
 #include "../data_structures/hash_map.h"
-#include "../redirections_handling/redirect.c"
+#include "../redirections_handling/redirect.h"
 
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)

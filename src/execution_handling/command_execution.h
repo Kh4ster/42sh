@@ -8,6 +8,7 @@
 #pragma once
 
 #include "command_container.h"
+#include "../parser/parser.h"
 
 /**
 * @brief Handle parameters given to 42sh binary
@@ -18,4 +19,4 @@
 * @return 2 if cmd argument not valid
 * @return -1 if execvp fails
 */
-int exec_cmd(struct command_container *cmd);
+int exec_cmd(struct instruction *cmd_container);

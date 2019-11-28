@@ -9,7 +9,6 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <glob.h>
 
 #include "ast.h"
 #include "../parser.h"
@@ -18,6 +17,8 @@
 #include "../../redirections_handling/redirect.h"
 #include "../../data_structures/hash_map.h"
 #include "../../input_output/get_next_line.h"
+#include "../../path_expention/path_exepension.c"
+#include "../parser.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
@@ -105,8 +106,8 @@ static int handle_commands(struct instruction *ast)
         return exec_func(ast);
     else if (is_builtin(ast))
         return exec_builtin(ast);
-    struct command_container *command = ast->data;
-    return exec_cmd(command);
+
+    return exec_cmd(ast);
 }
 
 
@@ -141,28 +142,27 @@ static int handle_for(struct instruction *ast)
     struct for_instruction *instruction_for = ast->data;
     struct array_list *var_values = instruction_for->var_values;
     int return_value;
-    glob_t glob_c;
 
     if (!var_values)
         return 0;
 
     for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
-        int error = glob(var_values->content[i], GLOB_NOSORT, NULL, &glob_c);
-
-        if (error == GLOB_NOMATCH)
-        {
+        struct path_globbing *glob = sh_glob(var_values->content[i]);
         //  assigne_variable(instruction_for->var_name, var_values->content[i]);
+
+        if (!glob)
+        {
             return_value = execute_ast(instruction_for->to_execute);
             continue;
         }
 
-        for (size_t j = 0; j < glob_c.gl_pathc && !g_have_to_stop; j++)
+        for (int j = 0; j < glob->nb_matchs; j++)
         {
-    //      assigne_variable(instruction_for->var_name, glob.gl_pathv[j]);
+            //asigne_variable(instruction_for->var_name, glob->matches->content[j]);
             return_value = execute_ast(instruction_for->to_execute);
         }
-        globfree(&glob_c);
+        destroy_path_glob(glob);
     }
 
     return return_value;
@@ -197,7 +197,7 @@ static int handle_pipe(struct instruction *ast)
 
     int left_status;
     int right_status;
-    waitpid(left, &left_status, 0);
+       waitpid(left, &left_status, 0);
     waitpid(right, &right_status, 0);
     return WEXITSTATUS(right_status);
 }
