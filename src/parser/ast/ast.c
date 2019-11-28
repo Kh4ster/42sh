@@ -152,14 +152,12 @@ static int handle_for(struct instruction *ast)
 
         if (error == GLOB_NOMATCH)
         {
-        //  assigne_variable(instruction_for->var_name, var_values->content[i]);
             return_value = execute_ast(instruction_for->to_execute);
             continue;
         }
 
         for (size_t j = 0; j < glob_c.gl_pathc && !g_have_to_stop; j++)
         {
-    //      assigne_variable(instruction_for->var_name, glob.gl_pathv[j]);
             return_value = execute_ast(instruction_for->to_execute);
         }
         globfree(&glob_c);

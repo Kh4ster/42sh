@@ -456,6 +456,13 @@ static struct instruction *add_command_redirection(
     return redirection;
 }
 
+static void add_variable(char *var)
+{
+    char *name = strtok_r(var, "=", &var);
+    char *value = strtok_r(NULL, "=", &var);
+    hash_insert(g_env.variables, name, value);
+}
+
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
     struct instruction *redirection = parse_redirection(lexer, NULL);
@@ -473,6 +480,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         struct token_lexer *token = token_lexer_head(lexer);
         if (token->data[0] != '=') //just =value, is considered a command
         {
+            add_variable(token->data);
             EAT();
             return build_instruction(TOKEN_VAR_DECLARATION, NULL);
         }
