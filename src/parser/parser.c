@@ -533,6 +533,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     free(parameters->content);
     free(parameters);//not destroy array_list cause we need it's content
+    free(simple_command_str); //now it's duped in the command struct
     return command;
 }
 

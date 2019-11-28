@@ -2,11 +2,15 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <err.h>
 
 #include "../data_structures/queue.h"
 #include "../memory/memory.h"
 #include "token_lexer.h"
 #include "../input_output/get_next_line.h"
+#include "../execution_handling/command_container.h"
+#include "../execution_handling/command_execution.h"
+#include "../error/error.h"
 
 #define DELIMITERS " \\\n\t&|<>$\"\'`$();"
 
@@ -147,6 +151,62 @@ static void handle_comments(struct queue *token_queue,
         *cursor = delim;
     }
     free(new_token);
+}
+
+char *find_corresponding_bracket(char **cursor, char **token_start)
+{
+    int counter_bracket = 1;
+    while (1)
+    {
+        while (**cursor != '\0' && counter_bracket != 0)
+        {
+            //TODO skip_quoting()
+            if (**cursor == '(')
+                counter_bracket++;
+            else if (**cursor == ')')
+                counter_bracket--;
+            (*cursor)++;
+        }
+        if (counter_bracket == 0)
+        {
+            break;
+        }
+        if (**cursor == '\0')
+        {
+            char *next_line = get_next_line(g_env.prompt);
+            if (next_line == NULL)
+                errx(2, "Lexing error");
+
+            char *new_line = xcalloc(strlen(*token_start)
+                                + strlen(next_line) + 1, sizeof(char));
+            strcat(new_line, *token_start);
+            strcat(new_line, next_line);
+            free(next_line);
+            *cursor = new_line + (*cursor - *token_start);
+            *token_start = new_line;
+        }
+    }
+    return *cursor;
+}
+
+static void handle_dollar(struct token_lexer *new_token, char **cursor)
+{
+    // keep beginning of the dollar expression
+    char *token_start = *cursor;
+
+    // skip dollar
+    (*cursor)++;
+
+    if (**cursor == '\0')
+        set_token(new_token, TOKEN_OTHER, cursor, 1);
+    else if (**cursor == '(')
+    {
+        (*cursor)++;
+        char *end_bracket = find_corresponding_bracket(cursor, &token_start);
+        set_token(new_token, TOKEN_OTHER, &token_start,
+                end_bracket - token_start);
+    }
+    //TODO ! other expansions
 }
 
 static void handle_quoting(struct token_lexer *new_token,
@@ -306,12 +366,11 @@ static struct token_lexer *generate_token(struct queue *token_queue,
     {
         handle_escape(delim);
     }
-
+    #endif /* 0 */
     else if (*cursor == '$' || *cursor == '`')
     {
-        // handle_sub_commands(delim);
+        handle_dollar(new_token, delim);
     }
-    #endif /* 0 */
 
     else
         if (!generate_token_aux(token_queue, cursor, delim, new_token))
@@ -350,6 +409,8 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     free(g_env.current_line);
     char *next_line = get_next_line(g_env.prompt);
 
+    g_env.prompt = "> "; //change prompt to ps2 with lexing
+
     if (next_line == NULL) // End Of File
     {
         g_env.current_line = NULL;
@@ -360,7 +421,6 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     }
     else
     {
-        // add a new line token in the queue execpt if it's first call
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
 
@@ -372,7 +432,6 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
             free(next_line);
     }
 
-    g_env.prompt = "> "; //change prompt to ps2 with lexing
     return current_token;
 }
 
