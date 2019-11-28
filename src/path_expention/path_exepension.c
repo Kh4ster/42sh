@@ -134,6 +134,27 @@ static struct path_globbing *init_path_glob(void)
     return p_glob;
 }
 
+
+static void swap(void **a, void **b)
+{
+    void *tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+
+static void sort_matches(struct array_list *list)
+{
+    for (int i = list->nb_element - 1; i >= 0; i--)
+    {
+        for (int j = 0; j < i; j++)
+        {
+            if (strcoll(list->content[j], list->content[j + 1]) > 0)
+                swap(&(list->content[j]), &(list->content[j + 1]));
+        }
+    }
+}
+
 extern struct path_globbing *sh_glob(char *pattern)
 {
     if (!is_path_expansion(pattern))
@@ -167,7 +188,7 @@ extern struct path_globbing *sh_glob(char *pattern)
         destroy_path_glob(p_glob);
         return NULL;
     }
-
+    sort_matches(p_glob->matches);
     return p_glob;
 }
 

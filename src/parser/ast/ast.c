@@ -18,13 +18,42 @@
 #include "../../redirections_handling/redirect.h"
 #include "../../data_structures/hash_map.h"
 #include "../../input_output/get_next_line.h"
-#include "../../path_expention/path_exepension.c"
+#include "../../path_expention/path_exepension.h"
 #include "../../error/error.h"
 #include "../../memory/memory.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char *to_expand);
+
+
+static struct command_container *build_cmd(struct array_list *params)
+{
+    struct array_list *list = array_list_init();
+
+    for (int i = 1; params->nb_element; i++)
+        array_list_append(list, strdup(params->content[i]));
+
+    struct command_container *cmd = command_create(params->content[0], list);
+    free(list->content);
+    free(list);
+    return cmd;
+}
+
+
+static void expand_glob_cmd(struct instruction *cmd_i)
+{
+    struct command_container *cmd = cmd_i->data;
+    struct path_globbing *glob = sh_glob(cmd->command);
+
+    if (!glob)
+        return;
+
+    cmd_i->data = build_cmd(glob->matches);
+    command_destroy(&cmd);
+    destroy_path_glob(glob);
+}
+
 
 //to really understand take this example $(echo $(echo ok))
 static char *expand_nested_command(char *cursor, char *to_expand)
@@ -118,8 +147,9 @@ static char *expand(char *to_expand)
     return to_expand; //no expansion
 }
 
-static void handle_expand_command(struct command_container *command)
+static void handle_expand_command(struct instruction *command_i)
 {
+    struct command_container *command = command_i->data;
     char *expansion = expand(command->command);
 
     if (is_multiple_words(expansion)) //var="echo ok ok ..."
@@ -139,6 +169,8 @@ static void handle_expand_command(struct command_container *command)
             free(command->params[i]);
         command->params[i] = expansion;
     }
+
+    expand_glob_cmd(command_i);
 }
 
 void handle_sigint(int signal)
@@ -220,7 +252,7 @@ static int exec_builtin(struct instruction *ast)
 
 static int handle_commands(struct instruction *ast)
 {
-    handle_expand_command(ast->data);
+    handle_expand_command(ast);
     /* execute commande with zak function */
     if (is_func(ast))
         return exec_func(ast);

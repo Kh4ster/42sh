@@ -66,7 +66,7 @@ static struct command_container *add_glob_to_cmd(struct command_container *cmd)
             continue;
 
         struct command_container *new =
-                    command_create(strdup(cmd->command), list);
+                    command_create(cmd->command, list);
         free(list->content);
         free(list);
         command_destroy(&cmd);
