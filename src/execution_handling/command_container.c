@@ -47,9 +47,8 @@ struct command_container *command_create(char *cmd, struct array_list *list)
     struct command_container *save;
     save = xcalloc(1, sizeof(struct command_container));
     save->params = xcalloc(list->nb_element + 2, sizeof(char *));
-    save->command = xcalloc(strlen(cmd) + 1, sizeof(char));
-    strcpy(save->command, cmd);
-    save->params[0] = cmd;
+    save->command = strdup(cmd);
+    save->params[0] = strdup(cmd);
     size_t j = 0;
     for (; j < list->nb_element; j++)
     {
