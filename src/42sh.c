@@ -23,6 +23,7 @@
 #include "memory/memory.h"
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
+#include "builtins/echo.h"
 #include "builtins/history.h"
 
 static void sigint_handler(int signum)
@@ -162,6 +163,7 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_init(builtins, NB_SLOTS);
     hash_insert_builtin(builtins, "shopt", shopt);
     hash_insert_builtin(builtins, "history", history);
+    hash_insert_builtin(builtins, "echo", echo);
 }
 
 static void init_hash_maps_and_history(struct hash_map *functions,

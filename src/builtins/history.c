@@ -9,6 +9,9 @@
 #include "history.h"
 #include "../memory/memory.h"
 
+#define STDERR 2
+#define STDOUT 1
+
 static char *get_homedir(void)
 {
     char *homedir;
@@ -69,8 +72,8 @@ static int handle_options(char **args, char *file_path)
             {
                 char *usage =
                     "history: usage: history [-c] [-r] or history [n]\n";
-                fprintf(stderr, "history: -%c: invalid option\n", arg[1]);
-                fprintf(stderr, "%s", usage);
+                dprintf(STDERR, "history: -%c: invalid option\n", arg[1]);
+                dprintf(STDERR, "%s", usage);
                 return 2;
             }
         }
@@ -91,7 +94,7 @@ static int show_history(int nb_lines)
     int index_current = history_base + history_length - nb_lines;
     for (int i = history_length - nb_lines; i < history_length; i++)
     {
-        fprintf(stdout, " %*d  %s\n", nb_digits_max, index_current,
+        dprintf(STDOUT, " %*d  %s\n", nb_digits_max, index_current,
                 hist_elts[i]->line);
         nb_lines--;
         index_current++;
@@ -131,13 +134,13 @@ int history(char **args)
                 return_val = show_history(atoi(first_arg));
             else
             {
-                fprintf(stderr, "history: too many arguments\n");
+                dprintf(STDERR, "history: too many arguments\n");
                 return_val = 1;
             }
         }
         else
         {
-            fprintf(stderr, "history: %s: numeric argument required\n",
+            dprintf(STDERR, "history: %s: numeric argument required\n",
                     first_arg);
             return_val = 1;
         }
