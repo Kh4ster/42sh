@@ -27,7 +27,8 @@ struct shell_environment
     char *current_line; /**< @brief last line took by readline */
     int noclobber_set; /**< @brief handle noclobber variable */
     char last_return_value; /**< @brief last returned value */
-    char *envvar[]; /**< @brief containing environement variables */
+    char **envvar; /**< @brief containing environement variables list*/
+    char **old_envvar; /**< @brief containing old environement variables list*/
 };
 
 /**

@@ -14,4 +14,4 @@
 * @return wrong argument: 2
 */
 //void simple_export();
-int export_builtin(char **argv);
+int export(char **argv);

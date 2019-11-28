@@ -156,13 +156,25 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "history", history);
     hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
-    hash_insert_builtin(builtins, "export", export_builtin);
+    hash_insert_builtin(builtins, "export", export);
 }
 
-static void init_hash_maps_and_history(struct hash_map *functions,
-                            struct hash_map *builtins
+static void init_all(struct hash_map *functions,
+                            struct hash_map *builtins, char **env
 )
 {
+    //environmental variable
+    size_t i = 0;
+    while (env[i] != NULL)
+        i++;
+    g_env.envvar = xcalloc(i + 1, sizeof(char *));
+    i = 0;
+    for (; env[i] != NULL; i++)
+    {
+        g_env.envvar[i] = env[i];
+    }
+    g_env.envvar[i] = '\0';
+
     // Hash map
     g_env.functions = functions;
     g_env.builtins = builtins;
@@ -194,11 +206,9 @@ static int execute_and_print_ast(struct instruction *ast)
 
 int main(int argc, char *argv[], char *env[])
 {
-    strcpy(*g_env.envvar, *env);
-
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
-    init_hash_maps_and_history(&functions, &builtins);
+    init_all(&functions, &builtins, env);
 
     int return_code = 0;
 
