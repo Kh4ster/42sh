@@ -144,6 +144,20 @@ void end_call_and_free_all(struct queue *lexer)
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
     free(g_env.pwd);
+    
+    for (int i = 0; g_env.envvar[i]; i++)
+    {
+        free(g_env.envvar[i]);
+    }
+    
+    if (g_env.old_envvar != NULL)
+    {
+        for (int i = 0; g_env.old_envvar[i]; i++)
+            free(g_env.old_envvar[i]);
+    }
+    
+    free(g_env.envvar);
+    free(g_env.old_envvar);
     free(lexer);
 
     write_history_file();
@@ -171,9 +185,9 @@ static void init_all(struct hash_map *functions,
     i = 0;
     for (; env[i] != NULL; i++)
     {
-        g_env.envvar[i] = env[i];
+        g_env.envvar[i] = strdup(env[i]);
     }
-    g_env.envvar[i] = '\0';
+    g_env.envvar[i] = NULL;
 
     // Hash map
     g_env.functions = functions;

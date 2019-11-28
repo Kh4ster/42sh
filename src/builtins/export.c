@@ -59,36 +59,52 @@ static void save_old_env(void)
     i = 0;
     for (; g_env.envvar[i] != NULL; i++)
     {
-        g_env.old_envvar[i] = g_env.envvar[i];
+        g_env.old_envvar[i] = strdup(g_env.envvar[i]);
     }
-    g_env.old_envvar[i] = '\0';
+    g_env.old_envvar[i] = NULL;
 }
 
 static void n_export(char *arg)
 {
-    if (getenv(arg) == NULL)
-        return;
-    
-    int size = 0;
-    while(g_env.envvar[size])
-        size++;
-
     int i = 0;
     int j = 0;
-    while (strstr(g_env.old_envvar[i], arg) != NULL)  
+    for (int k = 0; g_env.envvar[k]; k++)
     {
-        g_env.envvar[j] = g_env.old_envvar[i];
+        free(g_env.envvar[k]);
+        g_env.envvar[k] = NULL;
+    }
+    
+    while (strncmp(g_env.old_envvar[i], arg, strlen(arg)) != 0) //TOTO resolve TERM CONFLICT
+    {
+        g_env.envvar[j] = strdup(g_env.old_envvar[i]);
         i++;
-        j++;        
+        j++;
+
+        if (g_env.old_envvar[i] == NULL)
+        {
+            while (g_env.envvar[j]) //free spare room
+        {
+            free(g_env.envvar[j]);
+            g_env.envvar[j] = NULL;
+            j++;
+        }
+            return;
+        }
     }
     i++;
     while (g_env.old_envvar[i] != NULL)  
     {
-        g_env.envvar[j] = g_env.old_envvar[i];
+        g_env.envvar[j] = strdup(g_env.old_envvar[i]);
         i++;
         j++;        
     }
-
+    
+    while (g_env.envvar[j]) //free spare room
+    {
+        free(g_env.envvar[j]);
+        g_env.envvar[j] = NULL;
+        j++;
+    }
 }
 /*
 static int handle_error(char *arg)
@@ -96,31 +112,40 @@ static int handle_error(char *arg)
     return 1;
 }
 */
+
 int export(char **argv)
 {
-    assert(argv && (strcmp(argv[0], "export")));
+    assert(argv && (strcmp(argv[0], "export") == 0));
 
     int argc = 0;
     while (argv[argc] != NULL)
         argc++;
 
-    //save_old_env();
-    if (argc == 1  || (argc == 2 && (strcmp(argv[1], "-p") == 0)))
+    if (argc == 1 || (argc == 2 && (strcmp(argv[1], "-p") == 0)))
         simple_export(g_env.envvar);
 
-    if (argc > 2 && (strcmp(argv[1], "-n")  == 0) && argv[2])
+    if (argc > 2 && (strcmp(argv[1], "-n")  == 0))
     {
         int i = 2;
         while (argv[i])
         {
             //handle_error(argv[2]); //handle syntax error
+            if (g_env.old_envvar != NULL)
+            {
+                for (int i = 0; g_env.old_envvar[i]; i++)
+                    free(g_env.old_envvar[i]);
+            }
+            free(g_env.old_envvar);
+            save_old_env();
             n_export(argv[i]);
+            
+            for (int j = 0; g_env.old_envvar[j]; j++)
+                free(g_env.old_envvar[j]);
+            free(g_env.old_envvar);
             save_old_env();
             i++;
         }
         return 0;
     }
-
     return 0;  
-
 }
