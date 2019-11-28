@@ -2,6 +2,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <err.h>
 
 #include "../memory/memory.h"
 #include "export.h"
@@ -44,6 +45,15 @@ static char *var_value(char *arg)
 }
 */
 
+static void free_env(char **env, int k)
+{
+    for (; env[k]; k++)
+    {
+        free(env[k]);
+        env[k] = NULL;
+    }
+}
+
 static void simple_export(char **env)
 {
     for(int i = 0; env[i] != NULL; i++)
@@ -68,12 +78,9 @@ static void n_export(char *arg)
 {
     int i = 0;
     int j = 0;
-    for (int k = 0; g_env.envvar[k]; k++)
-    {
-        free(g_env.envvar[k]);
-        g_env.envvar[k] = NULL;
-    }
-    
+    int k = 0;
+    free_env(g_env.envvar, k);
+
     while (strncmp(g_env.old_envvar[i], arg, strlen(arg)) != 0) //TOTO resolve TERM CONFLICT
     {
         g_env.envvar[j] = strdup(g_env.old_envvar[i]);
@@ -82,12 +89,7 @@ static void n_export(char *arg)
 
         if (g_env.old_envvar[i] == NULL)
         {
-            while (g_env.envvar[j]) //free spare room
-        {
-            free(g_env.envvar[j]);
-            g_env.envvar[j] = NULL;
-            j++;
-        }
+            free_env(g_env.envvar, j); //free spare room
             return;
         }
     }
@@ -98,25 +100,28 @@ static void n_export(char *arg)
         i++;
         j++;        
     }
-    
-    while (g_env.envvar[j]) //free spare room
-    {
-        free(g_env.envvar[j]);
-        g_env.envvar[j] = NULL;
-        j++;
-    }
+    free_env(g_env.envvar, j); //free spare room
 }
-/*
-static int handle_error(char *arg)
+
+static int handle_error(char **arg)
 {
-    return 1;
+    for (int i = 0; arg[i]; i++)
+    {
+        if (strcmp(arg[i], "=") == 0)
+        {
+            fprintf(stderr, "export: '=' not a valid identifier\n");
+            return 1;
+        }
+    }
+    return 0;
 }
-*/
+
 
 int export(char **argv)
 {
     assert(argv && (strcmp(argv[0], "export") == 0));
-
+    if (handle_error(argv) == 1) //check if syntax error
+        return 1;
     int argc = 0;
     while (argv[argc] != NULL)
         argc++;
@@ -138,9 +143,8 @@ int export(char **argv)
             free(g_env.old_envvar);
             save_old_env();
             n_export(argv[i]);
-            
-            for (int j = 0; g_env.old_envvar[j]; j++)
-                free(g_env.old_envvar[j]);
+            int j = 0;
+            free_env(g_env.old_envvar, j);
             free(g_env.old_envvar);
             save_old_env();
             i++;
