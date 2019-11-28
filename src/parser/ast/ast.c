@@ -49,6 +49,7 @@ static char *expand_nested_command(char *cursor, char *to_expand)
 
 static char *expand_cmd(char *to_expand)
 {
+    bool to_free = false;
     to_expand++; //skip $
     to_expand++; //skip (
 
@@ -59,33 +60,47 @@ static char *expand_cmd(char *to_expand)
         {
             to_expand = expand_nested_command(cursor, to_expand);
             cursor = to_expand;
+            to_free = true;
         }
     }
     if (cursor == NULL)
         handle_parser_errors(NULL);
     *cursor = 0; //replace ) with 0
 
-    return get_result_from_42sh(to_expand);
+    char *result = get_result_from_42sh(to_expand);
+    if (to_free) //inner expansion that needs to be freed
+        free(to_expand);
+    return result;
 }
 
 static void fill_command_and_params(struct command_container *command,
                                                                 char *expansion
 )
 {
+    free(command->command);
     command->command = strtok_r(expansion, " ", &expansion);
 
     int argc = 0;
     while (command->params[argc] != NULL)
         argc++;
+
     //we want to add what comes after the command in our parameters
-    char **new_params = xmalloc(sizeof(char*) * (argc + 1));
-    new_params[0] = expansion;
-    argc = 1;
+
+    char **new_params = xmalloc(sizeof(char*) * (argc + 2));
+    //2 to store new param + null
+
+    //put expanded command as first param
+    new_params[0] = strdup(command->command);
+    new_params[1] = strdup(expansion);
+    //strdup so that it can be freed later
+
+    argc = 2;
     while (command->params[argc - 1] != NULL)
     {
         new_params[argc] = command->params[argc - 1];
         argc++;
     }
+    new_params[argc]= NULL;
     free(command->params);
     command->params = new_params;
 }
@@ -111,14 +126,19 @@ static void handle_expand_command(struct command_container *command)
         fill_command_and_params(command, expansion);
     else
     {
-        if (command->command != expansion)
+        if (command->command != expansion)//if an expansion was performed
             free(command->command);
         command->command = expansion;
     }
 
     //it's ok to expand var="echo ok ok" in the parameters, not need to create
     for (size_t i = 0; command->params[i] != NULL; ++i)
-        command->params[i] = expand(command->params[i]);
+    {
+        expansion = expand(command->params[i]);
+        if (expansion != command->params[i])
+            free(command->params[i]);
+        command->params[i] = expansion;
+    }
 }
 
 void handle_sigint(int signal)
