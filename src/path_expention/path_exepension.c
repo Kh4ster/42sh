@@ -17,7 +17,7 @@
 
 int g_nb_recursion = 1;
 
-
+#if 0
 static char *strupr(char *str)
 {
     for (size_t i = 0; str[i]; i++)
@@ -35,7 +35,7 @@ static char *strlwr(char *str)
 
     return str;
 }
-
+#endif
 
 static int is_path_expansion(char *pattern)
 {
@@ -198,6 +198,7 @@ static void sort_matches(struct array_list *list)
     }
 }
 
+#if 0
 static int is_a_path(char *path)
 {
     for (size_t i = 0; path[i]; i++)
@@ -208,7 +209,7 @@ static int is_a_path(char *path)
 
     return 0;
 }
-
+#endif
 
 static char *get_dir_name(char *pattern)
 {
@@ -219,10 +220,13 @@ static char *get_dir_name(char *pattern)
 
     char *current_path = strndup(pattern, end_file - pattern);
 
-    if (!is_a_path(current_path))
+    char *end_path = strrchr(current_path, '/');
+
+    if (end_path != end_file)
     {
+        char *to_return = strndup(current_path, end_path - current_path);
         free(current_path);
-        return strdup("");
+        return to_return;
     }
 
     return current_path;
@@ -251,15 +255,6 @@ static DIR *open_dir(char *dir_name)
     }
 
     DIR *dir = opendir(dir_name);
-
-    if (!dir && g_env.options.option_nocaseglob)
-    {
-        dir = opendir(strlwr(dir_name));
-
-        if (!dir)
-            dir = opendir(strupr(dir_name));
-    }
-
     return dir;
 }
 
