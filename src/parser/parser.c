@@ -14,7 +14,7 @@
 #include "../execution_handling/command_container.h"
 #include "../data_structures/array_list.h"
 #include "../data_structures/hash_map.h"
-#include "../redirections_handling/redirect.c"
+#include "../redirections_handling/redirect.h"
 
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)
@@ -292,7 +292,8 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
 
-    hash_insert(g_env.functions, func_name->data, to_execute);
+    hash_insert(g_env.functions, func_name->data, to_execute, AST);
+    free(func_name->data);
     free(func_name);
     return  build_funcdef_instruction();
 }
@@ -457,6 +458,13 @@ static struct instruction *add_command_redirection(
     return redirection;
 }
 
+static void add_variable(char *var)
+{
+    char *name = strtok_r(var, "=", &var);
+    char *value = strtok_r(NULL, "=", &var);
+    hash_insert(g_env.variables, name, value, STRING);
+}
+
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
     struct instruction *redirection = parse_redirection(lexer, NULL);
@@ -474,6 +482,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         struct token_lexer *token = token_lexer_head(lexer);
         if (token->data[0] != '=') //just =value, is considered a command
         {
+            add_variable(token->data);
             EAT();
             return build_instruction(TOKEN_VAR_DECLARATION, NULL);
         }
@@ -526,6 +535,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     free(parameters->content);
     free(parameters);//not destroy array_list cause we need it's content
+    free(simple_command_str); //now it's duped in the command struct
     return command;
 }
 
