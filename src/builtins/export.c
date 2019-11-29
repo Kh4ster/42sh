@@ -79,7 +79,7 @@ static void free_env(char **env, int k)
         }
     }
 }
-/*
+
 static char *var_name(char *arg)
 {
     int n = strlen(arg);
@@ -108,25 +108,28 @@ static int is_right_var(char **var, char *arg, int i)
         free(name);
         return 1;
     }
-    else 
-        return 0;                                
+    else
+    {
+        if (strcmp(var[i], arg) == 0)
+            return 0;                                
+    }
+    return 1;
 }
-*/
+
 static void simple_export(char **env)
 {
-    for(int i = 0; env[i] != NULL; i++)
+    for (int i = 0; env[i] != NULL; i++)
         printf("%s\n", env[i]);
 }
 
-static void n_export(char *arg)
+static void export_n(char *arg)
 {
     int i = 0;
     int j = 0;
     int k = 0;
     free_env(g_env.envvar, k);
 
-    while (strncmp(g_env.old_envvar[i], arg, strlen(arg)) != 0) 
-        //&& (is_right_var(g_env.old_envvar, arg, i) != 0)) 
+    while (is_right_var(g_env.old_envvar, arg, i) != 0) 
     {
         g_env.envvar[j] = strdup(g_env.old_envvar[i]);
         i++;
@@ -147,7 +150,6 @@ static void n_export(char *arg)
     }
     free_env(g_env.envvar, j); //free spare room
 }
-
 
 int export(char **argv)
 {
@@ -175,7 +177,7 @@ int export(char **argv)
             free_env(g_env.old_envvar, k);
             free(g_env.old_envvar);
             save_old_env();
-            n_export(argv[i]);
+            export_n(argv[i]);
             int j = 0;
             free_env(g_env.old_envvar, j);
             free(g_env.old_envvar);
