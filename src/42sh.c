@@ -23,6 +23,7 @@
 #include "memory/memory.h"
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
+#include "builtins/echo.h"
 #include "builtins/history.h"
 #include "builtins/cd.h"
 #include "builtins/exit.h"
@@ -154,6 +155,7 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "history", history);
     hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
+    hash_insert_builtin(builtins, "echo", echo);
 }
 
 static void init_hash_maps_and_history(struct hash_map *functions,
