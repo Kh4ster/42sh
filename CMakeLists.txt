@@ -49,10 +49,12 @@ set(SRC_FILES
     src/error/error.c
     src/parser/ast/ast_print.c
     src/redirections_handling/redirect.c
+    src/builtins/cd.c
     src/builtins/shopt.c
     src/builtins/history.c
     src/builtins/source.c
     src/builtins/break.c
+    src/builtins/exit.c
 )
 
 # ---- List of test files (unit tests) ----

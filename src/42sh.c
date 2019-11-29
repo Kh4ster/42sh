@@ -26,6 +26,8 @@
 #include "builtins/history.h"
 #include "builtins/source.h"
 #include "builtins/break.h"
+#include "builtins/cd.h"
+#include "builtins/exit.h"
 
 static void sigint_handler(int signum)
 {
@@ -104,22 +106,10 @@ void end_call_and_free_all(struct queue *lexer)
     // Free all
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
+    free(g_env.pwd);
     free(lexer);
 
-    // History write to file
-    char *history_path = get_history_file_path();
-    FILE *history_file = fopen(history_path, "w");
-    if (history_file == NULL)
-    {
-        free(history_path);
-        return;
-    }
-    HIST_ENTRY **hist_elts = history_list();
-    for (int i = 0; i < history_length - 1; i++)
-        fprintf(history_file, "%s\n", hist_elts[i]->line);
-    fclose(history_file);
-    history_truncate_file(history_path, 2000);
-    free(history_path);
+    write_history_file();
 }
 
 static void init_builtins_hash_map(struct hash_map *builtins)
@@ -130,6 +120,8 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "source", source);
     hash_insert_builtin(builtins, "break", has_break);
     hash_insert_builtin(builtins, "continue", has_continue);
+    hash_insert_builtin(builtins, "cd", cd);
+    hash_insert_builtin(builtins, "exit", exit_builtin);
 }
 
 static void init_hash_maps_and_history(struct hash_map *functions,
