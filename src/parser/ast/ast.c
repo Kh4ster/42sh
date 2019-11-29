@@ -27,6 +27,52 @@ bool g_have_to_stop = 0; //to break in case of signal
 static char *expand(char *to_expand);
 
 
+static void expand_tilde_in_params(char **params)
+{
+     for (int i = 0; params[i]; i++)
+    {
+        if (strcmp("~", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = strdup(getenv("HOME"));
+        }
+
+        if (strcmp("~+", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = get_current_dir_name();
+        }
+
+        if (strcmp("~-", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = strdup(getenv("OLDPWD"));
+        }
+    }
+}
+
+static void expand_tilde(struct command_container *cmd)
+{
+    if (strcmp("~", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = strdup(getenv("HOME"));
+    }
+
+    if (strcmp("~+", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = get_current_dir_name();
+    }
+
+    if (strcmp("~-", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = strdup(getenv("OLDPWD"));
+    }
+    expand_tilde_in_params(cmd->params);
+}
+
 static struct command_container *build_cmd(struct array_list *params,
                                                 char **params_cmd)
 {
@@ -174,6 +220,7 @@ static void handle_expand_command(struct instruction *command_i)
         command->params[i] = expansion;
     }
 
+    expand_tilde(command_i->data);
     expand_glob_cmd(command_i);
 }
 
