@@ -224,39 +224,38 @@ static void handle_dollar(struct token_lexer *new_token, char **cursor)
 static void handle_quoting(struct token_lexer *new_token,
         char **cursor)
 {
-    //char *start_of_token = *cursor;
+    char *start_of_token = *cursor + 1;
     if (**cursor == '\'')
     {
         (*cursor)++;
-        char *end_quote = strchr(*cursor, '\'');
-        #if 0
-        while (end_quote == NULL)
+        *cursor = get_delimiter(*cursor, "\'\0");
+        while (**cursor != '\'') // end quote not found
         {
-            g_env.current_line
-            // TODO strcat get_next_line to the current str
-            // end_quote = strchr(*cursor, '\'');
-            // if EOF, error, expecting a closing '
+            add_next_line_to_current_and_update_cursors(cursor,
+                    &start_of_token);
+            *cursor = get_delimiter(*cursor, "\'\0");
         }
-        #endif /* 0 */
-        set_token(new_token, TOKEN_OTHER, cursor, end_quote - *cursor);
-        *cursor = end_quote + 1;
+        set_token(new_token, TOKEN_OTHER, &start_of_token,
+                *cursor - start_of_token);
+        (*cursor)++;
     }
     else if (**cursor == '"')
     {
         (*cursor)++;
-        char *end_quote = get_delimiter(*cursor, "\"\\\0");
-        while (*end_quote != '\"')
+        *cursor = get_delimiter(*cursor, "\"\\\0");
+        while (**cursor != '\"')
         {
             // Handle backslash
-            if (*end_quote == '\\' && *(end_quote + 1) != '\0')
-                end_quote += 2;
-            if (*end_quote == '\0')
-                break; // TODO strcat get_next_line to the current str
-            // if EOF : error, expecting a closing "
-            end_quote = get_delimiter(*cursor, "\"\\\0");
+            if (**cursor == '\\' && *(*cursor + 1) != '\0')
+                *cursor += 2;
+            if (**cursor == '\0')
+                add_next_line_to_current_and_update_cursors(cursor,
+                        &start_of_token);
+            *cursor = get_delimiter(*cursor, "\"\\\0");
         }
-        set_token(new_token, TOKEN_OTHER, cursor, end_quote - *cursor);
-        *cursor = end_quote + 1;
+        set_token(new_token, TOKEN_OTHER, &start_of_token,
+                *cursor - start_of_token);
+        (*cursor)++;
     }
 }
 
