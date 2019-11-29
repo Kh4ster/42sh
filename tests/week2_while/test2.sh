@@ -1,6 +1,8 @@
 touch file
+var1=titi
+var2=end
 while cat file; do
-    echo toto
+    echo $var1
     if true; then
         while cat file; do
             echo tata
@@ -11,7 +13,7 @@ while cat file; do
     else
         rm file
     fi
-    echo end
+    echo $var2
 done >> file
 cat file
 rm file

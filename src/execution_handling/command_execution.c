@@ -9,9 +9,18 @@
 
 #include "command_container.h"
 #include "command_execution.h"
+#include "../path_expention/path_exepension.h"
+#include "../memory/memory.h"
+#include "../data_structures/array_list.h"
+#include "../input_output/read.h"
+#include "../data_structures/data_string.h"
+#include "../input_output/get_next_line.h"
 
-int exec_cmd(struct command_container *cmd)
+
+int exec_cmd(struct instruction *cmd_container)
 {
+    struct command_container *cmd = cmd_container->data;
+
     int pid = fork();
     if (pid == -1)
         exit(EXIT_FAILURE);
@@ -30,4 +39,41 @@ int exec_cmd(struct command_container *cmd)
     int wstatus;
     waitpid(pid, &wstatus, 0);
     return WEXITSTATUS(wstatus);
+}
+
+char *get_result_from_42sh(char *command)
+{
+    int tube[2];
+    if (pipe(tube) == -1)
+        errx(-1, "Bad pipe"); //-1 ?
+
+    int save_stdout = dup(1); //save stdout
+    dup2(tube[1], 1);   //replace stdout
+    close(tube[1]);     //close write side tube
+
+    int pid = fork();
+    if (pid == -1)
+        exit(EXIT_FAILURE);
+    if (pid == 0)
+    {
+        close(tube[0]); //close read side
+        execl(g_env.path, "42sh", "-c", command, NULL);
+        errx(-1, "execvp has failed"); //-1 ? execl ?
+    }
+    close(1); //close write side of pipe in stdout, if not xread loops forever
+    int wstatus;
+    waitpid(pid, &wstatus, 0); //return code ?
+
+    struct string *str = string_init(); //retrieve data from pipe
+    if (xread(str, tube[0]) == -1)
+        errx(-1, "Bad read"); //-1 ?
+
+    if (str->content[0] != '\0') //else go to index -1
+        str->content[strlen(str->content) - 1] = 0; //! dunno why has to rm \n
+
+    dup2(save_stdout, 1); //put back stdout
+    close(tube[0]);     //close read side
+    close(save_stdout);
+
+    return string_get_content(&str);
 }

@@ -14,7 +14,7 @@
 #include "../execution_handling/command_container.h"
 #include "../data_structures/array_list.h"
 #include "../data_structures/hash_map.h"
-#include "../redirections_handling/redirect.c"
+#include "../redirections_handling/redirect.h"
 
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)
@@ -292,7 +292,8 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
 
-    hash_insert(g_env.functions, func_name->data, to_execute);
+    hash_insert(g_env.functions, func_name->data, to_execute, AST);
+    free(func_name->data);
     free(func_name);
     return  build_funcdef_instruction();
 }
@@ -334,6 +335,7 @@ static int parse_io_number(struct queue *lexer)
     return fd;
 }
 
+static bool next_is_end_of_instruction(struct queue *lexer);
 
 static struct instruction *__parse_redirection(struct queue *lexer)
 {
@@ -360,7 +362,7 @@ static struct instruction *__parse_redirection(struct queue *lexer)
     }
     EAT(); //eat the redirection token
 
-    if (lexer->size == 0 || !NEXT_IS_OTHER() || NEXT_IS("\n"))
+    if (next_is_end_of_instruction(lexer))
         return build_instruction(type, build_redirection(fd, NULL));
 
     struct token_lexer *token = token_lexer_head(lexer);
@@ -390,7 +392,7 @@ static struct instruction *parse_redirection(struct queue *lexer,
         //to make difference between no redirection and bad grammar
         if (redirection_not_valid(redirection))
             return free_instructions(2, command, redirection);
-    
+
         if (redirection->type == TOKEN_HEREDOC
                 || redirection->type == TOKEN_HEREDOC_MINUS)
             redirections_handling(redirection, 0);
@@ -456,6 +458,13 @@ static struct instruction *add_command_redirection(
     return redirection;
 }
 
+static void add_variable(char *var)
+{
+    char *name = strtok_r(var, "=", &var);
+    char *value = strtok_r(NULL, "=", &var);
+    hash_insert(g_env.variables, name, value, STRING);
+}
+
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
     struct instruction *redirection = parse_redirection(lexer, NULL);
@@ -473,6 +482,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         struct token_lexer *token = token_lexer_head(lexer);
         if (token->data[0] != '=') //just =value, is considered a command
         {
+            add_variable(token->data);
             EAT();
             return build_instruction(TOKEN_VAR_DECLARATION, NULL);
         }
@@ -489,7 +499,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         if (is_redirection(lexer) || NEXT_IS_NUMBER())
         {
             struct instruction *redirection2 =
-                                parse_redirection(lexer, redirection);
+                                parse_redirection(lexer, NULL);
 
             if (redirection)
                 redirection = add_command_redirection(redirection, redirection2);
@@ -525,6 +535,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
 
     free(parameters->content);
     free(parameters);//not destroy array_list cause we need it's content
+    free(simple_command_str); //now it's duped in the command struct
     return command;
 }
 
