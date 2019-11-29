@@ -310,7 +310,7 @@ static void handle_back_quote(struct token_lexer *new_token, char **cursor)
 static void handle_quoting(struct token_lexer *new_token,
         char **cursor)
 {
-    char *start_of_token = *cursor + 1;
+    char *start_of_token = *cursor;
     if (**cursor == '\'')
     {
         (*cursor)++;
@@ -322,7 +322,7 @@ static void handle_quoting(struct token_lexer *new_token,
             *cursor = get_delimiter(*cursor, "\'\0");
         }
         set_token(new_token, TOKEN_OTHER, &start_of_token,
-                *cursor - start_of_token);
+                *cursor - start_of_token + 1);
         (*cursor)++;
     }
     else if (**cursor == '"')
@@ -342,7 +342,7 @@ static void handle_quoting(struct token_lexer *new_token,
             *cursor = get_delimiter(*cursor, "\"\\\0");
         }
         set_token(new_token, TOKEN_OTHER, &start_of_token,
-                *cursor - start_of_token);
+                *cursor - start_of_token + 1);
         (*cursor)++;
     }
 }
