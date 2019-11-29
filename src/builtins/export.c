@@ -163,7 +163,8 @@ int export(char **argv)
     if (handle_error(argc, argv) == 1) //check if syntax error
         return 1;
 
-    if (argc == 1 || (strcmp(argv[1], "-p") == 0))
+    if (argc == 1 || (strcmp(argv[1], "-p") == 0) 
+        || (argc == 2 && (strcmp(argv[1], "-n") == 0)))
         simple_export(g_env.envvar);
 
     if (argc == 3 && (strcmp(argv[1], "-n") == 0) && (strcmp(argv[2], "-p") == 0))
