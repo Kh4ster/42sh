@@ -215,6 +215,20 @@ static void handle_dollar(struct token_lexer *new_token, char **cursor)
     }
 }
 
+static void handle_back_quote(struct token_lexer *new_token, char **cursor)
+{
+    // keep beginning of the back_quote expression
+    char *token_start = *cursor;
+
+    if (**cursor == '\0')
+        set_token(new_token, TOKEN_OTHER, cursor, 1);
+    while (true)
+    {
+        while (**cursor != '\0' && **cursor != '`')
+            (*cursor)++;
+    }
+}
+
 static void handle_quoting(struct token_lexer *new_token,
         char **cursor)
 {
@@ -373,9 +387,13 @@ static struct token_lexer *generate_token(struct queue *token_queue,
         handle_escape(delim);
     }
     #endif /* 0 */
-    else if (*cursor == '$' || *cursor == '`')
+    else if (*cursor == '$')
     {
         handle_dollar(new_token, delim);
+    }
+    else if (*cursor == '`')
+    {
+        handle_back_quote(new_token, delim);
     }
 
     else
