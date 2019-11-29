@@ -33,6 +33,7 @@ struct shell_environment
     char last_return_value; /**< @brief last returned value */
     char **envvar; /**< @brief containing environement variables list*/
     char **old_envvar; /**< @brief containing old environement variables list*/
+    char *path;
 };
 
 /**

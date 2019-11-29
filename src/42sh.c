@@ -122,7 +122,7 @@ void end_call_and_free_all(struct queue *lexer)
         for (int i = 0; g_env.old_envvar[i]; i++)
             free(g_env.old_envvar[i]);
     }
-    
+
     free(g_env.envvar);
     free(g_env.old_envvar);
     free(g_env.current_line);
@@ -148,7 +148,8 @@ static void init_builtins_hash_map(struct hash_map *builtins)
 static void init_all(struct hash_map *functions,
                             struct hash_map *builtins,
                             struct hash_map *variables,
-                            char **env
+                            char **env,
+                            char *path
 )
 {
     //environmental variable
@@ -172,6 +173,7 @@ static void init_all(struct hash_map *functions,
     init_builtins_hash_map(g_env.builtins);
     g_env.options.option_expand_aliases = true;
     g_env.options.option_sourcepath = true;
+    g_env.path = path;
 
     // History
     char *history_path = get_history_file_path();
@@ -199,7 +201,7 @@ int main(int argc, char *argv[], char *env[])
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
     struct hash_map variables;
-    init_all(&functions, &builtins, &variables, env);
+    init_all(&functions, &builtins, &variables, env, argv[0]);
 
     int return_code = 0;
 

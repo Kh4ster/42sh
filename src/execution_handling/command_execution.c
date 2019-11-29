@@ -14,6 +14,7 @@
 #include "../data_structures/array_list.h"
 #include "../input_output/read.h"
 #include "../data_structures/data_string.h"
+#include "../input_output/get_next_line.h"
 
 
 int exec_cmd(struct instruction *cmd_container)
@@ -56,7 +57,7 @@ char *get_result_from_42sh(char *command)
     if (pid == 0)
     {
         close(tube[0]); //close read side
-        execl("./42sh", "42sh", "-c", command, NULL);
+        execl(g_env.path, "42sh", "-c", command, NULL);
         errx(-1, "execvp has failed"); //-1 ? execl ?
     }
     close(1); //close write side of pipe in stdout, if not xread loops forever
