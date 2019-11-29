@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <err.h>
 #include <locale.h>
+#include <ctype.h>
 
 #include "../input_output/get_next_line.h"
 #include "path_exepension.h"
@@ -15,6 +16,26 @@
 #include "../memory/memory.h"
 
 int g_nb_recursion = 1;
+
+
+static char *strupr(char *str)
+{
+    for (size_t i = 0; str[i]; i++)
+        str[i] = toupper(str[i]);
+
+    return str;
+}
+
+
+
+static char *strlwr(char *str)
+{
+    for (size_t i = 0; str[i]; i++)
+        str[i] = tolower(str[i]);
+
+    return str;
+}
+
 
 static int is_path_expansion(char *pattern)
 {
@@ -177,6 +198,17 @@ static void sort_matches(struct array_list *list)
     }
 }
 
+static int is_a_path(char *path)
+{
+    for (size_t i = 0; path[i]; i++)
+    {
+        if (path[i] == '/')
+            return 1;
+    }
+
+    return 0;
+}
+
 
 static char *get_dir_name(char *pattern)
 {
@@ -185,7 +217,15 @@ static char *get_dir_name(char *pattern)
     if (end_file == pattern)
         return strdup("");
 
-    return strndup(pattern, end_file - pattern);
+    char *current_path = strndup(pattern, end_file - pattern);
+
+    if (!is_a_path(current_path))
+    {
+        free(current_path);
+        return strdup("");
+    }
+
+    return current_path;
 }
 
 static void init_nb_recursions(char *pattern)
@@ -199,6 +239,31 @@ static void init_nb_recursions(char *pattern)
     }
 }
 
+
+static DIR *open_dir(char *dir_name)
+{
+    if (!*dir_name)
+    {
+        char *new_dir = get_current_dir_name();
+        DIR *dir = opendir(new_dir);
+        free(new_dir);
+        return dir;
+    }
+
+    DIR *dir = opendir(dir_name);
+
+    if (!dir && g_env.options.option_nocaseglob)
+    {
+        dir = opendir(strlwr(dir_name));
+
+        if (!dir)
+            dir = opendir(strupr(dir_name));
+    }
+
+    return dir;
+}
+
+
 extern struct path_globbing *sh_glob(char *pattern)
 {
     if (!is_path_expansion(pattern))
@@ -206,21 +271,12 @@ extern struct path_globbing *sh_glob(char *pattern)
 
     init_nb_recursions(pattern);
     char *dir_name = get_dir_name(pattern);
-    DIR *current_dir_d = NULL;
-
-    if (!*dir_name)
-    {
-        char *current_dir = get_current_dir_name();
-        current_dir_d = opendir(current_dir);
-        free(current_dir);
-    }
-
-    else
-        current_dir_d = opendir(dir_name);
-
+    DIR *current_dir_d = open_dir(dir_name);
     struct path_globbing *p_glob = init_path_glob();
+    int error = 0;
 
-    int error = match_filesnames(dir_name, current_dir_d, p_glob, pattern);
+    if (current_dir_d)
+        error = match_filesnames(dir_name, current_dir_d, p_glob, pattern);
 
     closedir(current_dir_d);
     free(dir_name);

@@ -15,8 +15,8 @@
 #include "../input_output/read.h"
 #include "../data_structures/data_string.h"
 
-#if 0
-static size_t get_nb_params(char **params)
+
+static int get_nb_params(char **params)
 {
     int res = 0;
 
@@ -25,9 +25,8 @@ static size_t get_nb_params(char **params)
         res++;
     }
 
-    return res + 1;
+    return res;
 }
-#endif
 
 
 static struct array_list *__add_glob_to_cmd(char **params, char *pattern,
@@ -57,7 +56,7 @@ static struct array_list *__add_glob_to_cmd(char **params, char *pattern,
 
 static struct command_container *add_glob_to_cmd(struct command_container *cmd)
 {
-    for (int i = 0; cmd->params[i]; i++)
+    for (int i = 0; i < get_nb_params(cmd->params); i++)
     {
         struct array_list *list = __add_glob_to_cmd(cmd->params,
                                 cmd->params[i], &i);
