@@ -29,9 +29,9 @@ static char *var_value(char *arg)
     return varvalue;
 }
 */
-static int handle_error(char **arg)
+static int handle_error(int argc, char **arg)
 {
-    if (arg[1] != NULL && (strcmp(arg[1], "-n") == 0) && (strcmp(arg[2], "-p") != 0))
+    if (argc > 2 && arg[1] != NULL &&  (strcmp(arg[1], "-n") == 0) && (strcmp(arg[2], "-p") != 0))
     {
         for (int i = 3; arg[i]; i++)
         {
@@ -153,12 +153,13 @@ int export(char **argv)
 {
     assert(argv && (strcmp(argv[0], "export") == 0));
     
-    if (handle_error(argv) == 1) //check if syntax error
-        return 1;
     
     int argc = 0;
     while (argv[argc] != NULL)
         argc++;
+    
+    if (handle_error(argc, argv) == 1) //check if syntax error
+        return 1;
 
     if (argc == 1 || (strcmp(argv[1], "-p") == 0))
         simple_export(g_env.envvar);
