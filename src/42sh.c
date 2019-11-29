@@ -202,11 +202,7 @@ int main(int argc, char *argv[], char *env[])
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
     struct hash_map variables;
-<<<<<<< HEAD
-    init_hash_maps_and_history(&functions, &builtins, &variables, argv[0]);
-=======
-    init_all(&functions, &builtins, &variables, env);
->>>>>>> develop
+    init_all(&functions, &builtins, &variables, env, argv[0]);
 
     int return_code = 0;
 
