@@ -56,12 +56,14 @@ static char *expand_cmd(char *to_expand)
     char *cursor = to_expand;
     while ((cursor = strpbrk(cursor, "$)")) != NULL && *cursor != ')')
     {
-        if (*cursor == '$') //recursive call to expand command
+        if (*cursor == '$' && *cursor == '(') //recursive call to expand command
         {
             to_expand = expand_nested_command(cursor, to_expand);
             cursor = to_expand;
             to_free = true;
         }
+        else    //if we fall on a $ for a var we need to skip it
+            cursor++;
     }
     if (cursor == NULL)
         handle_parser_errors(NULL);
@@ -131,9 +133,14 @@ static char *expand(char *to_expand)
     return to_expand; //no expansion
 }
 
-static void handle_expand_command(struct command_container *command)
+static int handle_expand_command(struct command_container *command)
 {
     char *expansion = expand(command->command);
+    if (*expansion == 0) //expand empty var
+    {
+        free(expansion);
+        return -1;
+    }
 
     if (is_multiple_words(expansion)) //var="echo ok ok ..."
         fill_command_and_params(command, expansion);
@@ -152,6 +159,7 @@ static void handle_expand_command(struct command_container *command)
             free(command->params[i]);
         command->params[i] = expansion;
     }
+    return 1;
 }
 
 void handle_sigint(int signal)
@@ -233,7 +241,9 @@ static int exec_builtin(struct instruction *ast)
 
 static int handle_commands(struct instruction *ast)
 {
-    handle_expand_command(ast->data);
+    if (handle_expand_command(ast->data) == -1)
+        return 0; //return 0 ?
+
     /* execute commande with zak function */
     if (is_func(ast))
         return exec_func(ast);
