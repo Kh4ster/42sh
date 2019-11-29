@@ -2,7 +2,7 @@
   options:
     - ../tests/week2_until/test1.sh
 
-- name: simple until 2
+- name: simple until 2 with variable substitution
   options:
     - ../tests/week2_until/test2.sh
 
