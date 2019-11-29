@@ -51,6 +51,7 @@ set(SRC_FILES
     src/redirections_handling/redirect.c
     src/builtins/cd.c
     src/builtins/shopt.c
+    src/builtins/echo.c
     src/builtins/history.c
     src/builtins/exit.c
 )

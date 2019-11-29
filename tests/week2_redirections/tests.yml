@@ -276,3 +276,5 @@
   options:
     - ../tests/week2_redirections/test18.sh
 
+- name: echo ok > if
+  stdin: echo ok > if; cat if; rm if
