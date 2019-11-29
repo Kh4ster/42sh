@@ -43,7 +43,12 @@ void hash_insert(struct hash_map *set,
         s->key = strdup(key);
         s->data_type = data_type;
         if (s->data_type == STRING)
-            s->data = strdup(data);
+        {
+            if (s->data == NULL)
+                s->data = strdup("");
+            else
+                s->data = strdup(data);
+        }
         else
             s->data = data;
     }
@@ -53,7 +58,12 @@ void hash_insert(struct hash_map *set,
         new->key = strdup(key);
         s->data_type = data_type;
         if (s->data_type == STRING)
-            s->data = strdup(data);
+        {
+            if (s->data == NULL)
+                s->data = strdup("");
+            else
+                s->data = strdup(data);
+        }
         else
             s->data = data;
         new->next = NULL;
