@@ -27,12 +27,16 @@ bool g_have_to_stop = 0; //to break in case of signal
 static char *expand(char *to_expand);
 
 
-static struct command_container *build_cmd(struct array_list *params)
+static struct command_container *build_cmd(struct array_list *params,
+                                                char **params_cmd)
 {
     struct array_list *list = array_list_init();
 
-    for (int i = 1; params->nb_element; i++)
+    for (size_t i = 1; i < params->nb_element; i++)
         array_list_append(list, strdup(params->content[i]));
+
+    for (size_t i = 0; params_cmd[i]; i++)
+        array_list_append(list, strdup(params_cmd[i]));
 
     struct command_container *cmd = command_create(params->content[0], list);
     free(list->content);
@@ -49,7 +53,7 @@ static void expand_glob_cmd(struct instruction *cmd_i)
     if (!glob)
         return;
 
-    cmd_i->data = build_cmd(glob->matches);
+    cmd_i->data = build_cmd(glob->matches, cmd->params);
     command_destroy(&cmd);
     destroy_path_glob(glob);
 }
@@ -358,6 +362,14 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
+        char *expantion = expand(patterns->content[i]);
+
+        if (patterns->content[i] != expantion)
+        {
+            free(patterns->content[i]);
+            patterns->content[i] = expantion;
+        }
+
         if (fnmatch(patterns->content[i], pattern, FNM_EXTMATCH) == 0)
             return 1;
     }
@@ -369,6 +381,13 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 static int handle_case(struct instruction *ast)
 {
     struct case_clause *case_clause = ast->data;
+    char *expantion= expand(case_clause->pattern);
+
+    if (case_clause->pattern != expantion)
+    {
+        free(case_clause->pattern);
+        case_clause->pattern = expantion;
+    }
 
     for (size_t i = 0; i < case_clause->items->nb_element; i++)
     {
