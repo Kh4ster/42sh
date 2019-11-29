@@ -334,6 +334,7 @@ static int parse_io_number(struct queue *lexer)
     return fd;
 }
 
+static bool next_is_end_of_instruction(struct queue *lexer);
 
 static struct instruction *__parse_redirection(struct queue *lexer)
 {
@@ -360,7 +361,7 @@ static struct instruction *__parse_redirection(struct queue *lexer)
     }
     EAT(); //eat the redirection token
 
-    if (lexer->size == 0 || !NEXT_IS_OTHER() || NEXT_IS("\n"))
+    if (next_is_end_of_instruction(lexer))
         return build_instruction(type, build_redirection(fd, NULL));
 
     struct token_lexer *token = token_lexer_head(lexer);
