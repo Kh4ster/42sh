@@ -205,7 +205,8 @@ static char *expand(char *to_expand)
 }
 
 static void insert_sub_var(struct array_list *expanded_parameters,
-                                                                char *expansion)
+                                            char *expansion
+)
 {
     if (!is_multiple_words(expansion)) //expansion only gave one word
     {
@@ -250,13 +251,15 @@ static int handle_expand_command(struct instruction *command_i)
     else
     {
         if (command->command != expansion) //if an expansion was performed
+        {
             free(command->command);
-        command->command = strdup(expansion);
+            command->command = strdup(expansion);
+        }
         array_list_append(expanded_parameters, strdup(command->command));
     }
 
     bool is_first = true;
-    for (size_t i = 1; command->params[i] != NULL; ++i)
+    for (size_t i = 0; command->params[i] != NULL; ++i)
     {
         expansion = expand(command->params[i]);
         if (*expansion == '\0') //empty var
