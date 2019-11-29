@@ -155,7 +155,6 @@ int export(char **argv)
 {
     assert(argv && (strcmp(argv[0], "export") == 0));
     
-    
     int argc = 0;
     while (argv[argc] != NULL)
         argc++;
@@ -167,10 +166,10 @@ int export(char **argv)
         || (argc == 2 && (strcmp(argv[1], "-n") == 0)))
         simple_export(g_env.envvar);
 
-    if (argc == 3 && (strcmp(argv[1], "-n") == 0) && (strcmp(argv[2], "-p") == 0))
+    else if (argc == 3 && (strcmp(argv[1], "-n") == 0) && (strcmp(argv[2], "-p") == 0))
         simple_export(g_env.envvar);
 
-    if (argc > 2 && (strcmp(argv[1], "-n")  == 0))
+    else if (argc > 2 && (strcmp(argv[1], "-n")  == 0))
     {
         for (int i = 2; argv[i]; i++)
         {
@@ -186,5 +185,19 @@ int export(char **argv)
         }
         return 0;
     }
+
+    else
+    {
+        for (int i = 1; i < argc; i++)
+        {
+            if (strcmp(argv[i][0], "=") == 0)
+            {
+                fprintf(stderr, "export: '=' not a valid identifier\n");
+                return 1;
+            }
+            export_var(i);  
+        }
+    }
+    
     return 0;  
 }
