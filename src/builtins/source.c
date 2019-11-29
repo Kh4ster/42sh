@@ -2,6 +2,8 @@
 #include <err.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <readline/readline.h>
 
 #include "../parser/parser.h"
 #include "../parser/ast/ast.h"
@@ -57,7 +59,11 @@ extern int source(char **argv)
         return 2;
     }
     g_env.is_parsing_ressource = 1;
+    FILE * dev_null = fopen("/dev/null", "w");
+    rl_outstream = dev_null;
     execute_ressource_file(argv[1]);
+    fclose(dev_null);
+    rl_outstream = stdout;
     g_env.is_parsing_ressource = 0;
     return 0;
 }
