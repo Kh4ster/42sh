@@ -12,7 +12,7 @@
 #include "../execution_handling/command_execution.h"
 #include "../error/error.h"
 
-#define DELIMITERS " \\\n\t&|<>$\"\'`$();"
+#define DELIMITERS " \\\n\t&|<>\"\'`$();#"
 
 static void skip_class(int (*classifier)(int c), char **cursor)
 {
@@ -182,14 +182,49 @@ static void add_next_line_to_current_and_update_cursors(char **cursor,
     g_env.current_line = new_line;
 }
 
-char *find_corresponding_bracket(char **cursor, char **token_start)
+void skip_quoting(char **cursor, char **start_of_token)
+{
+    if (**cursor == '\'')
+    {
+        (*cursor)++;
+        *cursor = get_delimiter(*cursor, "\'\0");
+        while (**cursor != '\'') // end quote not found
+        {
+            add_next_line_to_current_and_update_cursors(cursor,
+                    start_of_token);
+            *cursor = get_delimiter(*cursor, "\'\0");
+        }
+        (*cursor)++;
+    }
+    else if (**cursor == '"')
+    {
+        (*cursor)++;
+        *cursor = get_delimiter(*cursor, "\"\\\0");
+        while (**cursor != '\"')
+        {
+            // Handle backslash
+            if (**cursor == '\\' && *(*cursor + 1) != '\0')
+                *cursor += 2;
+            else if (**cursor == '\0' || **cursor == '\\')
+            {
+                add_next_line_to_current_and_update_cursors(cursor,
+                        start_of_token);
+            }
+            *cursor = get_delimiter(*cursor, "\"\\\0");
+        }
+        (*cursor)++;
+    }
+}
+
+static char *find_corresponding_bracket(char **cursor, char **token_start)
 {
     int counter_bracket = 1;
     while (1)
     {
         while (**cursor != '\0' && counter_bracket != 0)
         {
-            //TODO skip_quoting()
+            if (**cursor == '\'' || **cursor == '"')
+                skip_quoting(cursor, token_start);
             if (**cursor == '(')
                 counter_bracket++;
             else if (**cursor == ')')
@@ -237,31 +272,20 @@ static void handle_dollar(struct token_lexer *new_token, char **cursor)
 static void handle_back_quote(struct token_lexer *new_token, char **cursor)
 {
     // keep beginning of the back_quote expression
-    char *token_start = *cursor;
+    char *start_of_token = *cursor;
 
-    if (**cursor == '\0')
-        set_token(new_token, TOKEN_OTHER, cursor, 1);
-    while (true)
+    (*cursor)++;
+
+    *cursor = get_delimiter(*cursor, "`\0");
+    while (**cursor != '`') // end back_quote not found
     {
-        while (**cursor != '\0' && **cursor != '`')
-            (*cursor)++;
-        if (**cursor == '`')
-            break;
-        else
-        {
-            char *next_line = get_next_line(g_env.prompt);
-            if (next_line == NULL)
-                errx(2, "Lexing error");
-
-            char *new_line = xcalloc(strlen(*token_start)
-                                + strlen(next_line) + 1, sizeof(char));
-            strcat(new_line, *token_start);
-            strcat(new_line, next_line);
-            free(next_line);
-            *cursor = new_line + (*cursor - token_start);
-            *token_start = new_line;
-        }
+        add_next_line_to_current_and_update_cursors(cursor,
+                &start_of_token);
+        *cursor = get_delimiter(*cursor, "`\0");
     }
+    set_token(new_token, TOKEN_OTHER, &start_of_token,
+            *cursor - start_of_token + 1);
+    (*cursor)++;
 }
 
 static void handle_quoting(struct token_lexer *new_token,

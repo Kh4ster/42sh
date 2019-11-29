@@ -14,6 +14,7 @@
 
 #include "ast.h"
 #include "../parser.h"
+#include "../../lexer/token_lexer.h"
 #include "../../execution_handling/command_container.h"
 #include "../../execution_handling/command_execution.h"
 #include "../../redirections_handling/redirect.h"
@@ -47,23 +48,29 @@ static char *expand_nested_command(char *cursor, char *to_expand)
     return new_to_expand;
 }
 
-static char *expand_cmd(char *to_expand)
+static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
 {
     bool to_free = false;
-    to_expand++; //skip $
-    to_expand++; //skip (
+    to_expand += nb_to_skip;
 
     char *cursor = to_expand;
-    while ((cursor = strpbrk(cursor, "$)")) != NULL && *cursor != ')')
+    while ((cursor = strpbrk(cursor, "`$)\"\'\\")) != NULL
+                                                        && *cursor != to_stop)
     {
-        if (*cursor == '$' && *cursor == '(') //recursive call to expand command
+        if (*cursor == '\"' || *cursor == '\'' || *cursor == '\\')
+            skip_quoting(&cursor, NULL);
+        else
         {
-            to_expand = expand_nested_command(cursor, to_expand);
-            cursor = to_expand;
-            to_free = true;
+            //recursive call to expand command
+            if ((*cursor == '$' && cursor[1] == '(') || *cursor == '`')
+            {
+                to_expand = expand_nested_command(cursor, to_expand);
+                cursor = to_expand;
+                to_free = true;
+            }
+            else    //if we fall on a $ for a var we need to skip it
+                cursor++;
         }
-        else    //if we fall on a $ for a var we need to skip it
-            cursor++;
     }
     if (cursor == NULL)
         handle_parser_errors(NULL);
@@ -126,9 +133,11 @@ static char *expand_variable(char *to_expand)
 static char *expand(char *to_expand)
 {
     if (to_expand[0] == '$' && to_expand[1] == '(')
-        to_expand = expand_cmd(to_expand);
+        to_expand = expand_cmd(to_expand, ')', 2);
     if (to_expand[0] == '$')
         to_expand = expand_variable(to_expand);
+    if (to_expand[0] == '`')
+        to_expand = expand_cmd(to_expand, '`', 1);
 
     return to_expand; //no expansion
 }
@@ -136,7 +145,7 @@ static char *expand(char *to_expand)
 static int handle_expand_command(struct command_container *command)
 {
     char *expansion = expand(command->command);
-    if (*expansion == 0) //expand empty var
+    if (*expansion == '\0') //expand empty var
     {
         free(expansion);
         return -1;
@@ -146,7 +155,7 @@ static int handle_expand_command(struct command_container *command)
         fill_command_and_params(command, expansion);
     else
     {
-        if (command->command != expansion)//if an expansion was performed
+        if (command->command != expansion) //if an expansion was performed
             free(command->command);
         command->command = expansion;
     }
@@ -242,7 +251,7 @@ static int exec_builtin(struct instruction *ast)
 static int handle_commands(struct instruction *ast)
 {
     if (handle_expand_command(ast->data) == -1)
-        return 0; //return 0 ?
+        return 0;
 
     /* execute commande with zak function */
     if (is_func(ast))

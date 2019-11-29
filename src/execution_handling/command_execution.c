@@ -61,7 +61,8 @@ char *get_result_from_42sh(char *command)
     if (xread(str, tube[0]) == -1)
         errx(-1, "Bad read"); //-1 ?
 
-    str->content[strlen(str->content) - 1] = 0; //TODO, dunno why has to remove \n
+    if (str->content[0] != '\0') //else go to index -1
+        str->content[strlen(str->content) - 1] = 0; //! dunno why has to rm \n
 
     dup2(save_stdout, 1); //put back stdout
     close(tube[0]);     //close read side

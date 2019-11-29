@@ -73,3 +73,10 @@ void token_queue_empty(struct queue *token_queue);
 * @relates token_lexer
 */
 struct token_lexer *lexer_next_next(struct queue *token_queue);
+
+/**
+* @brief skip quoting (single and double quotes + backslash)
+* @param cursor current pointer on a quoting character
+* @param start_of_token other pointer on line which can change
+*/
+void skip_quoting(char **cursor, char **start_of_token);
