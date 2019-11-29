@@ -161,8 +161,15 @@ static void add_next_line_to_current_and_update_cursors(char **cursor,
         errx(2, "Lexing error");
     char *new_line = xcalloc(strlen(g_env.current_line)
                         + strlen(next_line) + 2, sizeof(char));
-    strcat(new_line, g_env.current_line);
-    strcat(new_line, "\n");
+
+    // handle backslash as last char or add newline
+    if (**cursor != '\\')
+        strcat(strcat(new_line, g_env.current_line), "\n");
+    else
+    {
+        **cursor = '\0';
+        strcat(new_line, g_env.current_line);
+    }
 
     // put cursor back where it was
     *cursor = *cursor - g_env.current_line + new_line;
@@ -224,7 +231,7 @@ static void handle_dollar(struct token_lexer *new_token, char **cursor)
 static void handle_quoting(struct token_lexer *new_token,
         char **cursor)
 {
-    char *start_of_token = *cursor + 1;
+    char *start_of_token = *cursor;
     if (**cursor == '\'')
     {
         (*cursor)++;
@@ -236,7 +243,7 @@ static void handle_quoting(struct token_lexer *new_token,
             *cursor = get_delimiter(*cursor, "\'\0");
         }
         set_token(new_token, TOKEN_OTHER, &start_of_token,
-                *cursor - start_of_token);
+                *cursor - start_of_token + 1);
         (*cursor)++;
     }
     else if (**cursor == '"')
@@ -248,13 +255,15 @@ static void handle_quoting(struct token_lexer *new_token,
             // Handle backslash
             if (**cursor == '\\' && *(*cursor + 1) != '\0')
                 *cursor += 2;
-            if (**cursor == '\0')
+            else if (**cursor == '\0' || **cursor == '\\')
+            {
                 add_next_line_to_current_and_update_cursors(cursor,
                         &start_of_token);
+            }
             *cursor = get_delimiter(*cursor, "\"\\\0");
         }
         set_token(new_token, TOKEN_OTHER, &start_of_token,
-                *cursor - start_of_token);
+                *cursor - start_of_token + 1);
         (*cursor)++;
     }
 }
