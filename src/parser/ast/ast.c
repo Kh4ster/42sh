@@ -115,6 +115,7 @@ static int handle_while(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
     int return_value = 0;
+    g_env.is_in_loop = 1;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
     {
@@ -134,6 +135,7 @@ static int handle_while(struct instruction *ast)
     }
 
     g_have_to_stop = false;
+    g_env.is_in_loop = 0;
     return return_value;
 }
 
@@ -142,6 +144,7 @@ static int handle_until(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
     int return_value = 0;
+    g_env.is_in_loop = 1;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions))
     {
@@ -162,6 +165,7 @@ static int handle_until(struct instruction *ast)
     }
 
     g_have_to_stop = false;
+    g_env.is_in_loop = 0;
     return return_value;
 }
 
@@ -171,6 +175,7 @@ static int handle_for(struct instruction *ast)
     struct for_instruction *instruction_for = ast->data;
     struct array_list *var_values = instruction_for->var_values;
     int return_value;
+    g_env.is_in_loop = 1;
     glob_t glob_c;
 
     if (!var_values)
@@ -215,6 +220,7 @@ static int handle_for(struct instruction *ast)
         globfree(&glob_c);
     }
 
+    g_env.is_in_loop = 0;
     return return_value;
 }
 

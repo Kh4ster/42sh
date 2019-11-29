@@ -28,6 +28,7 @@ struct shell_environment
     int noclobber_set;
     int breaks;
     int continues;
+    int is_in_loop;
 };
 
 /**
