@@ -56,16 +56,16 @@ void hash_insert(struct hash_map *set,
     {
         struct hash_slot *new = xmalloc(sizeof(struct hash_slot));
         new->key = strdup(key);
-        s->data_type = data_type;
-        if (s->data_type == STRING)
+        new->data_type = data_type;
+        if (new->data_type == STRING)
         {
-            if (s->data == NULL)
-                s->data = strdup("");
+            if (new->data == NULL)
+                new->data = strdup("");
             else
-                s->data = strdup(data);
+                new->data = strdup(data);
         }
         else
-            s->data = data;
+            new->data = data;
         new->next = NULL;
         while (s->next != NULL)
             s = s->next;
