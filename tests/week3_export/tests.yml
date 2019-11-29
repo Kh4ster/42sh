@@ -1,0 +1,48 @@
+- name: export
+  stdin: export
+  checks:
+    - has_stdout
+    - returncode
+
+- name: export -p
+  stdin: export -p
+  checks:
+    - has_stdout
+    - returncode
+
+- name: export -p -n
+  stdin: export -p -n
+  checks:
+    - has_stdout
+    - returncode
+
+- name: export -n -p
+  stdin: export -n -p
+  checks:
+    - has_stdout
+    - returncode
+
+- name: export -n toto papa -p
+  stdin: export -n toto papa -p
+  checks:
+    - has_stderr
+    - returncode
+
+- name: export -n
+  stdin: export -n
+  checks:
+    - has_stdout
+    - returncode
+
+- name: export -n toto
+  stdin: export -n toto
+
+- name: export -n ZSH LS_COLORS USER toto
+  stdin: |
+    export
+    export -n ZSH LS_COLORS USER toto
+    export
+  checks:
+    - has_stdout
+    - returncode
+

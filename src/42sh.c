@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "parameters_handling/parameters_handler.h"
 #include "parameters_handling/options.h"
@@ -29,6 +30,7 @@
 #include "builtins/break.h"
 #include "builtins/cd.h"
 #include "builtins/exit.h"
+#include "builtins/export.h"
 
 static void sigint_handler(int signum)
 {
@@ -109,6 +111,20 @@ void end_call_and_free_all(struct queue *lexer)
     hash_free(g_env.builtins);
     hash_free(g_env.variables);
     free(g_env.pwd);
+    
+    for (int i = 0; g_env.envvar[i]; i++)
+    {
+        free(g_env.envvar[i]);
+    }
+    
+    if (g_env.old_envvar != NULL)
+    {
+        for (int i = 0; g_env.old_envvar[i]; i++)
+            free(g_env.old_envvar[i]);
+    }
+    
+    free(g_env.envvar);
+    free(g_env.old_envvar);
     free(g_env.current_line);
     free(lexer);
 
@@ -126,14 +142,28 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
     hash_insert_builtin(builtins, "echo", echo);
+    hash_insert_builtin(builtins, "export", export);
 }
 
-static void init_hash_maps_and_history(struct hash_map *functions,
-                                        struct hash_map *builtins,
-                                        struct hash_map *variables
+static void init_all(struct hash_map *functions,
+                            struct hash_map *builtins,
+                            struct hash_map *variables,
+                            char **env
 )
 {
-    // Hash maps
+    //environmental variable
+    size_t i = 0;
+    while (env[i] != NULL)
+        i++;
+    g_env.envvar = xcalloc(i + 1, sizeof(char *));
+    i = 0;
+    for (; env[i] != NULL; i++)
+    {
+        g_env.envvar[i] = strdup(env[i]);
+    }
+    g_env.envvar[i] = NULL;
+
+    // Hash map
     g_env.functions = functions;
     g_env.builtins = builtins;
     g_env.variables = variables;
@@ -164,12 +194,12 @@ static int execute_and_print_ast(struct instruction *ast)
     return execute_ast(ast);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[], char *env[])
 {
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
     struct hash_map variables;
-    init_hash_maps_and_history(&functions, &builtins, &variables);
+    init_all(&functions, &builtins, &variables, env);
 
     int return_code = 0;
 

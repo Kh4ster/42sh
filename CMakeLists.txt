@@ -56,6 +56,7 @@ set(SRC_FILES
     src/builtins/source.c
     src/builtins/break.c
     src/builtins/exit.c
+    src/builtins/export.c
     src/path_expention/path_exepension.c
 )
 

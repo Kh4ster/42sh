@@ -69,7 +69,7 @@
     - has_stderr
     - returncode
 
-- name : complex while 2
+- name : complex while 2 with variable substitution
   options:
     - ../tests/week2_while/test2.sh
   checks:
