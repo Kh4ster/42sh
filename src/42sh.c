@@ -143,6 +143,7 @@ void end_call_and_free_all(struct queue *lexer)
     hash_free(g_env.builtins);
     hash_free(g_env.variables);
     free(g_env.pwd);
+    free(g_env.current_line);
     free(lexer);
 
     write_history_file();

@@ -153,6 +153,35 @@ static void handle_comments(struct queue *token_queue,
     free(new_token);
 }
 
+static void add_next_line_to_current_and_update_cursors(char **cursor,
+        char **second_cursor)
+{
+    char *next_line = get_next_line(g_env.prompt);
+    if (next_line == NULL)
+        errx(2, "Lexing error");
+    char *new_line = xcalloc(strlen(g_env.current_line)
+                        + strlen(next_line) + 2, sizeof(char));
+
+    // handle backslash as last char or add newline
+    if (**cursor != '\\')
+        strcat(strcat(new_line, g_env.current_line), "\n");
+    else
+    {
+        **cursor = '\0';
+        strcat(new_line, g_env.current_line);
+    }
+
+    // put cursor back where it was
+    *cursor = *cursor - g_env.current_line + new_line;
+    if (second_cursor != NULL)
+        *second_cursor = *second_cursor - g_env.current_line + new_line;
+
+    strcat(new_line, next_line);
+    free(next_line);
+    free(g_env.current_line);
+    g_env.current_line = new_line;
+}
+
 char *find_corresponding_bracket(char **cursor, char **token_start)
 {
     int counter_bracket = 1;
@@ -173,17 +202,7 @@ char *find_corresponding_bracket(char **cursor, char **token_start)
         }
         if (**cursor == '\0')
         {
-            char *next_line = get_next_line(g_env.prompt);
-            if (next_line == NULL)
-                errx(2, "Lexing error");
-
-            char *new_line = xcalloc(strlen(*token_start)
-                                + strlen(next_line) + 1, sizeof(char));
-            strcat(new_line, *token_start);
-            strcat(new_line, next_line);
-            free(next_line);
-            *cursor = new_line + (*cursor - *token_start);
-            *token_start = new_line;
+            add_next_line_to_current_and_update_cursors(cursor, token_start);
         }
     }
     return *cursor;
@@ -248,37 +267,40 @@ static void handle_back_quote(struct token_lexer *new_token, char **cursor)
 static void handle_quoting(struct token_lexer *new_token,
         char **cursor)
 {
+    char *start_of_token = *cursor;
     if (**cursor == '\'')
     {
         (*cursor)++;
-        char *end_quote = strchr(*cursor, '\'');
-        #if 0
-        while (end_quote == NULL)
+        *cursor = get_delimiter(*cursor, "\'\0");
+        while (**cursor != '\'') // end quote not found
         {
-            // TODO strcat get_next_line to the current str
-            // end_quote = strchr(*cursor, '\'');
-            // if EOF, error, expecting a closing '
+            add_next_line_to_current_and_update_cursors(cursor,
+                    &start_of_token);
+            *cursor = get_delimiter(*cursor, "\'\0");
         }
-        #endif /* 0 */
-        set_token(new_token, TOKEN_OTHER, cursor, end_quote - *cursor);
-        *cursor = end_quote + 1;
+        set_token(new_token, TOKEN_OTHER, &start_of_token,
+                *cursor - start_of_token + 1);
+        (*cursor)++;
     }
     else if (**cursor == '"')
     {
         (*cursor)++;
-        char *end_quote = get_delimiter(*cursor, "\"\\\0");
-        while (*end_quote != '\"')
+        *cursor = get_delimiter(*cursor, "\"\\\0");
+        while (**cursor != '\"')
         {
             // Handle backslash
-            if (*end_quote == '\\' && *(end_quote + 1) != '\0')
-                end_quote += 2;
-            if (*end_quote == '\0')
-                break; // TODO strcat get_next_line to the current str
-            // if EOF : error, expecting a closing "
-            end_quote = get_delimiter(*cursor, "\"\\\0");
+            if (**cursor == '\\' && *(*cursor + 1) != '\0')
+                *cursor += 2;
+            else if (**cursor == '\0' || **cursor == '\\')
+            {
+                add_next_line_to_current_and_update_cursors(cursor,
+                        &start_of_token);
+            }
+            *cursor = get_delimiter(*cursor, "\"\\\0");
         }
-        set_token(new_token, TOKEN_OTHER, cursor, end_quote - *cursor);
-        *cursor = end_quote + 1;
+        set_token(new_token, TOKEN_OTHER, &start_of_token,
+                *cursor - start_of_token + 1);
+        (*cursor)++;
     }
 }
 
@@ -446,14 +468,17 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     if (current_token != NULL)
         return current_token;
 
-    free(g_env.current_line);
+    // else
+    if (g_env.is_parsing_ressource || !g_env.options.option_c)
+        free(g_env.current_line);
     char *next_line = get_next_line(g_env.prompt);
 
     g_env.prompt = "> "; //change prompt to ps2 with lexing
 
+    g_env.current_line = next_line;
+
     if (next_line == NULL) // End Of File
     {
-        g_env.current_line = NULL;
         current_token = xmalloc(sizeof(struct token_lexer));
         current_token->type = TOKEN_EOF;
         current_token->data = strdup("ouais");
@@ -463,13 +488,6 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
     {
         token_queue = lexer(next_line, token_queue);
         current_token = token_lexer_head(token_queue);
-
-        /*
-        ** free line if not -c option, execpt if its parsing ressource
-        ** then even if 42sh binary was called with -c we want to free lines
-        */
-        if (g_env.is_parsing_ressource || !g_env.options.option_c)
-            free(next_line);
     }
 
     return current_token;
