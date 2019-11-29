@@ -7,6 +7,7 @@
 #include "../memory/memory.h"
 #include "export.h"
 #include "../input_output/get_next_line.h"
+#include "../data_structures/hash_map.h"
 
 
 /*
@@ -70,7 +71,7 @@ static void save_old_env(void)
 
 static void free_env(char **env, int k)
 {
-    if (env != NULL)
+    if (env != NULL)q
     {
         for (; env[k]; k++)
         {   
@@ -151,6 +152,13 @@ static void export_n(char *arg)
     free_env(g_env.envvar, j); //free spare room
 }
 
+static void export_var(char *variable)
+{
+    char *name = strtok_r(variable, "=", &variable);
+    char *value = strtok_r(NULL, "=", &variable);
+    
+}
+
 int export(char **argv)
 {
     assert(argv && (strcmp(argv[0], "export") == 0));
@@ -195,9 +203,9 @@ int export(char **argv)
                 fprintf(stderr, "export: '=' not a valid identifier\n");
                 return 1;
             }
-            export_var(i);  
+            export_var(argv[i]);  
         }
     }
     
-    return 0;  
+    return 0;
 }

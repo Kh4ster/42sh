@@ -24,6 +24,7 @@
 #include "memory/memory.h"
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
+#include "builtins/echo.h"
 #include "builtins/history.h"
 #include "builtins/cd.h"
 #include "builtins/exit.h"
@@ -143,6 +144,7 @@ void end_call_and_free_all(struct queue *lexer)
     // Free all
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
+    hash_free(g_env.variables);
     free(g_env.pwd);
     
     for (int i = 0; g_env.envvar[i]; i++)
@@ -158,6 +160,7 @@ void end_call_and_free_all(struct queue *lexer)
     
     free(g_env.envvar);
     free(g_env.old_envvar);
+    free(g_env.current_line);
     free(lexer);
 
     write_history_file();
@@ -170,11 +173,14 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "history", history);
     hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
+    hash_insert_builtin(builtins, "echo", echo);
     hash_insert_builtin(builtins, "export", export);
 }
 
 static void init_all(struct hash_map *functions,
-                            struct hash_map *builtins, char **env
+                            struct hash_map *builtins,
+                            struct hash_map *variables,
+                            char **env
 )
 {
     //environmental variable
@@ -192,7 +198,9 @@ static void init_all(struct hash_map *functions,
     // Hash map
     g_env.functions = functions;
     g_env.builtins = builtins;
+    g_env.variables = variables;
     hash_init(functions, NB_SLOTS);
+    hash_init(variables, NB_SLOTS);
     init_builtins_hash_map(g_env.builtins);
     g_env.options.option_expand_aliases = true;
     g_env.options.option_sourcepath = true;
@@ -222,7 +230,8 @@ int main(int argc, char *argv[], char *env[])
 {
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
-    init_all(&functions, &builtins, env);
+    struct hash_map variables;
+    init_all(&functions, &builtins, &variables, env);
 
     int return_code = 0;
 

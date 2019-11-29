@@ -30,7 +30,8 @@ static struct hash_slot* get_slot(struct hash_map *set, char *key)
 
 void hash_insert(struct hash_map *set,
                 char *key,
-                void *data
+                void *data,
+                enum data_type data_type
 )
 {
     assert(key != NULL);
@@ -39,14 +40,32 @@ void hash_insert(struct hash_map *set,
 
     if (s->key == NULL) //first time at this index
     {
-        s->key = key;
-        s->data = data;
+        s->key = strdup(key);
+        s->data_type = data_type;
+        if (s->data_type == STRING)
+        {
+            if (data == NULL)
+                s->data = strdup("");
+            else
+                s->data = strdup(data);
+        }
+        else
+            s->data = data;
     }
     else if (hash_find(set, key) == NULL) //if element not already in hashmap
     {
         struct hash_slot *new = xmalloc(sizeof(struct hash_slot));
-        new->key = key;
-        new->data = data;
+        new->key = strdup(key);
+        new->data_type = data_type;
+        if (new->data_type == STRING)
+        {
+            if (data == NULL)
+                new->data = strdup("");
+            else
+                new->data = strdup(data);
+        }
+        else
+            new->data = data;
         new->next = NULL;
         while (s->next != NULL)
             s = s->next;
@@ -83,7 +102,10 @@ void hash_insert_builtin(struct hash_map *set,
 static int free_slot(struct hash_slot *s)
 {
     free(s->key);
-    destroy_tree(s->data);
+    if (s->data_type == AST)
+        destroy_tree(s->data);
+    else
+        free(s->data);
     s->key = NULL;
     s->data = NULL;
     s->next = NULL;

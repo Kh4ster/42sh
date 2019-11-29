@@ -24,6 +24,7 @@ struct shell_environment
     int is_parsing_ressource; /**< @brief check if valid */
     struct hash_map *functions; /**< @brief hashmap containing functions */
     struct hash_map *builtins; /**< @brief hashmap containing builtins */
+    struct hash_map *variables; /**< @brief hashmap containing variables */
     char *current_line; /**< @brief last line took by readline */
     int noclobber_set; /**< @brief handle noclobber variable */
     char last_return_value; /**< @brief last returned value */

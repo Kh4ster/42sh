@@ -51,9 +51,11 @@ set(SRC_FILES
     src/redirections_handling/redirect.c
     src/builtins/cd.c
     src/builtins/shopt.c
+    src/builtins/echo.c
     src/builtins/history.c
     src/builtins/exit.c
     src/builtins/export.c
+    src/path_expention/path_exepension.c
 )
 
 # ---- List of test files (unit tests) ----
@@ -64,8 +66,8 @@ set(TESTS_FILES
     #tests/builtins/test_redirector.c
     tests/builtins/test_shopt.c
     tests/parameters_handling/test_parameters_handler.c
-    tests/commands_handling/test_exec.c
-    tests/commands_handling/test_create.c
+    #tests/commands_handling/test_exec.c
+    #tests/commands_handling/test_create.c
     tests/data_structures/test_queue.c
     tests/data_structures/test_hash_map.c
     tests/lexer/test_token_lexer.c
