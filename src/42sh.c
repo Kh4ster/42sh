@@ -23,6 +23,7 @@
 #include "memory/memory.h"
 #include "data_structures/hash_map.h"
 #include "builtins/shopt.h"
+#include "builtins/echo.h"
 #include "builtins/history.h"
 #include "builtins/source.h"
 #include "builtins/break.h"
@@ -106,7 +107,9 @@ void end_call_and_free_all(struct queue *lexer)
     // Free all
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
+    hash_free(g_env.variables);
     free(g_env.pwd);
+    free(g_env.current_line);
     free(lexer);
 
     write_history_file();
@@ -122,16 +125,20 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "continue", has_continue);
     hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
+    hash_insert_builtin(builtins, "echo", echo);
 }
 
 static void init_hash_maps_and_history(struct hash_map *functions,
-                            struct hash_map *builtins
+                                        struct hash_map *builtins,
+                                        struct hash_map *variables
 )
 {
-    // Hash map
+    // Hash maps
     g_env.functions = functions;
     g_env.builtins = builtins;
+    g_env.variables = variables;
     hash_init(functions, NB_SLOTS);
+    hash_init(variables, NB_SLOTS);
     init_builtins_hash_map(g_env.builtins);
     g_env.options.option_expand_aliases = true;
     g_env.options.option_sourcepath = true;
@@ -161,7 +168,8 @@ int main(int argc, char *argv[])
 {
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
-    init_hash_maps_and_history(&functions, &builtins);
+    struct hash_map variables;
+    init_hash_maps_and_history(&functions, &builtins, &variables);
 
     int return_code = 0;
 

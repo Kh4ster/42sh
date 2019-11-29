@@ -3,16 +3,16 @@
 #include "../../src/data_structures/hash_map.h"
 #include "../../src/execution_handling/command_container.h"
 
-int main(void)
+Test(hashmap, all)
 {
     struct hash_map map;
     hash_init(&map, 1);
 
     struct command_container *echo_container = command_init(1, "echo", "ok");
-    hash_insert(&map, strdup("echo"), build_instruction(TOKEN_COMMAND, echo_container));
+    hash_insert(&map, "echo", build_instruction(TOKEN_COMMAND, echo_container), AST);
 
     struct command_container *cat_container = command_init(0, "cat");
-    hash_insert(&map, strdup("cat"), build_instruction(TOKEN_COMMAND, cat_container));
+    hash_insert(&map, "cat", build_instruction(TOKEN_COMMAND, cat_container), AST);
 
     struct instruction *echo_instruction = hash_find(&map, "echo");
     cr_assert_not_null(echo_instruction);

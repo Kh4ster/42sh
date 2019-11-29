@@ -1,7 +1,5 @@
-#ifndef BREAK_H
-#define BREAK_H
+#pragma once
 
 int has_break(char **argv);
 
 int has_continue(char **argv);
-#endif
