@@ -90,6 +90,7 @@ static void fill_command_and_params(struct command_container *command,
     //2 to store new param + null
 
     //put expanded command as first param
+    free(command->params[0]);
     new_params[0] = strdup(command->command);
     new_params[1] = strdup(expansion);
     //strdup so that it can be freed later
@@ -110,10 +111,22 @@ static bool is_multiple_words(char *expansion)
     return strpbrk(expansion, " ") != NULL;
 }
 
+static char *expand_variable(char *to_expand)
+{
+    to_expand++; //skip $
+    char *value;
+
+    if ((value = hash_find(g_env.variables, to_expand)) != NULL)
+        return strdup(value);
+    return strdup("");
+}
+
 static char *expand(char *to_expand)
 {
     if (to_expand[0] == '$' && to_expand[1] == '(')
-        return expand_cmd(to_expand);
+        to_expand = expand_cmd(to_expand);
+    if (to_expand[0] == '$')
+        to_expand = expand_variable(to_expand);
 
     return to_expand; //no expansion
 }

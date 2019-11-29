@@ -141,6 +141,7 @@ void end_call_and_free_all(struct queue *lexer)
     // Free all
     hash_free(g_env.functions);
     hash_free(g_env.builtins);
+    hash_free(g_env.variables);
     free(g_env.pwd);
     free(lexer);
 

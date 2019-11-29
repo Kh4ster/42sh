@@ -292,7 +292,8 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
 
-    hash_insert(g_env.functions, func_name->data, to_execute);
+    hash_insert(g_env.functions, func_name->data, to_execute, AST);
+    free(func_name->data);
     free(func_name);
     return  build_funcdef_instruction();
 }
@@ -460,7 +461,7 @@ static void add_variable(char *var)
 {
     char *name = strtok_r(var, "=", &var);
     char *value = strtok_r(NULL, "=", &var);
-    hash_insert(g_env.variables, name, value);
+    hash_insert(g_env.variables, name, value, STRING);
 }
 
 static struct instruction *parse_simple_command(struct queue *lexer)

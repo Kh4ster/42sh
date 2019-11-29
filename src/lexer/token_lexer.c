@@ -206,7 +206,13 @@ static void handle_dollar(struct token_lexer *new_token, char **cursor)
         set_token(new_token, TOKEN_OTHER, &token_start,
                 end_bracket - token_start);
     }
-    //TODO ! other expansions
+    else //case $var
+    {
+        while (**cursor && **cursor != ' ')
+            (*cursor)++;
+        set_token(new_token, TOKEN_OTHER, &token_start,
+                *cursor - token_start);
+    }
 }
 
 static void handle_quoting(struct token_lexer *new_token,
