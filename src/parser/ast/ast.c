@@ -9,7 +9,6 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <glob.h>
 #include <assert.h>
 
 #include "ast.h"
@@ -20,12 +19,92 @@
 #include "../../redirections_handling/redirect.h"
 #include "../../data_structures/hash_map.h"
 #include "../../input_output/get_next_line.h"
+#include "../../path_expention/path_exepension.h"
 #include "../../error/error.h"
 #include "../../memory/memory.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char *to_expand);
+
+
+static void expand_tilde_in_params(char **params)
+{
+     for (int i = 0; params[i]; i++)
+    {
+        if (strcmp("~", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = strdup(getenv("HOME"));
+        }
+
+        if (strcmp("~+", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = get_current_dir_name();
+        }
+
+        if (strcmp("~-", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = strdup(getenv("OLDPWD"));
+        }
+    }
+}
+
+static void expand_tilde(struct command_container *cmd)
+{
+    if (strcmp("~", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = strdup(getenv("HOME"));
+    }
+
+    if (strcmp("~+", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = get_current_dir_name();
+    }
+
+    if (strcmp("~-", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = strdup(getenv("OLDPWD"));
+    }
+    expand_tilde_in_params(cmd->params);
+}
+
+static struct command_container *build_cmd(struct array_list *params,
+                                                char **params_cmd)
+{
+    struct array_list *list = array_list_init();
+
+    for (size_t i = 1; i < params->nb_element; i++)
+        array_list_append(list, strdup(params->content[i]));
+
+    for (size_t i = 0; params_cmd[i]; i++)
+        array_list_append(list, strdup(params_cmd[i]));
+
+    struct command_container *cmd = command_create(params->content[0], list);
+    free(list->content);
+    free(list);
+    return cmd;
+}
+
+
+static void expand_glob_cmd(struct instruction *cmd_i)
+{
+    struct command_container *cmd = cmd_i->data;
+    struct path_globbing *glob = sh_glob(cmd->command);
+
+    if (!glob)
+        return;
+
+    cmd_i->data = build_cmd(glob->matches, cmd->params);
+    command_destroy(&cmd);
+    destroy_path_glob(glob);
+}
+
 
 //to really understand take this example $(echo $(echo ok))
 static char *expand_nested_command(char *cursor, char *to_expand)
@@ -142,8 +221,9 @@ static char *expand(char *to_expand)
     return to_expand; //no expansion
 }
 
-static int handle_expand_command(struct command_container *command)
+static int handle_expand_command(struct instruction *command_i)
 {
+    struct command_container *command = command_i->data;
     char *expansion = expand(command->command);
     if (*expansion == '\0') //expand empty var
     {
@@ -168,6 +248,9 @@ static int handle_expand_command(struct command_container *command)
             free(command->params[i]);
         command->params[i] = expansion;
     }
+
+    expand_tilde(command_i->data);
+    expand_glob_cmd(command_i);
     return 1;
 }
 
@@ -250,7 +333,7 @@ static int exec_builtin(struct instruction *ast)
 
 static int handle_commands(struct instruction *ast)
 {
-    if (handle_expand_command(ast->data) == -1)
+    if (handle_expand_command(ast) == -1)
         return 0;
 
     /* execute commande with zak function */
@@ -258,8 +341,8 @@ static int handle_commands(struct instruction *ast)
         return exec_func(ast);
     else if (is_builtin(ast))
         return exec_builtin(ast);
-    struct command_container *command = ast->data;
-    return exec_cmd(command);
+
+    return exec_cmd(ast);
 }
 
 
@@ -294,26 +377,27 @@ static int handle_for(struct instruction *ast)
     struct for_instruction *instruction_for = ast->data;
     struct array_list *var_values = instruction_for->var_values;
     int return_value;
-    glob_t glob_c;
 
     if (!var_values)
         return 0;
 
     for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
-        int error = glob(var_values->content[i], GLOB_NOSORT, NULL, &glob_c);
+        struct path_globbing *glob = sh_glob(var_values->content[i]);
+        // TODO assigne_variable(instruction_for->var_name, var_values->content[i]);
 
-        if (error == GLOB_NOMATCH)
+        if (!glob)
         {
             return_value = execute_ast(instruction_for->to_execute);
             continue;
         }
 
-        for (size_t j = 0; j < glob_c.gl_pathc && !g_have_to_stop; j++)
+        for (int j = 0; j < glob->nb_matchs; j++)
         {
+            // TODO asigne_variable(instruction_for->var_name, glob->matches->content[j]);
             return_value = execute_ast(instruction_for->to_execute);
         }
-        globfree(&glob_c);
+        destroy_path_glob(glob);
     }
 
     return return_value;
@@ -357,6 +441,14 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
+        char *expantion = expand(patterns->content[i]);
+
+        if (patterns->content[i] != expantion)
+        {
+            free(patterns->content[i]);
+            patterns->content[i] = expantion;
+        }
+
         if (fnmatch(patterns->content[i], pattern, FNM_EXTMATCH) == 0)
             return 1;
     }
@@ -368,6 +460,13 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 static int handle_case(struct instruction *ast)
 {
     struct case_clause *case_clause = ast->data;
+    char *expantion= expand(case_clause->pattern);
+
+    if (case_clause->pattern != expantion)
+    {
+        free(case_clause->pattern);
+        case_clause->pattern = expantion;
+    }
 
     for (size_t i = 0; i < case_clause->items->nb_element; i++)
     {
