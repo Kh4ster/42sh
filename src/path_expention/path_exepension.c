@@ -13,6 +13,8 @@
 #include "../data_structures/array_list.h"
 #include "../memory/memory.h"
 
+int g_nb_recursion = 1;
+
 static int is_path_expansion(char *pattern)
 {
     assert(pattern);
@@ -90,12 +92,14 @@ static void add_string_to_glob(struct path_globbing *path_glob, char *s)
     path_glob->nb_matchs++;
 }
 
+
 static int match_filesnames(char *path, DIR *current_dir,
                               struct path_globbing *path_glob, char *pattern)
 {
     struct dirent *current_file = readdir(current_dir);
     char *tmp = NULL;
     int value = 0;
+    int nb_recursion = g_nb_recursion - 1;
 
     for (; current_file; current_file = readdir(current_dir))
     {
@@ -109,14 +113,26 @@ static int match_filesnames(char *path, DIR *current_dir,
 
         if (current_file->d_type == DT_DIR)
         {
-            DIR *new_dir = opendir(tmp);
-
-            if (new_dir)
+            if (nb_recursion)
             {
-                value = match_filesnames(tmp, new_dir, path_glob, pattern);
-                closedir(new_dir);
+                g_nb_recursion--;
+
+                DIR *new_dir = opendir(tmp);
+
+                if (new_dir)
+                {
+                    value = match_filesnames(tmp, new_dir, path_glob, pattern);
+                    closedir(new_dir);
+                }
             }
-        }
+            else
+            {
+                char *new_tmp = create_path(tmp, "");
+                if (fnmatch(pattern, new_tmp, get_fnmatch_flags()) == 0)
+                    add_string_to_glob(path_glob, new_tmp);
+                free(new_tmp);
+            }
+      }
 
         free(tmp);
     }
@@ -155,33 +171,53 @@ static void sort_matches(struct array_list *list)
     }
 }
 
+
+static char *get_dir_name(char *pattern)
+{
+    char *end_file = strpbrk(pattern, "*?[");
+
+    if (end_file == pattern)
+        return strdup("");
+
+    return strndup(pattern, end_file - pattern);
+}
+
+static void init_nb_recursions(char *pattern)
+{
+    char *begin_pattern = strpbrk(pattern, "*?[");
+
+    for (int i = begin_pattern - pattern; pattern[i]; i++)
+    {
+        if (pattern[i] == '/' && is_path_expansion(pattern + i))
+            g_nb_recursion++;
+    }
+}
+
 extern struct path_globbing *sh_glob(char *pattern)
 {
     if (!is_path_expansion(pattern))
         return NULL;
 
-    DIR *current_dir_d = opendir(pattern);
-    char *current_dir = pattern;
+    init_nb_recursions(pattern);
+    char *dir_name = get_dir_name(pattern);
+    DIR *current_dir_d = NULL;
 
-    if (!current_dir_d)
+    if (!*dir_name)
     {
-        current_dir = get_current_dir_name();
+        char *current_dir = get_current_dir_name();
         current_dir_d = opendir(current_dir);
+        free(current_dir);
     }
 
-    if (!current_dir_d)
-    {
-        warn("Could not open directory %s", current_dir);
-        free(current_dir);
-        return NULL;
-    }
+    else
+        current_dir_d = opendir(dir_name);
 
     struct path_globbing *p_glob = init_path_glob();
 
-    int error = match_filesnames("", current_dir_d, p_glob, pattern);
+    int error = match_filesnames(dir_name, current_dir_d, p_glob, pattern);
 
-    free(current_dir);
     closedir(current_dir_d);
+    free(dir_name);
 
     if (error || (p_glob->nb_matchs == 0 && !g_env.options.option_nullglob))
     {
