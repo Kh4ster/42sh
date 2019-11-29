@@ -222,7 +222,7 @@ static char *get_dir_name(char *pattern)
 
     char *end_path = strrchr(current_path, '/');
 
-    if (end_path != end_file)
+    if (end_path != current_path)
     {
         char *to_return = strndup(current_path, end_path - current_path);
         free(current_path);
