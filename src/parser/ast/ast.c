@@ -22,6 +22,7 @@
 #include "../../path_expention/path_exepension.h"
 #include "../../error/error.h"
 #include "../../memory/memory.h"
+#include "../../data_structures/array_list.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
@@ -30,7 +31,7 @@ static char *expand(char *to_expand);
 
 static void expand_tilde_in_params(char **params)
 {
-     for (int i = 0; params[i]; i++)
+    for (int i = 0; params[i]; i++)
     {
         if (strcmp("~", params[i]) == 0)
         {
@@ -162,36 +163,18 @@ static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
 }
 
 static void fill_command_and_params(struct command_container *command,
-                                                                char *expansion
+                                    char *expansion,
+                                    struct array_list *parameters
 )
 {
     free(command->command);
-    command->command = strtok_r(expansion, " ", &expansion);
+    command->command = strdup(strtok_r(expansion, " ", &expansion));
+    //first parameter is command
+    array_list_append(parameters, strdup(command->command));
 
-    int argc = 0;
-    while (command->params[argc] != NULL)
-        argc++;
-
-    //we want to add what comes after the command in our parameters
-
-    char **new_params = xmalloc(sizeof(char*) * (argc + 2));
-    //2 to store new param + null
-
-    //put expanded command as first param
-    free(command->params[0]);
-    new_params[0] = strdup(command->command);
-    new_params[1] = strdup(expansion);
-    //strdup so that it can be freed later
-
-    argc = 2;
-    while (command->params[argc - 1] != NULL)
-    {
-        new_params[argc] = command->params[argc - 1];
-        argc++;
-    }
-    new_params[argc]= NULL;
-    free(command->params);
-    command->params = new_params;
+    char *param;
+    while ((param = strtok_r(NULL, " ", &expansion)) != NULL)
+        array_list_append(parameters, strdup(param));
 }
 
 static bool is_multiple_words(char *expansion)
@@ -221,33 +204,92 @@ static char *expand(char *to_expand)
     return to_expand; //no expansion
 }
 
+static void insert_sub_var(struct array_list *expanded_parameters,
+                                                                char *expansion)
+{
+    if (!is_multiple_words(expansion)) //expansion only gave one word
+    {
+        array_list_append(expanded_parameters, strdup(expansion));
+        return;
+    }
+
+    //first call without NULL
+    array_list_append(expanded_parameters, strdup(strtok_r(expansion, " ",
+                                                                &expansion)));
+
+    char *param;
+    while ((param = strtok_r(NULL, " ", &expansion)) != NULL)
+        array_list_append(expanded_parameters, strdup(param));
+}
+
 static int handle_expand_command(struct instruction *command_i)
 {
     struct command_container *command = command_i->data;
+    struct array_list *expanded_parameters = array_list_init();
+
     char *expansion = expand(command->command);
     if (*expansion == '\0') //expand empty var
     {
         free(expansion);
-        return -1;
+        size_t i = 1;
+        while (command->params[i] != NULL) //while empty var we remove
+        {
+            expansion = expand(command->params[i]);
+            if (*expansion == '\0')
+            {
+                free(expansion);
+                i++;
+            }
+            else
+                break;
+        }
     }
 
     if (is_multiple_words(expansion)) //var="echo ok ok ..."
-        fill_command_and_params(command, expansion);
+        fill_command_and_params(command, expansion, expanded_parameters);
     else
     {
         if (command->command != expansion) //if an expansion was performed
             free(command->command);
-        command->command = expansion;
+        command->command = strdup(expansion);
+        array_list_append(expanded_parameters, strdup(command->command));
     }
 
-    //it's ok to expand var="echo ok ok" in the parameters, not need to create
-    for (size_t i = 0; command->params[i] != NULL; ++i)
+    bool is_first = true;
+    for (size_t i = 1; command->params[i] != NULL; ++i)
     {
         expansion = expand(command->params[i]);
-        if (expansion != command->params[i])
-            free(command->params[i]);
-        command->params[i] = expansion;
+        if (*expansion == '\0') //empty var
+        {
+            free(expansion);
+            continue;
+        }
+        else
+        {
+            if (!is_first) //the first param being command alreay pushed
+                insert_sub_var(expanded_parameters, expansion);
+            is_first = false;
+        }
     }
+
+    //create char ** to hold the new expanded parameters
+    char **new_param_list = xmalloc((expanded_parameters->nb_element + 1)
+                                                            * sizeof(char*));
+    //fill it
+    size_t i = 0;
+    for (; i < expanded_parameters->nb_element; ++i)
+        new_param_list[i] = expanded_parameters->content[i];
+    new_param_list[i] = NULL;
+
+    //free old list
+    for (i = 0; command->params[i] != NULL; ++i)
+        free(command->params[i]);
+    free(command->params);
+    free(expanded_parameters->content); //free array list but not content
+    free(expanded_parameters);
+
+    //set it
+    command->params = new_param_list;
 
     expand_tilde(command_i->data);
     expand_glob_cmd(command_i);

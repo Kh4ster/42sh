@@ -162,7 +162,8 @@ static void init_builtins_hash_map(struct hash_map *builtins)
 
 static void init_hash_maps_and_history(struct hash_map *functions,
                                         struct hash_map *builtins,
-                                        struct hash_map *variables
+                                        struct hash_map *variables,
+                                        char *path
 )
 {
     // Hash maps
@@ -180,6 +181,8 @@ static void init_hash_maps_and_history(struct hash_map *functions,
     using_history();
     read_history(history_path);
     free(history_path);
+
+    g_env.path_to_binary = path;
 }
 
 static void handle_signal(void)
@@ -201,7 +204,7 @@ int main(int argc, char *argv[])
     struct hash_map functions; //declared on the stack no need to be freed
     struct hash_map builtins;
     struct hash_map variables;
-    init_hash_maps_and_history(&functions, &builtins, &variables);
+    init_hash_maps_and_history(&functions, &builtins, &variables, argv[0]);
 
     int return_code = 0;
 

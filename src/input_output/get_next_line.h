@@ -27,7 +27,8 @@ struct shell_environment
     struct hash_map *variables; /**< @brief hashmap containing variables */
     char *current_line; /**< @brief last line took by readline */
     int noclobber_set; /**< @brief handle noclobber variable */
-    char last_return_value; /** @brief last returned value */
+    char last_return_value; /**< @brief last returned value */
+    char *path_to_binary; /**< @brief where the binary is executed */
 };
 
 /**

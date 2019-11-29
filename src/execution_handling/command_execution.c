@@ -14,6 +14,7 @@
 #include "../data_structures/array_list.h"
 #include "../input_output/read.h"
 #include "../data_structures/data_string.h"
+#include "../input_output/get_next_line.h"
 
 static struct array_list *add_glob_to_cmd_aux(char **params, char *pattern,
                     int *i)
@@ -102,7 +103,7 @@ char *get_result_from_42sh(char *command)
     if (pid == 0)
     {
         close(tube[0]); //close read side
-        execl("./42sh", "42sh", "-c", command, NULL);
+        execl(g_env.path_to_binary, "42sh", "-c", command, NULL);
         errx(-1, "execvp has failed"); //-1 ? execl ?
     }
     close(1); //close write side of pipe in stdout, if not xread loops forever
