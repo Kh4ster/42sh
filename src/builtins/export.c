@@ -9,30 +9,10 @@
 #include "../input_output/get_next_line.h"
 #include "../data_structures/hash_map.h"
 
-
-/*
-static char *var_value(char *arg)
-{
-    int i = 0;
-    char *varvalue = NULL;
-    if (strchr(arg, '=') != NULL)
-    {
-        while (arg[i] != '=')
-            i++;
-        i++;
-        while (arg[i])
-        {
-            varvalue[i] = arg[i];
-            i++;
-        }
-        varvalue[i] = '/0';
-    }
-    return varvalue;
-}
-*/
 static int handle_error(int argc, char **arg)
 {
-    if (argc > 2 && arg[1] != NULL &&  (strcmp(arg[1], "-n") == 0) && (strcmp(arg[2], "-p") != 0))
+    if (argc > 2 && arg[1] != NULL &&  (strcmp(arg[1], "-n") == 0)
+        && (strcmp(arg[2], "-p") != 0))
     {
         for (int i = 3; arg[i]; i++)
         {
@@ -71,10 +51,10 @@ static void save_old_env(void)
 
 static void free_env(char **env, int k)
 {
-    if (env != NULL)q
+    if (env != NULL)
     {
         for (; env[k]; k++)
-        {   
+        {
             free(env[k]);
             env[k] = NULL;
         }
@@ -86,13 +66,26 @@ static char *var_name(char *arg)
     int n = strlen(arg);
     int i = 0;
     char *varname = xcalloc(n + 1, sizeof(char));
-    while (arg[i] != '=')
+    if (strchr(arg, '=') != NULL)
     {
-        varname[i] = arg[i];
-        i++;
+        while (arg[i] != '=')
+        {
+            varname[i] = arg[i];
+            i++;
+        }
+        varname[i] = '\0';
+        return varname;
     }
-    varname[i] = '\0'; 
-    return varname;
+    else
+    {
+        while (arg[i] != '\0')
+        {
+            varname[i] = arg[i];
+            i++;
+        }
+        varname[i] = '\0';
+        return varname;
+    }
 }
 
 //check if we got the right variable
@@ -112,7 +105,7 @@ static int is_right_var(char **var, char *arg, int i)
     else
     {
         if (strcmp(var[i], arg) == 0)
-            return 0;                                
+            return 0;
     }
     return 1;
 }
@@ -130,7 +123,7 @@ static void export_n(char *arg)
     int k = 0;
     free_env(g_env.envvar, k);
 
-    while (is_right_var(g_env.old_envvar, arg, i) != 0) 
+    while (is_right_var(g_env.old_envvar, arg, i) != 0)
     {
         g_env.envvar[j] = strdup(g_env.old_envvar[i]);
         i++;
@@ -143,38 +136,57 @@ static void export_n(char *arg)
         }
     }
     i++;
-    while (g_env.old_envvar[i] != NULL)  
+    while (g_env.old_envvar[i] != NULL)
     {
         g_env.envvar[j] = strdup(g_env.old_envvar[i]);
         i++;
-        j++;        
+        j++;
     }
     free_env(g_env.envvar, j); //free spare room
 }
 
 static void export_var(char *variable)
 {
+    char *save = variable;
     char *name = strtok_r(variable, "=", &variable);
     char *value = strtok_r(NULL, "=", &variable);
-    
+    hash_insert(g_env.variables, name, value, STRING);
+    size_t i = 0;
+    while (g_env.envvar[i] != NULL)
+        i++;
+    g_env.envvar = xrealloc(g_env.envvar, (i + 2) * sizeof(char *));
+    g_env.envvar[i] = strdup(save);
+    g_env.envvar[i + 1] = NULL;
 }
 
+static int var_exists(char *var)
+{
+    for (int i = 0; g_env.envvar[i] != NULL; i++)
+    {
+        if (strcmp(g_env.envvar[i], var) == 0)
+            return 0;
+    }
+    return 1;
+}
+
+//TODO : REFACTOR
 int export(char **argv)
 {
     assert(argv && (strcmp(argv[0], "export") == 0));
-    
+
     int argc = 0;
     while (argv[argc] != NULL)
         argc++;
-    
+
     if (handle_error(argc, argv) == 1) //check if syntax error
         return 1;
 
-    if (argc == 1 || (strcmp(argv[1], "-p") == 0) 
+    if (argc == 1 || (strcmp(argv[1], "-p") == 0)
         || (argc == 2 && (strcmp(argv[1], "-n") == 0)))
         simple_export(g_env.envvar);
 
-    else if (argc == 3 && (strcmp(argv[1], "-n") == 0) && (strcmp(argv[2], "-p") == 0))
+    else if (argc == 3 && (strcmp(argv[1], "-n") == 0)
+             && (strcmp(argv[2], "-p") == 0))
         simple_export(g_env.envvar);
 
     else if (argc > 2 && (strcmp(argv[1], "-n")  == 0))
@@ -194,18 +206,18 @@ int export(char **argv)
         return 0;
     }
 
-    else
+    else //variable adding case
     {
         for (int i = 1; i < argc; i++)
         {
-            if (strcmp(argv[i][0], "=") == 0)
+            if (argv[i][0] == '=')
             {
                 fprintf(stderr, "export: '=' not a valid identifier\n");
                 return 1;
             }
-            export_var(argv[i]);  
+            if (var_exists(argv[i]) != 0) //var does not already exist
+                export_var(argv[i]);
         }
     }
-    
     return 0;
 }
