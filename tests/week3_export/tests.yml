@@ -30,6 +30,9 @@
 
 - name: export -n
   stdin: export -n
+  checks:
+    - has_stdout
+    - returncode
 
 - name: export -n toto
   stdin: export -n toto
