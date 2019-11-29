@@ -15,7 +15,6 @@
 #include "../input_output/read.h"
 #include "../data_structures/data_string.h"
 
-<<<<<<< HEAD
 
 static int get_nb_params(char **params)
 {
@@ -30,10 +29,7 @@ static int get_nb_params(char **params)
 }
 
 
-static struct array_list *__add_glob_to_cmd(char **params, char *pattern,
-=======
 static struct array_list *add_glob_to_cmd_aux(char **params, char *pattern,
->>>>>>> develop
                     int *i)
 {
     struct path_globbing *glob = sh_glob(pattern);
