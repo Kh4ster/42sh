@@ -36,7 +36,7 @@ static void execute_shell(void)
 }
 
 
-extern void execute_ressource_file(char *name)
+extern void execute_ressource_file(char *name, int is_source)
 {
     int fd = open(name, O_RDONLY);
     if (fd != -1)
@@ -48,6 +48,8 @@ extern void execute_ressource_file(char *name)
         dup2(fd_saved, 0);
         close(fd_saved);
     }
+    else if (is_source)
+        warn("Could not open %s", name);
 }
 
 
@@ -61,7 +63,7 @@ extern int source(char **argv)
     g_env.is_parsing_ressource = 1;
     FILE * dev_null = fopen("/dev/null", "w");
     rl_outstream = dev_null;
-    execute_ressource_file(argv[1]);
+    execute_ressource_file(argv[1], 1);
     fclose(dev_null);
     rl_outstream = stdout;
     g_env.is_parsing_ressource = 0;

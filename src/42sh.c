@@ -84,12 +84,12 @@ static void handle_ressource_files(void)
     if (!g_env.options.option_n)
     {
         g_env.is_parsing_ressource = 1;
-        execute_ressource_file("/etc/42shrc");
+        execute_ressource_file("/etc/42shrc", 0);
         char *s = getenv("HOME");
         char *full_path = xmalloc(strlen(s) + strlen("/.42shrc") + 1);
         strcpy(full_path, s);
         strcat(full_path, "/.42shrc");
-        execute_ressource_file(full_path);
+        execute_ressource_file(full_path, 0);
         free(full_path);
         g_env.is_parsing_ressource = 0;
     }
