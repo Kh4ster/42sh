@@ -54,6 +54,9 @@ char *get_next_line(const char *prompt)
 
     char *new_line = readline(prompt);
     rl_bind_key ('\t', rl_insert_completions);
-    add_history(new_line);
+
+    if (!g_env.is_parsing_ressource)
+        add_history(new_line);
+
     return new_line;
 }
