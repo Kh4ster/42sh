@@ -25,6 +25,8 @@
 #include "builtins/shopt.h"
 #include "builtins/echo.h"
 #include "builtins/history.h"
+#include "builtins/source.h"
+#include "builtins/break.h"
 #include "builtins/cd.h"
 #include "builtins/exit.h"
 
@@ -80,54 +82,17 @@ static void is_noclobber(int argc, char **argv)
     }
 }
 
-static void execute_shell(void)
-{
-    int is_end = 0;
-    struct queue *lexer = queue_init();
-    int error = 0;
-
-    while (42)
-    {
-        g_env.prompt = "42sh$ ";
-        struct instruction *ast = parse_input(lexer, &is_end, &error);
-        execute_ast(ast);
-        destroy_tree(ast);
-        if (is_end)
-            break;
-        else if (error)
-        {
-            handle_parser_errors(lexer);
-            error = 0; //set error back to 0 for interactive mode
-        }
-    }
-    free(lexer);
-}
-
-static void execute_ressource_file(char *name)
-{
-    int fd = open(name, O_RDONLY);
-    if (fd != -1)
-    {
-        dup2(0, 10);
-        dup2(fd, 0);
-        close(fd);
-        execute_shell();
-        dup2(10, 0);
-        close(10);
-    }
-}
-
 static void handle_ressource_files(void)
 {
     if (!g_env.options.option_n)
     {
         g_env.is_parsing_ressource = 1;
-        execute_ressource_file("/etc/42shrc");
+        execute_ressource_file("/etc/42shrc", 0, NULL);
         char *s = getenv("HOME");
         char *full_path = xmalloc(strlen(s) + strlen("/.42shrc") + 1);
         strcpy(full_path, s);
         strcat(full_path, "/.42shrc");
-        execute_ressource_file(full_path);
+        execute_ressource_file(full_path, 0, NULL);
         free(full_path);
         g_env.is_parsing_ressource = 0;
     }
@@ -155,6 +120,9 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_init(builtins, NB_SLOTS);
     hash_insert_builtin(builtins, "shopt", shopt);
     hash_insert_builtin(builtins, "history", history);
+    hash_insert_builtin(builtins, "source", source);
+    hash_insert_builtin(builtins, "break", has_break);
+    hash_insert_builtin(builtins, "continue", has_continue);
     hash_insert_builtin(builtins, "cd", cd);
     hash_insert_builtin(builtins, "exit", exit_builtin);
     hash_insert_builtin(builtins, "echo", echo);
