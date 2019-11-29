@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <err.h>
+#include <locale.h>
 
 #include "../input_output/get_next_line.h"
 #include "path_exepension.h"
@@ -161,6 +162,11 @@ static void swap(void **a, void **b)
 
 static void sort_matches(struct array_list *list)
 {
+    char *res_local = setlocale(LC_ALL, "");
+
+    if (!res_local)
+        return;
+
     for (int i = list->nb_element - 1; i >= 0; i--)
     {
         for (int j = 0; j < i; j++)
