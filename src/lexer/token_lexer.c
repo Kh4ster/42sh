@@ -226,6 +226,22 @@ static void handle_back_quote(struct token_lexer *new_token, char **cursor)
     {
         while (**cursor != '\0' && **cursor != '`')
             (*cursor)++;
+        if (**cursor == '`')
+            break;
+        else
+        {
+            char *next_line = get_next_line(g_env.prompt);
+            if (next_line == NULL)
+                errx(2, "Lexing error");
+
+            char *new_line = xcalloc(strlen(*token_start)
+                                + strlen(next_line) + 1, sizeof(char));
+            strcat(new_line, *token_start);
+            strcat(new_line, next_line);
+            free(next_line);
+            *cursor = new_line + (*cursor - token_start);
+            *token_start = new_line;
+        }
     }
 }
 
