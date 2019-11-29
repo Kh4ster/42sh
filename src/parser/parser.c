@@ -292,7 +292,8 @@ static struct instruction *parse_funcdec(struct queue *lexer)
         return NULL;
     }
 
-    hash_insert(g_env.functions, func_name->data, to_execute);
+    hash_insert(g_env.functions, func_name->data, to_execute, AST);
+    free(func_name->data);
     free(func_name);
     return  build_funcdef_instruction();
 }
@@ -334,6 +335,7 @@ static int parse_io_number(struct queue *lexer)
     return fd;
 }
 
+static bool next_is_end_of_instruction(struct queue *lexer);
 
 static struct instruction *__parse_redirection(struct queue *lexer)
 {
@@ -360,7 +362,7 @@ static struct instruction *__parse_redirection(struct queue *lexer)
     }
     EAT(); //eat the redirection token
 
-    if (lexer->size == 0 || !NEXT_IS_OTHER() || NEXT_IS("\n"))
+    if (next_is_end_of_instruction(lexer))
         return build_instruction(type, build_redirection(fd, NULL));
 
     struct token_lexer *token = token_lexer_head(lexer);
@@ -456,6 +458,13 @@ static struct instruction *add_command_redirection(
     return redirection;
 }
 
+static void add_variable(char *var)
+{
+    char *name = strtok_r(var, "=", &var);
+    char *value = strtok_r(NULL, "=", &var);
+    hash_insert(g_env.variables, name, value, STRING);
+}
+
 static struct instruction *parse_simple_command(struct queue *lexer)
 {
     struct instruction *redirection = parse_redirection(lexer, NULL);
@@ -473,6 +482,7 @@ static struct instruction *parse_simple_command(struct queue *lexer)
         struct token_lexer *token = token_lexer_head(lexer);
         if (token->data[0] != '=') //just =value, is considered a command
         {
+            add_variable(token->data);
             EAT();
             return build_instruction(TOKEN_VAR_DECLARATION, NULL);
         }

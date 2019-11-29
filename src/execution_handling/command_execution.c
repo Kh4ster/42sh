@@ -15,6 +15,7 @@
 #include "../input_output/read.h"
 #include "../data_structures/data_string.h"
 
+<<<<<<< HEAD
 
 static int get_nb_params(char **params)
 {
@@ -30,6 +31,9 @@ static int get_nb_params(char **params)
 
 
 static struct array_list *__add_glob_to_cmd(char **params, char *pattern,
+=======
+static struct array_list *add_glob_to_cmd_aux(char **params, char *pattern,
+>>>>>>> develop
                     int *i)
 {
     struct path_globbing *glob = sh_glob(pattern);
@@ -58,7 +62,7 @@ static struct command_container *add_glob_to_cmd(struct command_container *cmd)
 {
     for (int i = 0; i < get_nb_params(cmd->params); i++)
     {
-        struct array_list *list = __add_glob_to_cmd(cmd->params,
+        struct array_list *list = add_glob_to_cmd_aux(cmd->params,
                                 cmd->params[i], &i);
 
         if (!list)
@@ -127,7 +131,8 @@ char *get_result_from_42sh(char *command)
     if (xread(str, tube[0]) == -1)
         errx(-1, "Bad read"); //-1 ?
 
-    str->content[strlen(str->content) - 1] = 0; //TODO, dunno why has to remove \n
+    if (str->content[0] != '\0') //else go to index -1
+        str->content[strlen(str->content) - 1] = 0; //! dunno why has to rm \n
 
     dup2(save_stdout, 1); //put back stdout
     close(tube[0]);     //close read side
