@@ -31,7 +31,7 @@ static char *var_value(char *arg)
 */
 static int handle_error(char **arg)
 {
-    if (arg[1] != NULL && (strcmp(arg[1], "-n") == 0))
+    if (arg[1] != NULL && (strcmp(arg[1], "-n") == 0) && (strcmp(arg[2], "-p") != 0))
     {
         for (int i = 3; arg[i]; i++)
         {
