@@ -39,6 +39,9 @@ static char *strlwr(char *str)
 
 static int is_path_expansion(char *pattern)
 {
+    if (*pattern == '"' || *pattern == '\'')
+        return 0;
+
     assert(pattern);
 
     for (size_t i = 0; pattern[i]; i++)
