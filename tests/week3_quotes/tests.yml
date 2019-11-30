@@ -1,0 +1,11 @@
+- name: echo "\$aze"
+  stdin: echo "\$aze"
+
+- name: var="oui oui \//\/\/\lala"; echo $var
+  stdin: var="oui oui \//\/\/\lala"; echo $var;
+
+- name: var='oui oui \//\/\/\lala'; echo $var
+  stdin: var='oui oui \//\/\/\lala'; echo $var
+
+- name: hey=EXPANSION; echo a"var"$hey'$hey'
+  stdin: hey=EXPANSION; echo a"var"$hey'$hey'
