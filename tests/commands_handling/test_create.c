@@ -10,7 +10,7 @@
 
 Test(cmd_exec, echo_toto, .timeout = 0)
 {
-    char *c = strdup("echo");
+    char *c = "echo";
     struct array_list *list = array_list_init();
     array_list_append(list, strdup("toto"));
     struct command_container *cmd = command_create(c, list);
@@ -25,7 +25,7 @@ Test(cmd_exec, echo_toto, .timeout = 0)
 
 Test(cmd_exec, cmd_not_found_toto, .timeout = 0)
 {
-    char *c = strdup("cmd_notfound");
+    char *c = "cmd_notfound";
     struct array_list *list = array_list_init();
     array_list_append(list, strdup("toto"));
     struct command_container *cmd = command_create(c, list);
@@ -42,7 +42,7 @@ Test(cmd_exec, not_executable_toto, .timeout = 0)
 {
     FILE *fd;
     fd = fopen("not_executable", "w+");
-    char *c = strdup("./not_executable");
+    char *c = "./not_executable";
     struct array_list *list = array_list_init();
     array_list_append(list, strdup("toto"));
     struct command_container *cmd = command_create(c, list);
@@ -58,7 +58,7 @@ Test(cmd_exec, not_executable_toto, .timeout = 0)
 
 Test(cmd_exec, ls_dir_notfound, .timeout = 0)
 {
-    char *c = strdup("ls");
+    char *c = "ls";
     struct array_list *list = array_list_init();
     array_list_append(list, strdup("dir_notfound"));
     struct command_container *cmd = command_create(c, list);
@@ -73,7 +73,7 @@ Test(cmd_exec, ls_dir_notfound, .timeout = 0)
 
 Test(cmd_exec, ls_prevdir_rootdir, .timeout = 0)
 {
-    char *c = strdup("ls");
+    char *c = "ls";
     struct array_list *list = array_list_init();
     array_list_append(list, strdup(".."));
     array_list_append(list, strdup("."));
@@ -90,7 +90,7 @@ Test(cmd_exec, ls_prevdir_rootdir, .timeout = 0)
 
 int main()
 {
-    char *c = strdup("tree");
+    char *c = "tree";
     struct array_list *list = array_list_init();
     array_list_append(list, strdup("dir_notfound"));
     struct command_container *cmd = command_create(c, list);

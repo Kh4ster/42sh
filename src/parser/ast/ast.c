@@ -9,17 +9,310 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <glob.h>
+#include <assert.h>
 
 #include "ast.h"
 #include "../parser.h"
+#include "../../lexer/token_lexer.h"
 #include "../../execution_handling/command_container.h"
 #include "../../execution_handling/command_execution.h"
 #include "../../redirections_handling/redirect.h"
 #include "../../data_structures/hash_map.h"
 #include "../../input_output/get_next_line.h"
+#include "../../builtins/break.h"
+#include "../../path_expention/path_exepension.h"
+#include "../../error/error.h"
+#include "../../memory/memory.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
+
+static char *expand(char *to_expand);
+
+static int get_nb_params(char **params)
+{
+    int res = 0;
+
+    for (int i = 0; params[i]; i++)
+    {
+        res++;
+    }
+
+    return res;
+}
+
+
+static struct array_list *add_glob_to_cmd_aux(char **params, char *pattern,
+                    int *i)
+{
+    struct path_globbing *glob = sh_glob(pattern);
+
+    if (!glob)
+        return NULL;
+
+    struct array_list *list = array_list_init();
+
+    for (int j = 1; j < *i; j++)
+        array_list_append(list, strdup(params[j]));
+
+    for (int j = 0; j < glob->nb_matchs; j++)
+        array_list_append(list, strdup(glob->matches->content[j]));
+
+    (*i)++;
+    for (; params[*i]; (*i)++)
+        array_list_append(list, strdup(params[*i]));
+
+    destroy_path_glob(glob);
+    return list;
+}
+
+
+static struct command_container *add_glob_to_cmd(struct command_container *cmd)
+{
+    for (int i = 0; i < get_nb_params(cmd->params); i++)
+    {
+        struct array_list *list = add_glob_to_cmd_aux(cmd->params,
+                                cmd->params[i], &i);
+
+        if (!list)
+            continue;
+
+        struct command_container *new =
+                    command_create(cmd->command, list);
+        free(list->content);
+        free(list);
+        command_destroy(&cmd);
+        cmd = new;
+    }
+    return cmd;
+}
+
+
+static void expand_tilde_in_params(char **params)
+{
+     for (int i = 0; params[i]; i++)
+    {
+        if (strcmp("~", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = strdup(getenv("HOME"));
+        }
+
+        if (strcmp("~+", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = get_current_dir_name();
+        }
+
+        if (strcmp("~-", params[i]) == 0)
+        {
+            free(params[i]);
+            params[i] = strdup(getenv("OLDPWD"));
+        }
+    }
+}
+
+static void expand_tilde(struct command_container *cmd)
+{
+    if (strcmp("~", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = strdup(getenv("HOME"));
+    }
+
+    if (strcmp("~+", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = get_current_dir_name();
+    }
+
+    if (strcmp("~-", cmd->command) == 0)
+    {
+        free(cmd->command);
+        cmd->command = strdup(getenv("OLDPWD"));
+    }
+    expand_tilde_in_params(cmd->params);
+}
+
+static struct command_container *build_cmd(struct array_list *params,
+                                                char **params_cmd)
+{
+    struct array_list *list = array_list_init();
+
+    for (size_t i = 1; i < params->nb_element; i++)
+        array_list_append(list, strdup(params->content[i]));
+
+    for (size_t i = 0; params_cmd[i]; i++)
+        array_list_append(list, strdup(params_cmd[i]));
+
+    struct command_container *cmd = command_create(params->content[0], list);
+    free(list->content);
+    free(list);
+    return cmd;
+}
+
+
+static void expand_glob_cmd(struct instruction *cmd_i)
+{
+    struct command_container *cmd = cmd_i->data;
+    struct path_globbing *glob = sh_glob(cmd->command);
+
+    if (!glob)
+        return;
+
+    cmd_i->data = build_cmd(glob->matches, cmd->params);
+    command_destroy(&cmd);
+    destroy_path_glob(glob);
+}
+
+
+//to really understand take this example $(echo $(echo ok))
+static char *expand_nested_command(char *cursor, char *to_expand)
+{
+    char *result = expand(cursor);
+    char *end = cursor;
+    end += strlen(end); //move to \0 set in recursive call (matching ))
+    end++; //skip \0
+
+    *cursor = 0; //set $ to \0
+
+    char *new_to_expand = xcalloc(strlen(to_expand)
+                                    + strlen(result)
+                                    + strlen(end) + 1, sizeof(char));
+
+    strcat(new_to_expand, to_expand);
+    strcat(new_to_expand, result);
+    strcat(new_to_expand, end);
+    free(result);
+    return new_to_expand;
+}
+
+static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
+{
+    bool to_free = false;
+    to_expand += nb_to_skip;
+
+    char *cursor = to_expand;
+    while ((cursor = strpbrk(cursor, "`$)\"\'\\")) != NULL
+                                                        && *cursor != to_stop)
+    {
+        if (*cursor == '\"' || *cursor == '\'' || *cursor == '\\')
+            skip_quoting(&cursor, NULL);
+        else
+        {
+            //recursive call to expand command
+            if ((*cursor == '$' && cursor[1] == '(') || *cursor == '`')
+            {
+                to_expand = expand_nested_command(cursor, to_expand);
+                cursor = to_expand;
+                to_free = true;
+            }
+            else    //if we fall on a $ for a var we need to skip it
+                cursor++;
+        }
+    }
+    if (cursor == NULL)
+        handle_parser_errors(NULL);
+    *cursor = 0; //replace ) with 0
+
+    char *result = get_result_from_42sh(to_expand);
+    if (to_free) //inner expansion that needs to be freed
+        free(to_expand);
+    return result;
+}
+
+static void fill_command_and_params(struct command_container *command,
+                                                                char *expansion
+)
+{
+    free(command->command);
+    command->command = strtok_r(expansion, " ", &expansion);
+
+    int argc = 0;
+    while (command->params[argc] != NULL)
+        argc++;
+
+    //we want to add what comes after the command in our parameters
+
+    char **new_params = xmalloc(sizeof(char*) * (argc + 2));
+    //2 to store new param + null
+
+    //put expanded command as first param
+    free(command->params[0]);
+    new_params[0] = strdup(command->command);
+    new_params[1] = strdup(expansion);
+    //strdup so that it can be freed later
+
+    argc = 2;
+    while (command->params[argc - 1] != NULL)
+    {
+        new_params[argc] = command->params[argc - 1];
+        argc++;
+    }
+    new_params[argc]= NULL;
+    free(command->params);
+    command->params = new_params;
+}
+
+static bool is_multiple_words(char *expansion)
+{
+    return strpbrk(expansion, " ") != NULL;
+}
+
+static char *expand_variable(char *to_expand)
+{
+    to_expand++; //skip $
+    char *value;
+
+    if ((value = hash_find(g_env.variables, to_expand)) != NULL)
+        return strdup(value);
+    return strdup("");
+}
+
+static char *expand(char *to_expand)
+{
+    if (to_expand[0] == '$' && to_expand[1] == '(')
+        to_expand = expand_cmd(to_expand, ')', 2);
+    if (to_expand[0] == '$')
+        to_expand = expand_variable(to_expand);
+    if (to_expand[0] == '`')
+        to_expand = expand_cmd(to_expand, '`', 1);
+
+    return to_expand; //no expansion
+}
+
+static int handle_expand_command(struct instruction *command_i)
+{
+    struct command_container *command = command_i->data;
+    char *expansion = expand(command->command);
+    if (*expansion == '\0') //expand empty var
+    {
+        free(expansion);
+        return -1;
+    }
+
+    if (is_multiple_words(expansion)) //var="echo ok ok ..."
+        fill_command_and_params(command, expansion);
+    else
+    {
+        if (command->command != expansion) //if an expansion was performed
+            free(command->command);
+        command->command = expansion;
+    }
+
+    //it's ok to expand var="echo ok ok" in the parameters, not need to create
+    for (size_t i = 0; command->params[i] != NULL; ++i)
+    {
+        expansion = expand(command->params[i]);
+        if (expansion != command->params[i])
+            free(command->params[i]);
+        command->params[i] = expansion;
+    }
+
+    expand_tilde(command_i->data);
+    expand_glob_cmd(command_i);
+    command_i->data = add_glob_to_cmd(command);
+    return 1;
+}
 
 void handle_sigint(int signal)
 {
@@ -100,13 +393,16 @@ static int exec_builtin(struct instruction *ast)
 
 static int handle_commands(struct instruction *ast)
 {
+    if (handle_expand_command(ast) == -1)
+        return 0;
+
     /* execute commande with zak function */
     if (is_func(ast))
         return exec_func(ast);
     else if (is_builtin(ast))
         return exec_builtin(ast);
-    struct command_container *command = ast->data;
-    return exec_cmd(command);
+
+    return exec_cmd(ast);
 }
 
 
@@ -114,11 +410,27 @@ static int handle_while(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
     int return_value = 0;
+    g_env.is_in_loop = 1;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
+    {
         return_value = execute_ast(while_instruction->to_execute);
 
+        if (g_env.breaks > 0)
+        {
+            g_env.breaks--;
+            break;
+        }
+
+        if (g_env.continues > 0)
+        {
+            g_env.continues--;
+            continue;
+        }
+    }
+
     g_have_to_stop = false;
+    g_env.is_in_loop = 0;
     return return_value;
 }
 
@@ -127,11 +439,28 @@ static int handle_until(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
     int return_value = 0;
+    g_env.is_in_loop = 1;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions))
+    {
         return_value = execute_ast(while_instruction->to_execute);
 
+        if (g_env.breaks > 0)
+        {
+            g_env.breaks--;
+            break;
+        }
+
+        if (g_env.continues > 0)
+        {
+            g_env.continues--;
+            continue;
+        }
+
+    }
+
     g_have_to_stop = false;
+    g_env.is_in_loop = 0;
     return return_value;
 }
 
@@ -141,32 +470,54 @@ static int handle_for(struct instruction *ast)
     struct for_instruction *instruction_for = ast->data;
     struct array_list *var_values = instruction_for->var_values;
     int return_value;
-    glob_t glob_c;
+
+    g_env.is_in_loop = 1;
 
     if (!var_values)
         return 0;
 
     for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
-        int error = glob(var_values->content[i], GLOB_NOSORT, NULL, &glob_c);
+        struct path_globbing *glob = sh_glob(var_values->content[i]);
+        // TODO assigne_variable(instruction_for->var_name, var_values->content[i]);
 
-        if (error == GLOB_NOMATCH)
+        if (!glob)
         {
-        //  assigne_variable(instruction_for->var_name, var_values->content[i]);
             return_value = execute_ast(instruction_for->to_execute);
+
+            if (g_env.breaks > 0)
+            {
+                g_env.breaks--;
+                break;
+            }
+
             continue;
         }
 
-        for (size_t j = 0; j < glob_c.gl_pathc && !g_have_to_stop; j++)
+        for (int j = 0; j < glob->nb_matchs; j++)
         {
-    //      assigne_variable(instruction_for->var_name, glob.gl_pathv[j]);
+            // TODO asigne_variable(instruction_for->var_name, glob->matches->content[j]);
             return_value = execute_ast(instruction_for->to_execute);
+
+            if (g_env.breaks > 0)
+            {
+                g_env.breaks--;
+                break;
+            }
+
+            if (g_env.continues > 0)
+            {
+                g_env.continues--;
+                continue;
+            }
         }
-        globfree(&glob_c);
+        destroy_path_glob(glob);
     }
 
+    g_env.is_in_loop = 0;
     return return_value;
 }
+
 
 static int handle_pipe(struct instruction *ast)
 {
@@ -206,6 +557,14 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
+        char *expantion = expand(patterns->content[i]);
+
+        if (patterns->content[i] != expantion)
+        {
+            free(patterns->content[i]);
+            patterns->content[i] = expantion;
+        }
+
         if (fnmatch(patterns->content[i], pattern, FNM_EXTMATCH) == 0)
             return 1;
     }
@@ -217,6 +576,13 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 static int handle_case(struct instruction *ast)
 {
     struct case_clause *case_clause = ast->data;
+    char *expantion= expand(case_clause->pattern);
+
+    if (case_clause->pattern != expantion)
+    {
+        free(case_clause->pattern);
+        case_clause->pattern = expantion;
+    }
 
     for (size_t i = 0; i < case_clause->items->nb_element; i++)
     {
@@ -283,9 +649,11 @@ extern int execute_ast(struct instruction *ast)
     default:
         return_value = 0;
     }
-    g_env.last_return_value = return_value;
-    if (ast->next != NULL)
-        return_value = execute_ast(ast->next);
 
+    g_env.last_return_value = return_value;
+    if (ast->next != NULL && !g_env.breaks && !g_env.continues)
+    {
+        return_value = execute_ast(ast->next);
+    }
     return return_value;
 }
