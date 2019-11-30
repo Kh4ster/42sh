@@ -188,19 +188,19 @@ void skip_quoting(char **cursor, char **start_of_token)
     if (**cursor == '\'')
     {
         (*cursor)++;
-        *cursor = get_delimiter(*cursor, "\'\0");
+        *cursor = get_delimiter(*cursor, "\'");
         while (**cursor != '\'') // end quote not found
         {
             add_next_line_to_current_and_update_cursors(cursor,
                     start_of_token);
-            *cursor = get_delimiter(*cursor, "\'\0");
+            *cursor = get_delimiter(*cursor, "\'");
         }
         (*cursor)++;
     }
     else if (**cursor == '"')
     {
         (*cursor)++;
-        *cursor = get_delimiter(*cursor, "\"\\\0");
+        *cursor = get_delimiter(*cursor, "\"\\");
         while (**cursor != '\"')
         {
             // Handle backslash
@@ -211,7 +211,7 @@ void skip_quoting(char **cursor, char **start_of_token)
                 add_next_line_to_current_and_update_cursors(cursor,
                         start_of_token);
             }
-            *cursor = get_delimiter(*cursor, "\"\\\0");
+            *cursor = get_delimiter(*cursor, "\"\\");
         }
         (*cursor)++;
     }

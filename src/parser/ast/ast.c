@@ -28,7 +28,7 @@
 
 bool g_have_to_stop = 0; //to break in case of signal
 
-static char *expand(char *to_expand, char **cursor);
+static char *expand(char **to_expand);
 char *scan_for_expand(char *line);
 
 static void expand_tilde_in_params(char **params)
@@ -130,6 +130,8 @@ static char *expand_nested_command(char *cursor, char *to_expand)
     return new_to_expand;
 }
 
+static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip);
+
 static char *le_chapeau_de_expand_cmd(char **to_expand,
                                         char to_stop,
                                         int nb_to_skip
@@ -137,7 +139,7 @@ static char *le_chapeau_de_expand_cmd(char **to_expand,
 {
     char *end_parenthesis = strdup(*to_expand);
     char *beg = end_parenthesis;
-    find_corresponding_parenthesis(end_parenthesis, NULL);
+    find_corresponding_parenthesis(&end_parenthesis, NULL);
     end_parenthesis++;
     *to_expand += (end_parenthesis - beg);
     *end_parenthesis = '\0';
@@ -207,7 +209,7 @@ static char *expand_variable(char **to_expand)
     char *value;
 
     char *in_case_strpbrk_null = *to_expand;
-    *to_expand = strpbrk(to_expand, "$\'\"\\\n");
+    *to_expand = strpbrk(*to_expand, "$\'\"\\\n");
     char save;
     if (*to_expand != NULL)
     {
@@ -217,7 +219,7 @@ static char *expand_variable(char **to_expand)
     else
         *to_expand = in_case_strpbrk_null + strlen(in_case_strpbrk_null);
 
-    if ((value = hash_find(g_env.variables, to_expand)) == NULL)
+    if ((value = hash_find(g_env.variables, *to_expand)) == NULL)
         value = "";
 
     if (*to_expand != NULL)
@@ -225,20 +227,24 @@ static char *expand_variable(char **to_expand)
     return strdup(value);
 }
 
-static char *expand_variable_brackets(char ***to_expand)
+static char *expand_variable_brackets(char **to_expand)
 {
-    to_expand++; //skip $
-    to_expand++; //skip {
+    (*to_expand)++; //skip $
+    (*to_expand)++; //skip {
     size_t i = 0;
-    while (to_expand[i] != '}')
+    while ((*to_expand)[i] != '}')
         ++i;
     to_expand[i] = '\0'; //remove }
-    *cursor = (to_expand + i + 1);
     char *value;
 
-    if ((value = hash_find(g_env.variables, to_expand)) != NULL)
-        return strdup(value);
-    return strdup("");
+    char *result = NULL;
+    if ((value = hash_find(g_env.variables, *to_expand)) != NULL)
+        result = strdup(value);
+    else
+        result = strdup("");
+
+    *to_expand = (*to_expand + i + 1);
+    return result;
 }
 
 static bool is_to_expand(char c)
@@ -280,7 +286,7 @@ char *expand_quote(char **cursor)
     else if (**cursor == '"')
     {
         (*cursor)++;
-        char *beg = cursor;
+        char *beg = *cursor;
         *cursor = get_delimiter(*cursor, "\"\\");
         while (**cursor != '\"')
         {
@@ -303,19 +309,19 @@ char *expand_quote(char **cursor)
 
 static char *expand(char **to_expand)
 {
-    if (to_expand[0] == '\'' || to_expand[0] == '"' || to_expand[0] == '\\')
+    if (**to_expand == '\'' || **to_expand == '"' || **to_expand == '\\')
         return expand_quote(to_expand);
-    if (to_expand[0] == '$' && to_expand[1] == '(')
+    if (**to_expand == '$' && *(*to_expand + 1) == '(')
         return le_chapeau_de_expand_cmd(to_expand, ')', 2);
-    if (to_expand[0] == '$' && to_expand[1] == '{')
+    if (**to_expand == '$' && *(*to_expand + 1) == '{')
         return expand_variable_brackets(to_expand);
-    if (to_expand[0] == '$')
+    if (**to_expand == '$')
         return expand_variable(to_expand);
-    if (to_expand[0] == '`')
+    if (**to_expand == '`')
         return le_chapeau_de_expand_cmd(to_expand, '`', 1);
 
     //strdup cause need to be able to free anything from expand
-    return strdup(to_expand); //no expansion
+    return strdup(*to_expand); //no expansion
 }
 
 static void insert_sub_var(struct array_list *expanded_parameters,
