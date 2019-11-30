@@ -110,7 +110,7 @@ int cd(char **args)
             warnx("OLDPWD not set");
             return 1;
         }
-
+        puts(g_env.old_pwd);
         return my_chdir(g_env.old_pwd);
     }
 

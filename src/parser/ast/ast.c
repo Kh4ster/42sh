@@ -468,8 +468,13 @@ static int exec_builtin(struct instruction *ast)
     return return_value;
 }
 
+static struct command_container *dup_cmd(struct command_container *cmd);
+
 static int handle_commands(struct instruction *ast)
 {
+    struct command_container *save = dup_cmd(ast->data);
+    int to_return;
+
     if (handle_expand_command(ast) == -1)
         return 0;
 
@@ -477,9 +482,14 @@ static int handle_commands(struct instruction *ast)
     if (is_func(ast))
         return exec_func(ast);
     else if (is_builtin(ast))
-        return exec_builtin(ast);
+        to_return = exec_builtin(ast);
+    else
+        to_return = exec_cmd(ast);
 
-    return exec_cmd(ast);
+    struct command_container *cmd_c = ast->data;
+    command_destroy(&cmd_c);
+    ast->data = save;
+    return to_return;
 }
 
 
@@ -548,11 +558,23 @@ static struct command_container *dup_cmd(struct command_container *cmd)
     dup->command = strdup(cmd->command);
 
     size_t i = 0;
-    char **new_params = xmalloc(sizeof(char *) * nb_params);
-    for (; cmd->params[i]; i++)
+    char **new_params = xmalloc(sizeof(char*) * (get_nb_params(cmd->params)
+                                                            + 2));
+
+    while (1)
     {
-        //TODO
+        if (!cmd->params[i])
+        {
+            new_params[i] = NULL;
+            break;
+        }
+
+        new_params[i] = strdup(cmd->params[i]);
+        i++;
     }
+
+    dup->params = new_params;
+    return dup;
 }
 
 
@@ -583,7 +605,6 @@ static int handle_for(struct instruction *ast)
                 g_env.breaks--;
                 break;
             }
-
             continue;
         }
 
