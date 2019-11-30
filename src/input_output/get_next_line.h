@@ -35,6 +35,8 @@ struct shell_environment
     char **envvar; /**< @brief containing environement variables list*/
     char **old_envvar; /**< @brief containing old environement variables list*/
     char *old_pwd;
+    int argc;
+    char **argv;
 };
 
 /**

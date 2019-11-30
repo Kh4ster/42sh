@@ -30,6 +30,7 @@ bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char *to_expand);
 
+
 static void expand_tilde_in_params(char **params)
 {
     for (int i = 0; params[i]; i++)
@@ -482,6 +483,20 @@ static int handle_until(struct instruction *ast)
 }
 
 
+static struct command_container *dup_cmd(struct command_container *cmd)
+{
+    struct command_container *dup = xmalloc(sizeof(struct command_container));
+    dup->command = strdup(cmd->command);
+
+    size_t i = 0;
+    char **new_params = xmalloc(sizeof(char *) * nb_params);
+    for (; cmd->params[i]; i++)
+    {
+        //TODO
+    }
+}
+
+
 static int handle_for(struct instruction *ast)
 {
     struct for_instruction *instruction_for = ast->data;
@@ -496,10 +511,12 @@ static int handle_for(struct instruction *ast)
     for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
         struct path_globbing *glob = sh_glob(var_values->content[i]);
-        // TODO assigne_variable(instruction_for->var_name, var_values->content[i]);
 
         if (!glob)
         {
+            hash_insert(g_env.variables, instruction_for->var_name,
+                    var_values->content[i], STRING);
+
             return_value = execute_ast(instruction_for->to_execute);
 
             if (g_env.breaks > 0)
@@ -513,12 +530,12 @@ static int handle_for(struct instruction *ast)
 
         for (int j = 0; j < glob->nb_matchs; j++)
         {
-            // TODO asigne_variable(instruction_for->var_name, glob->matches->content[j]);
+            hash_insert(g_env.variables, instruction_for->var_name,
+                    glob->matches->content[i], STRING);
             return_value = execute_ast(instruction_for->to_execute);
 
             if (g_env.breaks > 0)
             {
-                g_env.breaks--;
                 break;
             }
 
@@ -528,6 +545,13 @@ static int handle_for(struct instruction *ast)
                 continue;
             }
         }
+
+        if (g_env.breaks > 0)
+        {
+            g_env.breaks--;
+            break;
+        }
+
         destroy_path_glob(glob);
     }
 

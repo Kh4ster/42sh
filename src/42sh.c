@@ -171,6 +171,8 @@ static void init_all(struct hash_map *functions,
     init_builtins_hash_map(g_env.builtins);
     g_env.options.option_expand_aliases = true;
     g_env.options.option_sourcepath = true;
+    g_env.old_pwd = NULL;
+
 
     // History
     char *history_path = get_history_file_path();
@@ -206,6 +208,17 @@ int main(int argc, char *argv[], char *env[])
 
     if ((return_code = handle_parameters(&g_env.options, argc, argv)) != 0)
         errx(return_code, "invalid option or file");
+
+    if (is_interactive())
+    {
+        g_env.argc = 0;
+        g_env.argv = 0;
+    }
+    else
+    {
+        g_env.argc = argc - 2;
+        g_env.argv = &argv[1];
+    }
 
     is_noclobber(argc, argv);
     handle_signal();

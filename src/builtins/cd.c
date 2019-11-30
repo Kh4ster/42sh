@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <err.h>
 
 #include "../input_output/get_next_line.h"
 #include "../memory/memory.h"
@@ -104,6 +105,12 @@ int cd(char **args)
 
     if (strcmp(args[1], "-") == 0 && args[2] == NULL)
     {
+        if (!g_env.old_pwd)
+        {
+            warnx("OLDPWD not set");
+            return 1;
+        }
+
         return my_chdir(g_env.old_pwd);
     }
 
