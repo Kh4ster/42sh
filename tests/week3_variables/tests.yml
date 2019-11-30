@@ -1,0 +1,80 @@
+- name: papa=toto echo ${papa}
+  stdin: papa=toto; echo ${papa}
+
+- name: papa=toto echo ${{papa}}
+  stdin: papa=toto; echo ${{papa}}
+  checks:
+    - returncode
+    - has_stderr
+
+- name: echo acu 2022
+  stdin: acu=2022; echo acu $acu
+
+- name: papa=toto echo ${papa
+  stdin: papa=toto; echo ${papa
+  checks:
+    - returncode
+    - has_stderr
+
+- name: papa=toto echo {${papa}}
+  stdin: papa=toto; echo {${papa}}
+
+- name: papa=toto echo ${}{papa}
+  stdin: papa=toto; echo ${}{papa}
+  checks:
+    - returncode
+    - has_stderr
+
+- name: echo ${papa}
+  stdin: echo ${papa}
+
+- name: echo ${papa
+  stdin: echo ${papa
+
+- name: papa=toto echo ${papa >}
+  stdin: |
+    papa=toto
+    echo ${papa
+    \}
+
+- name: papa=toto echo $papa}
+  stdin: papa=toto; echo $papa}
+
+- name: var=ok; echo 'jio'j'ji $var  ao'
+  stdin: var=ok; echo 'jio'j'ji $var  ao'
+
+- name: var=toto; echo $(echo '$var')
+  stdin: var=toto; echo $(echo '$var')
+
+- name: hey=test; echo a'var'$hey"you"
+  stdin: hey=test; echo a'var'$hey"you"
+
+- name: var="oui oui lala"; echo $var
+  stdin: var="oui oui lala"; echo $var;
+
+- name: var='oui oui lala'; echo $var
+  stdin: var='oui oui lala'; echo $var
+
+- name: variable assignement syntax error (var =test) 1
+  stdin: var =test; echo $var
+  checks:
+    - returncode
+    - has_stderr
+
+- name: variable assignement syntax error (var = test) 2
+  stdin: var = test; echo $var
+  checks:
+    - returncode
+    - has_stderr
+
+- name: variable assignement syntax edge case (var= test)
+  stdin: var= test; echo $var
+
+- name: vara=test; echo $(echo $var)a
+  stdin: vara=test; echo $(echo $var)a
+
+- name: $(va=test; echo $var)
+  stdin: $(va=test; echo $var)
+
+- name: va=test; echo $var
+  stdin: va=test; echo $var
