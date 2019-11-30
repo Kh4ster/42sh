@@ -137,10 +137,9 @@ static char *le_chapeau_de_expand_cmd(char **to_expand,
                                         int nb_to_skip
 )
 {
-    char *end_parenthesis = strdup(*to_expand);
-    char *beg = end_parenthesis;
+    char *beg = strdup(*to_expand);
+    char *end_parenthesis = beg + nb_to_skip;
     find_corresponding_parenthesis(&end_parenthesis, NULL);
-    end_parenthesis++;
     *to_expand += (end_parenthesis - beg);
     *end_parenthesis = '\0';
     char *result = expand_cmd(beg, to_stop, nb_to_skip);
@@ -217,7 +216,7 @@ static char *expand_variable(char **to_expand)
          **to_expand = '\0';
     }
     else
-        *to_expand = in_case_strpbrk_null + strlen(in_case_strpbrk_null);
+        *to_expand = in_case_strpbrk_null;
 
     if ((value = hash_find(g_env.variables, *to_expand)) == NULL)
         value = "";
