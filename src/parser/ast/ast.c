@@ -176,6 +176,7 @@ static void fill_command_and_params(struct command_container *command,
     char *param;
     while ((param = strtok_r(NULL, " ", &expansion)) != NULL)
         array_list_append(parameters, strdup(param));
+    free(expansion);
 }
 
 static bool is_multiple_words(char *expansion)
@@ -196,22 +197,24 @@ static char *expand_variable(char *to_expand)
 static char *expand(char *to_expand)
 {
     if (to_expand[0] == '$' && to_expand[1] == '(')
-        to_expand = expand_cmd(to_expand, ')', 2);
+        return expand_cmd(to_expand, ')', 2);
     if (to_expand[0] == '$')
-        to_expand = expand_variable(to_expand);
+        return expand_variable(to_expand);
     if (to_expand[0] == '`')
-        to_expand = expand_cmd(to_expand, '`', 1);
+        return expand_cmd(to_expand, '`', 1);
 
-    return to_expand; //no expansion
+    //strdup cause need to be able to free anything from expand
+    return strdup(to_expand); //no expansion
 }
 
 static void insert_sub_var(struct array_list *expanded_parameters,
                                             char *expansion
 )
 {
+    char *beg = expansion;
     if (!is_multiple_words(expansion)) //expansion only gave one word
     {
-        array_list_append(expanded_parameters, strdup(expansion));
+        array_list_append(expanded_parameters, expansion);
         return;
     }
 
@@ -222,6 +225,7 @@ static void insert_sub_var(struct array_list *expanded_parameters,
     char *param;
     while ((param = strtok_r(NULL, " ", &expansion)) != NULL)
         array_list_append(expanded_parameters, strdup(param));
+    free(beg);
 }
 
 static int handle_expand_command(struct instruction *command_i)
@@ -251,15 +255,12 @@ static int handle_expand_command(struct instruction *command_i)
         fill_command_and_params(command, expansion, expanded_parameters);
     else
     {
-        if (command->command != expansion) //if an expansion was performed
-        {
-            free(command->command);
-            command->command = strdup(expansion);
-        }
+        free(command->command);
+        command->command = expansion;
         array_list_append(expanded_parameters, strdup(command->command));
     }
 
-    bool is_first = true;
+    bool is_first = true; //to know first paramter ($a $b echo-> echo is first)
     for (size_t i = 0; command->params[i] != NULL; ++i)
     {
         expansion = expand(command->params[i]);
@@ -272,6 +273,8 @@ static int handle_expand_command(struct instruction *command_i)
         {
             if (!is_first) //the first param being command alreay pushed
                 insert_sub_var(expanded_parameters, expansion);
+            else
+                free(expansion);
             is_first = false;
         }
     }
