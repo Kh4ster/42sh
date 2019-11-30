@@ -111,18 +111,15 @@ void end_call_and_free_all(struct queue *lexer)
     hash_free(g_env.builtins);
     hash_free(g_env.variables);
     free(g_env.pwd);
-
     for (int i = 0; g_env.envvar[i]; i++)
     {
         free(g_env.envvar[i]);
     }
-
     if (g_env.old_envvar != NULL)
     {
         for (int i = 0; g_env.old_envvar[i]; i++)
             free(g_env.old_envvar[i]);
     }
-
     free(g_env.envvar);
     free(g_env.old_envvar);
     free(g_env.current_line);
@@ -137,6 +134,7 @@ static void init_builtins_hash_map(struct hash_map *builtins)
     hash_insert_builtin(builtins, "shopt", shopt);
     hash_insert_builtin(builtins, "history", history);
     hash_insert_builtin(builtins, "source", source);
+    hash_insert_builtin(builtins, ".", source);
     hash_insert_builtin(builtins, "break", has_break);
     hash_insert_builtin(builtins, "continue", has_continue);
     hash_insert_builtin(builtins, "cd", cd);
@@ -173,6 +171,8 @@ static void init_all(struct hash_map *functions,
     init_builtins_hash_map(g_env.builtins);
     g_env.options.option_expand_aliases = true;
     g_env.options.option_sourcepath = true;
+    g_env.old_pwd = NULL;
+
 
     // History
     char *history_path = get_history_file_path();
@@ -208,6 +208,17 @@ int main(int argc, char *argv[], char *env[])
 
     if ((return_code = handle_parameters(&g_env.options, argc, argv)) != 0)
         errx(return_code, "invalid option or file");
+
+    if (is_interactive())
+    {
+        g_env.argc = 0;
+        g_env.argv = 0;
+    }
+    else
+    {
+        g_env.argc = argc - 2;
+        g_env.argv = &argv[1];
+    }
 
     is_noclobber(argc, argv);
     handle_signal();

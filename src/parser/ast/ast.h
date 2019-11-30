@@ -16,6 +16,9 @@
 * @param ast: the root of the tree being executed
 * @return value : return the return code of the tree (0 if success, else errno is the return code)
 */
+
+extern int get_nb_params(char **params);
+
 extern int execute_ast(struct instruction *ast);
 
 #endif

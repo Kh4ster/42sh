@@ -25,13 +25,14 @@
 #include "../../memory/memory.h"
 #include "../../data_structures/array_list.h"
 #include "../../data_structures/data_string.h"
+#include "../../variables/expand_special_variables.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char **to_expand);
 char *scan_for_expand(char *line);
 
-static int get_nb_params(char **params)
+extern int get_nb_params(char **params)
 {
     int res = 0;
 
@@ -109,7 +110,7 @@ static void expand_tilde_in_params(char **params)
         if (strcmp("~-", params[i]) == 0)
         {
             free(params[i]);
-            params[i] = strdup(getenv("OLDPWD"));
+            params[i] = strdup(g_env.old_pwd);
         }
     }
 }
@@ -131,7 +132,7 @@ static void expand_tilde(struct command_container *cmd)
     if (strcmp("~-", cmd->command) == 0)
     {
         free(cmd->command);
-        cmd->command = strdup(getenv("OLDPWD"));
+        cmd->command = strdup(g_env.old_pwd);
     }
     expand_tilde_in_params(cmd->params);
 }
@@ -263,6 +264,11 @@ static bool is_multiple_words(char *expansion)
 
 static char *expand_variable(char **to_expand)
 {
+    char *special_variable = expand_special_variables(*to_expand);
+
+    if (special_variable != NULL)
+        return special_variable;
+
     (*to_expand)++; //skip $
     char *value;
 
@@ -451,7 +457,7 @@ static int handle_expand_command(struct instruction *command_i)
         }
         else
         {
-            if (!is_first) //the first param being command alreay pushed
+            if (!is_first) //the first param being command already pushed
                 insert_sub_var(expanded_parameters, expansion);
             else
                 free(expansion);
@@ -561,8 +567,13 @@ static int exec_builtin(struct instruction *ast)
     return return_value;
 }
 
+static struct command_container *dup_cmd(struct command_container *cmd);
+
 static int handle_commands(struct instruction *ast)
 {
+    struct command_container *save = dup_cmd(ast->data);
+    int to_return;
+
     if (handle_expand_command(ast) == -1)
         return 0;
 
@@ -570,9 +581,14 @@ static int handle_commands(struct instruction *ast)
     if (is_func(ast))
         return exec_func(ast);
     else if (is_builtin(ast))
-        return exec_builtin(ast);
+        to_return = exec_builtin(ast);
+    else
+        to_return = exec_cmd(ast);
 
-    return exec_cmd(ast);
+    struct command_container *cmd_c = ast->data;
+    command_destroy(&cmd_c);
+    ast->data = save;
+    return to_return;
 }
 
 
@@ -635,6 +651,32 @@ static int handle_until(struct instruction *ast)
 }
 
 
+static struct command_container *dup_cmd(struct command_container *cmd)
+{
+    struct command_container *dup = xmalloc(sizeof(struct command_container));
+    dup->command = strdup(cmd->command);
+
+    size_t i = 0;
+    char **new_params = xmalloc(sizeof(char*) * (get_nb_params(cmd->params)
+                                                            + 2));
+
+    while (1)
+    {
+        if (!cmd->params[i])
+        {
+            new_params[i] = NULL;
+            break;
+        }
+
+        new_params[i] = strdup(cmd->params[i]);
+        i++;
+    }
+
+    dup->params = new_params;
+    return dup;
+}
+
+
 static int handle_for(struct instruction *ast)
 {
     struct for_instruction *instruction_for = ast->data;
@@ -649,10 +691,12 @@ static int handle_for(struct instruction *ast)
     for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
         struct path_globbing *glob = sh_glob(var_values->content[i]);
-        // TODO assigne_variable(instruction_for->var_name, var_values->content[i]);
 
         if (!glob)
         {
+            hash_insert(g_env.variables, instruction_for->var_name,
+                    var_values->content[i], STRING);
+
             return_value = execute_ast(instruction_for->to_execute);
 
             if (g_env.breaks > 0)
@@ -660,18 +704,18 @@ static int handle_for(struct instruction *ast)
                 g_env.breaks--;
                 break;
             }
-
             continue;
         }
 
         for (int j = 0; j < glob->nb_matchs; j++)
         {
-            // TODO asigne_variable(instruction_for->var_name, glob->matches->content[j]);
+            hash_insert(g_env.variables, instruction_for->var_name,
+                    glob->matches->content[j], STRING);
+
             return_value = execute_ast(instruction_for->to_execute);
 
             if (g_env.breaks > 0)
             {
-                g_env.breaks--;
                 break;
             }
 
@@ -681,6 +725,13 @@ static int handle_for(struct instruction *ast)
                 continue;
             }
         }
+
+        if (g_env.breaks > 0)
+        {
+            g_env.breaks--;
+            break;
+        }
+
         destroy_path_glob(glob);
     }
 
