@@ -9,3 +9,33 @@
 
 - name: hey=EXPANSION; echo a"var"$hey'$hey'
   stdin: hey=EXPANSION; echo a"var"$hey'$hey'
+
+- name: echo '*'
+  stdin: echo '*'
+
+- name: echo "*"
+  stdin: echo "*"
+
+- name: echo "$toto"
+  stdin: toto=papa; echo "$toto"
+
+- name: echo '$toto'
+  stdin: toto=papa; echo '$toto'
+
+- name: echo '$toto"'
+  stdin: toto=papa; echo '$toto"'
+
+- name: echo "$toto'"
+  stdin: toto=papa; echo "$toto'"
+
+- name: echo "$toto'"
+  stdin: toto=papa; echo "$toto\""
+
+- name: echo "$toto\"'"""
+  stdin: echo "$toto\"'"""
+
+- name: echo "ok""ok""ok"
+  stdin: echo "ok""ok""ok"
+
+- name: echo "ok""ok"/\"ok""
+  stdin: echo "ok""ok"/\"ok""
