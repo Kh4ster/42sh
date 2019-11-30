@@ -260,6 +260,25 @@ static void handle_dollar(struct token_lexer *new_token, char **cursor)
         set_token(new_token, TOKEN_OTHER, &token_start,
                 end_bracket - token_start);
     }
+    else if (**cursor == '{')
+    {
+        (*cursor)++;
+        while (**cursor != '\0' && **cursor != '}')
+            (*cursor)++;
+        if (**cursor == '\0')
+        {
+            if (is_interactive())
+                warnx("Bad lexing");
+            else
+                errx(2, "Bad lexing");
+        }
+        else
+        {
+            (*cursor)++;
+            set_token(new_token, TOKEN_OTHER, &token_start,
+                *cursor - token_start);
+        }
+    }
     else //case $var
     {
         while (**cursor && **cursor != ' ')

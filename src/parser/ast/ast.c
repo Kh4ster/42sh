@@ -195,10 +195,27 @@ static char *expand_variable(char *to_expand)
     return strdup("");
 }
 
+static char *expand_variable_brackets(char *to_expand)
+{
+    to_expand++; //skip $
+    to_expand++; //skip {
+    size_t i = 0;
+    while (to_expand[i] != '\0' && to_expand[i] != '}')
+        ++i;
+    to_expand[i] = '\0'; //remove }
+    char *value;
+
+    if ((value = hash_find(g_env.variables, to_expand)) != NULL)
+        return strdup(value);
+    return strdup("");
+}
+
 static char *expand(char *to_expand)
 {
     if (to_expand[0] == '$' && to_expand[1] == '(')
         return expand_cmd(to_expand, ')', 2);
+    if (to_expand[0] == '$' && to_expand[1] == '{')
+        return expand_variable_brackets(to_expand);
     if (to_expand[0] == '$')
         return expand_variable(to_expand);
     if (to_expand[0] == '`')
