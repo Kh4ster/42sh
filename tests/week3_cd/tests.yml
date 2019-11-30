@@ -10,6 +10,18 @@
 - name: cd ..
   stdin: cd ..; ls
 
+- name: cd -
+  stdin: cd -
+
+- name: cd --
+  stdin: cd --
+
+- name: cd -; ls
+  stdin: cd -; ls
+
+- name: cd --; ls
+  stdin: cd --; ls
+
 - name: cd ../
   stdin: cd ../; ls
 
