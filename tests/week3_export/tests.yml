@@ -46,3 +46,8 @@
     - has_stdout
     - returncode
 
+- name: export -n acus test
+  stdin: |
+    export a=b
+    export -n a=c
+    export -p | grep a
