@@ -24,11 +24,12 @@
 #include "../../error/error.h"
 #include "../../memory/memory.h"
 #include "../../data_structures/array_list.h"
+#include "../../data_structures/data_string.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
-static char *expand(char *to_expand);
-
+static char *expand(char *to_expand, char **cursor);
+char *scan_for_expand(char *line);
 
 static void expand_tilde_in_params(char **params)
 {
@@ -111,7 +112,7 @@ static void expand_glob_cmd(struct instruction *cmd_i)
 //to really understand take this example $(echo $(echo ok))
 static char *expand_nested_command(char *cursor, char *to_expand)
 {
-    char *result = expand(cursor);
+    char *result = scan_for_expand(cursor);
     char *end = cursor;
     end += strlen(end); //move to \0 set in recursive call (matching ))
     end++; //skip \0
@@ -129,7 +130,8 @@ static char *expand_nested_command(char *cursor, char *to_expand)
     return new_to_expand;
 }
 
-static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
+static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip,
+                                                                char **end)
 {
     bool to_free = false;
     to_expand += nb_to_skip;
@@ -153,9 +155,9 @@ static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
                 cursor++;
         }
     }
-    /*if (cursor == NULL) //TODO CAN THIS CASE REALLY HAPPEN ?
-        handle_parser_errors(NULL);*/
+
     *cursor = 0; //replace ) with 0
+    *end = cursor + 1;
 
     char *result = get_result_from_42sh(to_expand);
     if (to_free) //inner expansion that needs to be freed
@@ -185,24 +187,39 @@ static bool is_multiple_words(char *expansion)
     return strpbrk(expansion, " ") != NULL;
 }
 
-static char *expand_variable(char *to_expand)
+static char *expand_variable(char *to_expand, char **cursor)
 {
     to_expand++; //skip $
     char *value;
 
-    if ((value = hash_find(g_env.variables, to_expand)) != NULL)
-        return strdup(value);
-    return strdup("");
+    char *in_case_strpbrk_null = *cursor;
+    *cursor = strpbrk(to_expand, "$\'\"\\\n");
+    char save;
+    if (*cursor != NULL)
+    {
+         save = **cursor;
+         **cursor = '\0';
+    }
+    else
+        *cursor = in_case_strpbrk_null + strlen(in_case_strpbrk_null);
+
+    if ((value = hash_find(g_env.variables, to_expand)) == NULL)
+        value = "";
+
+    if (*cursor != NULL)
+        **cursor = save;
+    return strdup(value);
 }
 
-static char *expand_variable_brackets(char *to_expand)
+static char *expand_variable_brackets(char *to_expand, char **cursor)
 {
     to_expand++; //skip $
     to_expand++; //skip {
     size_t i = 0;
-    while (to_expand[i] != '\0' && to_expand[i] != '}')
+    while (to_expand[i] != '}')
         ++i;
     to_expand[i] = '\0'; //remove }
+    *cursor = (to_expand + i + 1);
     char *value;
 
     if ((value = hash_find(g_env.variables, to_expand)) != NULL)
@@ -210,16 +227,78 @@ static char *expand_variable_brackets(char *to_expand)
     return strdup("");
 }
 
-static char *expand(char *to_expand)
+static bool is_to_expand(char c)
 {
+    return c == '$' || c == '\'' || c == '"' || c == '`' || c == '\\';
+}
+
+char *scan_for_expand(char *line)
+{
+    struct string *new_line = string_init();
+
+    for (; *line != '\0'; line++)
+    {
+        if (is_to_expand(*line))
+        {
+            char *expansion = expand(line, &line);
+            string_append(new_line, expansion);
+            free(expansion);
+        }
+        else
+            string_append_char(new_line, *line);
+        if (*line == '\0')
+            break;
+    }
+    return string_get_content(&new_line);
+}
+
+char *expand_quote(char *cursor, char **end)
+{
+    if (*cursor == '\'')
+    {
+        cursor++;
+        char *beg = cursor;
+        cursor = get_delimiter(cursor, "\'");
+        *cursor = '\0'; //set ' to 0
+        *end = cursor + 1;
+        return strdup(beg);
+    }
+    else if (*cursor == '"')
+    {
+        cursor++;
+        char *beg = cursor;
+        cursor = get_delimiter(cursor, "\"\\");
+        while (*cursor != '\"')
+        {
+            // Handle backslash
+            if (*cursor == '\\')
+                cursor += 2;
+            cursor = get_delimiter(cursor, "\"\\");
+        }
+        *cursor = '\0'; //set " to 0
+        *end = cursor + 1;
+        return scan_for_expand(beg);
+    }
+    else // \ handling
+    {
+        cursor++;
+        *end = cursor + 1;
+        return strndup(cursor, 1);
+    }
+}
+
+static char *expand(char *to_expand, char **cursor)
+{
+    if (to_expand[0] == '\'' || to_expand[0] == '"' || to_expand[0] == '\\')
+        return expand_quote(to_expand, cursor);
     if (to_expand[0] == '$' && to_expand[1] == '(')
-        return expand_cmd(to_expand, ')', 2);
+        return expand_cmd(to_expand, ')', 2, cursor);
     if (to_expand[0] == '$' && to_expand[1] == '{')
-        return expand_variable_brackets(to_expand);
+        return expand_variable_brackets(to_expand, cursor);
     if (to_expand[0] == '$')
-        return expand_variable(to_expand);
+        return expand_variable(to_expand, cursor);
     if (to_expand[0] == '`')
-        return expand_cmd(to_expand, '`', 1);
+        return expand_cmd(to_expand, '`', 1, cursor);
 
     //strdup cause need to be able to free anything from expand
     return strdup(to_expand); //no expansion
@@ -251,14 +330,14 @@ static int handle_expand_command(struct instruction *command_i)
     struct command_container *command = command_i->data;
     struct array_list *expanded_parameters = array_list_init();
 
-    char *expansion = expand(command->command);
+    char *expansion = scan_for_expand(command->command);
     if (*expansion == '\0') //expand empty var
     {
         free(expansion);
         size_t i = 1;
         while (command->params[i] != NULL) //while empty var we remove
         {
-            expansion = expand(command->params[i]);
+            expansion = scan_for_expand(command->params[i]);
             if (*expansion == '\0')
             {
                 free(expansion);
@@ -286,7 +365,7 @@ static int handle_expand_command(struct instruction *command_i)
     bool is_first = true; //to know first paramter ($a $b echo-> echo is first)
     for (size_t i = 0; command->params[i] != NULL; ++i)
     {
-        expansion = expand(command->params[i]);
+        expansion = scan_for_expand(command->params[i]);
         if (*expansion == '\0') //empty var
         {
             free(expansion);
@@ -569,7 +648,7 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
-        char *expantion = expand(patterns->content[i]);
+        char *expantion = scan_for_expand(patterns->content[i]);
 
         if (patterns->content[i] != expantion)
         {
@@ -588,7 +667,7 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 static int handle_case(struct instruction *ast)
 {
     struct case_clause *case_clause = ast->data;
-    char *expantion= expand(case_clause->pattern);
+    char *expantion = scan_for_expand(case_clause->pattern);
 
     if (case_clause->pattern != expantion)
     {

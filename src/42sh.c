@@ -111,18 +111,18 @@ void end_call_and_free_all(struct queue *lexer)
     hash_free(g_env.builtins);
     hash_free(g_env.variables);
     free(g_env.pwd);
-    
+
     for (int i = 0; g_env.envvar[i]; i++)
     {
         free(g_env.envvar[i]);
     }
-    
+
     if (g_env.old_envvar != NULL)
     {
         for (int i = 0; g_env.old_envvar[i]; i++)
             free(g_env.old_envvar[i]);
     }
-    
+
     free(g_env.envvar);
     free(g_env.old_envvar);
     free(g_env.current_line);

@@ -80,3 +80,5 @@ struct token_lexer *lexer_next_next(struct queue *token_queue);
 * @param start_of_token other pointer on line which can change
 */
 void skip_quoting(char **cursor, char **start_of_token);
+
+char *get_delimiter(char *line, char *delimiters);
