@@ -7,6 +7,9 @@
     - returncode
     - has_stderr
 
+- name: echo acu 2022
+  stdin: acu=2022; echo acu $acu
+
 - name: papa=toto echo ${papa
   stdin: papa=toto; echo ${papa
   checks:

@@ -1,0 +1,86 @@
+- name: echo -e \b
+  stdin: echo -e "Tecmint \bis \ba \bcommunity \bof \bLinux \bNerds"
+
+- name: echo -e \n
+  stdin: echo -e "Tecmint \nis \na \ncommunity \nof \nLinux \nNerds"
+
+- name: echo -e \t
+  stdin: echo -e "Tecmint \tis \ta \tcommunity \tof \tLinux \tNerds"
+
+- name: echo -e \n\t
+  stdin: echo -e "\n\tTecmint \n\tis \n\ta \n\tcommunity \n\tof \n\tLinux \n\tNerds"
+
+- name: echo -e \v
+  stdin: echo -e "\vTecmint \vis \va \vcommunity \vof \vLinux \vNerds"
+
+- name: echo -e \n\v
+  stdin: echo -e "\n\vTecmint \n\vis \n\va \n\vcommunity \n\vof \n\vLinux \n\vNerds"
+
+- name: echo -e \r
+  stdin: echo -e "Tecmint \ris a community of Linux Nerds"
+
+- name: echo -n
+  stdin: echo -n "Tecmint is a community of Linux Nerds"
+
+- name: echo -e \a
+  stdin: echo -e "Tecmint is a community of \aLinux Nerds"
+
+- name: echo -e "\\"
+  stdin: echo -e "\\"
+
+- name: echo -e '\\'
+  stdin: echo -e '\\'
+
+- name: echo -E '\\'
+  stdin: echo -E '\\'
+
+- name: echo '\\'
+  stdin: echo '\\'
+
+- name: echo -e "\\\\"
+  stdin: echo -e "\\\\"
+
+- name: echo "\\"
+  stdin: echo "\\"
+
+- name: echo "\\\\"
+  stdin: echo "\\\\"
+
+- name: echo -E "\\"
+  stdin: echo -E "\\"
+
+- name: echo -E "\\\\"
+  stdin: echo -E "\\\\"
+
+- name: echo -e "\xHH"
+  stdin: echo -e "\x40"
+
+- name: echo -e "\0NNN"
+  stdin: echo -e "\0176"
+
+- name: echo -E "test\tLinux"
+  stdin: echo -E "test\tLinux"
+
+- name: echo --help
+  stdin: echo --help
+
+- name: echo --version
+  stdin: echo --version
+
+- name: echo -e \c
+  stdin: echo -e "Tecmint is a community \cof Linux Nerds"
+
+- name: echo \f
+  stdin: echo $'Trois retours chariot \f \f \f'
+
+- name: echo -e \f
+  stdin: echo $'Trois retours chariot \f \f \f'
+
+- name: echo -E \f
+  stdin: echo $'Trois retours chariot \f \f \f'
+
+- name: echo -E \e
+  stdin: echo -E "toto\evrbet"
+
+- name: echo -e \e
+  stdin: echo -e "toto\evrbet"
