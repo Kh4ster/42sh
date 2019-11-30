@@ -1,10 +1,10 @@
-- name: complex command substitution and execution 1
+- name: complex command substitution and execution 1 w/ var
   stdin: echo $(var=test; echo $var) $var
 
-- name: complex command substitution and execution 2
+- name: complex command substitution and execution 2 w/ var
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var
 
-- name: complex command substitution and execution 3
+- name: complex command substitution and execution 3 w/ var
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var + $((5+3))
 
 - name: complex command substitution and execution 4
@@ -38,35 +38,11 @@
     - returncode
     - has_stderr
 
-- name: variable assignement syntax error (var =test) 1
-  stdin: var =test; echo $var
-  checks:
-    - returncode
-    - has_stderr
-
-- name: variable assignement syntax error (var = test) 2
-  stdin: var = test; echo $var
-  checks:
-    - returncode
-    - has_stderr
-
-- name: variable assignement syntax edge case (var= test)
-  stdin: var= test; echo $var
-
 - name: complex command substitution and execution 9
   stdin: echo $(echo $(echo ok ok ok))
 
 - name: complex command substitution and execution 10
   stdin: $(echo echo ok ok $(echo ok ok ok))
-
-- name: complex command substitution and execution 11
-  stdin: vara=test; echo $(echo $var)a
-
-- name: complex command substitution and execution 12
-  stdin: $(va=test; echo $var)
-
-- name: complex command substitution and execution 13
-  stdin: va=test; echo $var
 
 - name: complex command substitution and execution 14
   options:
