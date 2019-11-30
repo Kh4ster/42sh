@@ -113,22 +113,16 @@ static char *var_value(char *arg)
 //check if we got the right variable
 static int is_right_var(char **var, char *arg, int i)
 {
-    if (strchr(arg, '=') == NULL)
+    char *name1 = var_name(var[i]);
+    char *name2 = var_name(arg);
+    if (strcmp(name1, name2) == 0)
     {
-        char *name = var_name(var[i]);
-        if (strcmp(name, arg) == 0)
-        {
-            free(name);
-            return 0;
-        }
-        free(name);
-        return 1;
+        free(name1);
+        free(name2);
+        return 0;
     }
-    else
-    {
-        if (strcmp(var[i], arg) == 0)
-            return 0;
-    }
+    free(name1);
+    free(name2);
     return 1;
 }
 
@@ -201,11 +195,13 @@ static void change_value(char *var, int i)
 {
     size_t n = strlen(var);
     char *value = var_value(var);
-    //char *name = var_name(g_env.envvar[i]);
+    char *name = var_name(g_env.envvar[i]);
     g_env.envvar[i] = xrealloc(g_env.envvar[i], (n + 1) * sizeof(char));
-    strcat(g_env.envvar[i], "=");
-    strcat(g_env.envvar[i], value);
-    //free(name);
+    name = xrealloc(name, (n + 1) * sizeof(char));
+    strcat(name, "=");
+    strcat(name, value);
+    strcpy(g_env.envvar[i], name);
+    free(name);
     free(value);
 }
 
@@ -244,10 +240,15 @@ static int var_exists(char *var)
             free(name);
             name = NULL;
         }
-        /*
+
         if ((strchr(g_env.envvar[i], '=') != NULL)
             && strchr(var, '=') != NULL)
         {
+            if (strcmp(g_env.envvar[i], var) == 0)
+            {
+                return 0;
+            }
+
             char *name1 = var_name(g_env.envvar[i]);
             char *name2 = var_name(var);
             if (strcmp(name1, name2) == 0)
@@ -262,11 +263,9 @@ static int var_exists(char *var)
             name1 = NULL;
             name2 = NULL;
         }
-*/
     }
     return 1;
 }
-
 
 //TODO : REFACTOR
 int export(char **argv)
