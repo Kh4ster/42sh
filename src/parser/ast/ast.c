@@ -486,7 +486,7 @@ static int handle_expand_command(struct instruction *command_i)
 
     expand_tilde(command_i->data);
     expand_glob_cmd(command_i);
-    command_i->data = add_glob_to_cmd(command);
+    command_i->data = add_glob_to_cmd(command_i->data);
     return 1;
 }
 
@@ -818,7 +818,7 @@ static int handle_case(struct instruction *ast)
 
 extern int execute_ast(struct instruction *ast)
 {
-    if (!ast)
+    if (!ast || !ast->data)
         return 0;
 
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
