@@ -16,6 +16,9 @@
 - name: cd --
   stdin: cd --
 
+- name: cd -- dir
+  stdin: mkdir dir; cd -- dir; ls; cd ..; rm -rf dir
+
 - name: cd -; ls
   stdin: cd -; ls
 
