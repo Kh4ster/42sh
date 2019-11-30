@@ -34,6 +34,7 @@ struct shell_environment
     char *path_to_binary; /**< @brief where the binary is executed */
     char **envvar; /**< @brief containing environement variables list*/
     char **old_envvar; /**< @brief containing old environement variables list*/
+    char *old_pwd;
 };
 
 /**

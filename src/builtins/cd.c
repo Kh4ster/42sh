@@ -47,6 +47,8 @@ int my_chdir(char *dir)
     handle_error_chdir(strlen(dir) < MAX_PATH_LENGTH ? 0 : ENAMETOOLONG , dir);
 
     set_pwd();
+    char *path = xmalloc(MAX_PATH_LENGTH);
+    path = strcpy(path, dir);
 
     // absolute path
     if (dir[0] == '/')
@@ -54,29 +56,33 @@ int my_chdir(char *dir)
         if (chdir(dir) == -1)
         {
             handle_error_chdir(errno, dir);
+            free(path);
             return 1;
         }
-        return 0;
     }
-
-    // relative path
-    char *path = xmalloc(MAX_PATH_LENGTH);
-    path[0] = '\0';
-    if (strlen(g_env.pwd) + strlen(dir) > MAX_PATH_LENGTH)
+    else
     {
-        fprintf(stderr, "cd: %s%s: Path is too long.\n", g_env.pwd, dir);
-        return 1;
-    }
-    strcat(path, g_env.pwd);
-    strcat(path, "/");
-    strcat(path, dir);
+        // relative path
+        path[0] = '\0';
+        if (strlen(g_env.pwd) + strlen(dir) > MAX_PATH_LENGTH)
+        {
+            fprintf(stderr, "cd: %s%s: Path is too long.\n", g_env.pwd, dir);
+            free(path);
+            return 1;
+        }
+        strcat(path, g_env.pwd);
+        strcat(path, "/");
+        strcat(path, dir);
 
-    if (chdir(path) == -1)
-    {
-        handle_error_chdir(errno, dir);
-        free(path);
-        return 1;
+        if (chdir(path) == -1)
+        {
+            handle_error_chdir(errno, dir);
+            free(path);
+            return 1;
+        }
     }
+    free(g_env.old_pwd);
+    g_env.old_pwd = xstrdup(g_env.pwd);
     free(g_env.pwd);
     g_env.pwd = xstrdup(path);
     free(path);
@@ -94,6 +100,11 @@ int cd(char **args)
         if (homedir == NULL)
             return 0;
         return my_chdir(homedir);
+    }
+
+    if (strcmp(args[1], "-") == 0 && args[2] == NULL)
+    {
+        return my_chdir(g_env.old_pwd);
     }
 
     if (args[2] == NULL)

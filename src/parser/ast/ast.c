@@ -24,11 +24,11 @@
 #include "../../error/error.h"
 #include "../../memory/memory.h"
 #include "../../data_structures/array_list.h"
+#include "../../variables/expand_special_variables.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char *to_expand);
-
 
 static void expand_tilde_in_params(char **params)
 {
@@ -49,7 +49,7 @@ static void expand_tilde_in_params(char **params)
         if (strcmp("~-", params[i]) == 0)
         {
             free(params[i]);
-            params[i] = strdup(getenv("OLDPWD"));
+            params[i] = strdup(g_env.old_pwd);
         }
     }
 }
@@ -71,7 +71,7 @@ static void expand_tilde(struct command_container *cmd)
     if (strcmp("~-", cmd->command) == 0)
     {
         free(cmd->command);
-        cmd->command = strdup(getenv("OLDPWD"));
+        cmd->command = strdup(g_env.old_pwd);
     }
     expand_tilde_in_params(cmd->params);
 }
@@ -187,6 +187,11 @@ static bool is_multiple_words(char *expansion)
 
 static char *expand_variable(char *to_expand)
 {
+    char *special_variable = expand_special_variables(to_expand);
+
+    if (special_variable)
+        return special_variable;
+
     to_expand++; //skip $
     char *value;
 
