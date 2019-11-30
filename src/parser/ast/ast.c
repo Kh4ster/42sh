@@ -611,7 +611,8 @@ static int handle_for(struct instruction *ast)
         for (int j = 0; j < glob->nb_matchs; j++)
         {
             hash_insert(g_env.variables, instruction_for->var_name,
-                    glob->matches->content[i], STRING);
+                    glob->matches->content[j], STRING);
+
             return_value = execute_ast(instruction_for->to_execute);
 
             if (g_env.breaks > 0)
