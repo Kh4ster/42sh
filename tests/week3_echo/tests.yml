@@ -25,16 +25,37 @@
 - name: echo -e \a
   stdin: echo -e "Tecmint is a community of \aLinux Nerds"
 
+- name: echo -e "\\"
+  stdin: echo -e "\\"
+
+- name: echo -e '\\'
+  stdin: echo -e '\\'
+
+- name: echo -E '\\'
+  stdin: echo -E '\\'
+
+- name: echo '\\'
+  stdin: echo '\\'
+
+- name: echo -e "\\\\"
+  stdin: echo -e "\\\\"
+
 - name: echo "\\"
   stdin: echo "\\"
 
 - name: echo "\\\\"
   stdin: echo "\\\\"
 
-- name: echo -e "\x40"
+- name: echo -E "\\"
+  stdin: echo -E "\\"
+
+- name: echo -E "\\\\"
+  stdin: echo -E "\\\\"
+
+- name: echo -e "\xHH"
   stdin: echo -e "\x40"
 
-- name: echo -e "\0176"
+- name: echo -e "\0NNN"
   stdin: echo -e "\0176"
 
 - name: echo -E "test\tLinux"
