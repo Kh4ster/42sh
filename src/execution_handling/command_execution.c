@@ -16,55 +16,9 @@
 #include "../data_structures/data_string.h"
 #include "../input_output/get_next_line.h"
 
-static struct array_list *add_glob_to_cmd_aux(char **params, char *pattern,
-                    int *i)
-{
-    struct path_globbing *glob = sh_glob(pattern);
-
-    if (!glob)
-        return NULL;
-
-    struct array_list *list = array_list_init();
-
-    for (int j = 1; j < *i; j++)
-        array_list_append(list, strdup(params[j]));
-
-    for (int j = 0; j < glob->nb_matchs; j++)
-        array_list_append(list, strdup(glob->matches->content[j]));
-
-    (*i)++;
-    for (; params[*i]; (*i)++)
-        array_list_append(list, strdup(params[*i]));
-
-    destroy_path_glob(glob);
-    return list;
-}
-
-
-static struct command_container *add_glob_to_cmd(struct command_container *cmd)
-{
-    for (int i = 0; cmd->params[i]; i++)
-    {
-        struct array_list *list = add_glob_to_cmd_aux(cmd->params,
-                                cmd->params[i], &i);
-
-        if (!list)
-            continue;
-
-        struct command_container *new =
-                    command_create(cmd->command, list);
-        free(list->content);
-        free(list);
-        command_destroy(&cmd);
-        cmd = new;
-    }
-    return cmd;
-}
-
 
 int exec_cmd(struct instruction *cmd_container)
 {
-    cmd_container->data = add_glob_to_cmd(cmd_container->data);
     struct command_container *cmd = cmd_container->data;
 
     int pid = fork();

@@ -30,6 +30,64 @@ bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char *to_expand);
 
+static int get_nb_params(char **params)
+{
+    int res = 0;
+
+    for (int i = 0; params[i]; i++)
+    {
+        res++;
+    }
+
+    return res;
+}
+
+
+static struct array_list *add_glob_to_cmd_aux(char **params, char *pattern,
+                    int *i)
+{
+    struct path_globbing *glob = sh_glob(pattern);
+
+    if (!glob)
+        return NULL;
+
+    struct array_list *list = array_list_init();
+
+    for (int j = 1; j < *i; j++)
+        array_list_append(list, strdup(params[j]));
+
+    for (int j = 0; j < glob->nb_matchs; j++)
+        array_list_append(list, strdup(glob->matches->content[j]));
+
+    (*i)++;
+    for (; params[*i]; (*i)++)
+        array_list_append(list, strdup(params[*i]));
+
+    destroy_path_glob(glob);
+    return list;
+}
+
+
+static struct command_container *add_glob_to_cmd(struct command_container *cmd)
+{
+    for (int i = 0; i < get_nb_params(cmd->params); i++)
+    {
+        struct array_list *list = add_glob_to_cmd_aux(cmd->params,
+                                cmd->params[i], &i);
+
+        if (!list)
+            continue;
+
+        struct command_container *new =
+                    command_create(cmd->command, list);
+        free(list->content);
+        free(list);
+        command_destroy(&cmd);
+        cmd = new;
+    }
+    return cmd;
+}
+
 
 static void expand_tilde_in_params(char **params)
 {
@@ -329,6 +387,7 @@ static int handle_expand_command(struct instruction *command_i)
 
     expand_tilde(command_i->data);
     expand_glob_cmd(command_i);
+    command_i->data = add_glob_to_cmd(command);
     return 1;
 }
 
