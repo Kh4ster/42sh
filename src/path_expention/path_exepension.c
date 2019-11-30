@@ -224,7 +224,6 @@ static char *get_dir_name(char *pattern)
 
     char *current_path = strndup(pattern, end_file - pattern);
 
-#if 0
     char *end_path = strrchr(current_path, '/');
 
     if (!end_path)
@@ -232,14 +231,6 @@ static char *get_dir_name(char *pattern)
         free(current_path);
         return strdup("");
     }
-
-    if (end_path != current_path)
-    {
-        char *to_return = strndup(current_path, end_path - current_path);
-        free(current_path);
-        return to_return;
-    }
-#endif
 
     return current_path;
 }
@@ -258,11 +249,11 @@ static void init_nb_recursions(char *pattern)
 
 static char *remove_slashs(char *dir_name)
 {
-    for (size_t i = 0; dir_name[i] && dir_name[i + 1]; i++)
+    for (size_t i = 0; dir_name[i]; i++)
     {
         if (dir_name[i] == '/')
         {
-            for (size_t j = i; dir_name[j + 1] == '/'; j++)
+            for (size_t j = i; dir_name[j + 1] == '/';)
             {
                 memmove(&dir_name[j], &dir_name[j + 1], strlen(dir_name) - j);
             }
