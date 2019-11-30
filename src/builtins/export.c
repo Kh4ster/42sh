@@ -88,6 +88,28 @@ static char *var_name(char *arg)
     }
 }
 
+static char *var_value(char *arg)
+{
+    int n = strlen(arg);
+    int i = 0;
+    int j = 0;
+    char *value = xcalloc(n + 1, sizeof(char));
+    if (strchr(arg, '=') != NULL)
+    {
+        while (arg[i] != '=')
+            i++;
+        i++;
+        while (arg[i])
+        {
+            value[j] = arg[i];
+            i++;
+            j++;
+        }
+        value[j] = '\0';
+    }
+    return value;
+}
+
 //check if we got the right variable
 static int is_right_var(char **var, char *arg, int i)
 {
@@ -112,8 +134,23 @@ static int is_right_var(char **var, char *arg, int i)
 
 static void simple_export(char **env)
 {
+    char *value = NULL;
+    char *name = NULL;
     for (int i = 0; env[i] != NULL; i++)
-        printf("%s\n", env[i]);
+    {
+        if (strchr(env[i], '=') != NULL)
+        {
+            name = var_name(env[i]);
+            value = var_value(env[i]);
+            printf("export %s=\"%s\"\n", name, value);
+            free(name);
+            free(value);
+            name = NULL;
+            value = NULL;
+        }
+        else
+            printf("export %s\n", env[i]);
+    }
 }
 
 static void export_n(char *arg)
@@ -147,7 +184,7 @@ static void export_n(char *arg)
 
 static void export_var(char *variable)
 {
-    char *save = variable;
+    char *save = strdup(variable);
     char *name = strtok_r(variable, "=", &variable);
     char *value = strtok_r(NULL, "=", &variable);
     hash_insert(g_env.variables, name, value, STRING);
@@ -157,6 +194,7 @@ static void export_var(char *variable)
     g_env.envvar = xrealloc(g_env.envvar, (i + 2) * sizeof(char *));
     g_env.envvar[i] = strdup(save);
     g_env.envvar[i + 1] = NULL;
+    free(save);
 }
 
 static int var_exists(char *var)
