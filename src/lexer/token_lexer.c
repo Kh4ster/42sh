@@ -13,7 +13,7 @@
 #include "../error/error.h"
 
 #define DELIMITERS " \\\n\t&|<>\"\'`$();#"
-#define IFS " \n\t&|;\0"
+#define IFS " \n\t&|;()<>"
 
 static void add_next_line_to_current_and_update_cursors(char **cursor,
         char **second_cursor);
@@ -217,7 +217,7 @@ void skip_quoting(char **cursor, char **start_of_token)
     }
 }
 
-static char *find_corresponding_parenthesis(char **cursor, char **token_start)
+char *find_corresponding_parenthesis(char **cursor, char **token_start)
 {
     int counter_bracket = 1;
     while (1)
@@ -441,12 +441,6 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
         return 0;
     }
 
-    else if (*cursor == '#')
-    {
-        handle_comments(token_queue, new_token, delim, 0);
-        return 0;
-    }
-
     else // other delimiters not defined yet
     {
         set_token(new_token, TOKEN_OTHER, delim, 1);
@@ -464,34 +458,20 @@ static struct token_lexer *generate_token(struct queue *token_queue,
 
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
-    if (cursor != *delim) // word pointed by cursor is not a delimiter
+    if (*cursor == '#')
+    {
+        handle_comments(token_queue, new_token, delim, 0);
+        return 0;
+    }
+    else if (cursor != *delim) // word pointed by cursor is not a delimiter
     {
         new_token = create_other_or_keyword_token(new_token, cursor, delim);
     }
-    #if 0
-    else if (*cursor == '\"' || *cursor == '\'')
-    {
-        handle_quoting(new_token, delim);
-    }
-
-    else if (*cursor == '\\')
-    {
-        handle_escape(delim);
-    }
-
-    else if (*cursor == '$')
-    {
-        handle_dollar(new_token, delim);
-    }
-    else if (*cursor == '`')
-    {
-        handle_back_quote(new_token, delim);
-    }
-    #endif /* 0 */
-
     else
+    {
         if (!generate_token_aux(token_queue, cursor, delim, new_token))
             return NULL;
+    }
 
     return new_token;
 }

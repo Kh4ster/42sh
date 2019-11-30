@@ -130,8 +130,23 @@ static char *expand_nested_command(char *cursor, char *to_expand)
     return new_to_expand;
 }
 
-static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip,
-                                                                char **end)
+static char *le_chapeau_de_expand_cmd(char **to_expand,
+                                        char to_stop,
+                                        int nb_to_skip
+)
+{
+    char *end_parenthesis = strdup(*to_expand);
+    char *beg = end_parenthesis;
+    find_corresponding_parenthesis(end_parenthesis, NULL);
+    end_parenthesis++;
+    *to_expand += (end_parenthesis - beg);
+    *end_parenthesis = '\0';
+    char *result = expand_cmd(beg, to_stop, nb_to_skip);
+    free(beg);
+    return result;
+}
+
+static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
 {
     bool to_free = false;
     to_expand += nb_to_skip;
@@ -156,8 +171,7 @@ static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip,
         }
     }
 
-    *cursor = 0; //replace ) with 0
-    *end = cursor + 1;
+    *cursor = '\0'; //replace ) with 0
 
     char *result = get_result_from_42sh(to_expand);
     if (to_free) //inner expansion that needs to be freed
@@ -187,31 +201,31 @@ static bool is_multiple_words(char *expansion)
     return strpbrk(expansion, " ") != NULL;
 }
 
-static char *expand_variable(char *to_expand, char **cursor)
+static char *expand_variable(char **to_expand)
 {
-    to_expand++; //skip $
+    (*to_expand)++; //skip $
     char *value;
 
-    char *in_case_strpbrk_null = *cursor;
-    *cursor = strpbrk(to_expand, "$\'\"\\\n");
+    char *in_case_strpbrk_null = *to_expand;
+    *to_expand = strpbrk(to_expand, "$\'\"\\\n");
     char save;
-    if (*cursor != NULL)
+    if (*to_expand != NULL)
     {
-         save = **cursor;
-         **cursor = '\0';
+         save = **to_expand;
+         **to_expand = '\0';
     }
     else
-        *cursor = in_case_strpbrk_null + strlen(in_case_strpbrk_null);
+        *to_expand = in_case_strpbrk_null + strlen(in_case_strpbrk_null);
 
     if ((value = hash_find(g_env.variables, to_expand)) == NULL)
         value = "";
 
-    if (*cursor != NULL)
-        **cursor = save;
+    if (*to_expand != NULL)
+        **to_expand = save;
     return strdup(value);
 }
 
-static char *expand_variable_brackets(char *to_expand, char **cursor)
+static char *expand_variable_brackets(char ***to_expand)
 {
     to_expand++; //skip $
     to_expand++; //skip {
@@ -240,7 +254,7 @@ char *scan_for_expand(char *line)
     {
         if (is_to_expand(*line))
         {
-            char *expansion = expand(line, &line);
+            char *expansion = expand(&line);
             string_append(new_line, expansion);
             free(expansion);
         }
@@ -252,53 +266,53 @@ char *scan_for_expand(char *line)
     return string_get_content(&new_line);
 }
 
-char *expand_quote(char *cursor, char **end)
+char *expand_quote(char **cursor)
 {
-    if (*cursor == '\'')
+    if (**cursor == '\'')
     {
-        cursor++;
-        char *beg = cursor;
-        cursor = get_delimiter(cursor, "\'");
-        *cursor = '\0'; //set ' to 0
-        *end = cursor + 1;
+        (*cursor)++;
+        char *beg = *cursor;
+        *cursor = get_delimiter(*cursor, "\'");
+        **cursor = '\0'; //set ' to 0
+        *cursor = *cursor + 1;
         return strdup(beg);
     }
-    else if (*cursor == '"')
+    else if (**cursor == '"')
     {
-        cursor++;
+        (*cursor)++;
         char *beg = cursor;
-        cursor = get_delimiter(cursor, "\"\\");
-        while (*cursor != '\"')
+        *cursor = get_delimiter(*cursor, "\"\\");
+        while (**cursor != '\"')
         {
             // Handle backslash
-            if (*cursor == '\\')
-                cursor += 2;
-            cursor = get_delimiter(cursor, "\"\\");
+            if (**cursor == '\\')
+                *cursor += 2;
+            *cursor = get_delimiter(*cursor, "\"\\");
         }
-        *cursor = '\0'; //set " to 0
-        *end = cursor + 1;
+        **cursor = '\0'; //set " to 0
+        *cursor = *cursor + 1;
         return scan_for_expand(beg);
     }
     else // \ handling
     {
-        cursor++;
-        *end = cursor + 1;
-        return strndup(cursor, 1);
+        (*cursor)++;
+        *cursor = *cursor + 1;
+        return strndup(*cursor, 1);
     }
 }
 
-static char *expand(char *to_expand, char **cursor)
+static char *expand(char **to_expand)
 {
     if (to_expand[0] == '\'' || to_expand[0] == '"' || to_expand[0] == '\\')
-        return expand_quote(to_expand, cursor);
+        return expand_quote(to_expand);
     if (to_expand[0] == '$' && to_expand[1] == '(')
-        return expand_cmd(to_expand, ')', 2, cursor);
+        return le_chapeau_de_expand_cmd(to_expand, ')', 2);
     if (to_expand[0] == '$' && to_expand[1] == '{')
-        return expand_variable_brackets(to_expand, cursor);
+        return expand_variable_brackets(to_expand);
     if (to_expand[0] == '$')
-        return expand_variable(to_expand, cursor);
+        return expand_variable(to_expand);
     if (to_expand[0] == '`')
-        return expand_cmd(to_expand, '`', 1, cursor);
+        return le_chapeau_de_expand_cmd(to_expand, '`', 1);
 
     //strdup cause need to be able to free anything from expand
     return strdup(to_expand); //no expansion
