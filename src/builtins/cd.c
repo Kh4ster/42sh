@@ -8,6 +8,7 @@
 #include "../input_output/get_next_line.h"
 #include "../memory/memory.h"
 #include "cd.h"
+#include "../parser/ast/ast.h"
 
 #define MAX_PATH_LENGTH 4096
 
@@ -117,8 +118,19 @@ int cd(char **args)
     if (args[2] == NULL)
     {
         // go to dir given in args
+        if (strcmp(args[1],"--") == 0)
+        {
+            char *homedir = getenv("HOME");
+            if (homedir == NULL)
+                return 0;
+            return my_chdir(homedir);
+        }
+
         return my_chdir(args[1]);
     }
+
+    if (strcmp(args[1],"--") == 0 && args[3] == NULL)
+        return my_chdir(args[2]);
 
     // too many arguments
     fprintf(stderr, "cd: Too many arguments.\n");

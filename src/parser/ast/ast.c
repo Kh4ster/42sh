@@ -30,7 +30,7 @@ bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char *to_expand);
 
-static int get_nb_params(char **params)
+extern int get_nb_params(char **params)
 {
     int res = 0;
 
