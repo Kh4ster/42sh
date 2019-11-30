@@ -153,8 +153,8 @@ static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
                 cursor++;
         }
     }
-    if (cursor == NULL)
-        handle_parser_errors(NULL);
+    /*if (cursor == NULL) //TODO CAN THIS CASE REALLY HAPPEN ?
+        handle_parser_errors(NULL);*/
     *cursor = 0; //replace ) with 0
 
     char *result = get_result_from_42sh(to_expand);
@@ -168,6 +168,7 @@ static void fill_command_and_params(struct command_container *command,
                                     struct array_list *parameters
 )
 {
+    char *beg = expansion;
     free(command->command);
     command->command = strdup(strtok_r(expansion, " ", &expansion));
     //first parameter is command
@@ -176,7 +177,7 @@ static void fill_command_and_params(struct command_container *command,
     char *param;
     while ((param = strtok_r(NULL, " ", &expansion)) != NULL)
         array_list_append(parameters, strdup(param));
-    free(expansion);
+    free(beg);
 }
 
 static bool is_multiple_words(char *expansion)
@@ -211,7 +212,7 @@ static void insert_sub_var(struct array_list *expanded_parameters,
                                             char *expansion
 )
 {
-    char *beg = expansion;
+    char *beg = expansion; //cause strtok_r will make expansion move
     if (!is_multiple_words(expansion)) //expansion only gave one word
     {
         array_list_append(expanded_parameters, expansion);
@@ -248,6 +249,11 @@ static int handle_expand_command(struct instruction *command_i)
             }
             else
                 break;
+        }
+        if (command->params[i] == NULL) //only empty
+        {
+            array_list_destroy(expanded_parameters);
+            return -1;
         }
     }
 
