@@ -244,6 +244,16 @@ char *find_corresponding_parenthesis(char **cursor, char **token_start)
     return *cursor;
 }
 
+static bool is_delimiter(char current)
+{
+    for (char *c = DELIMITERS; *c != '\0'; c++)
+    {
+        if (current == *c)
+            return true;
+    }
+    return current == '\0';
+}
+
 static void handle_dollar(char **cursor, char **token_start)
 {
     // skip dollar
@@ -273,7 +283,7 @@ static void handle_dollar(char **cursor, char **token_start)
     }
     else //case $var
     {
-        while (!is_ifs(**cursor))
+        while (!is_delimiter(**cursor))
             (*cursor)++;
     }
 }

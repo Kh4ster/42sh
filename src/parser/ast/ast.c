@@ -192,7 +192,7 @@ static char *expand_variable(char **to_expand)
     char *value;
 
     char *beg = *to_expand;
-    *to_expand = strpbrk(*to_expand, "$\'\"\\\n");
+    *to_expand = strpbrk(*to_expand, "$\'\"\\\n}{[]?!@`");
     char save;
     if (*to_expand != NULL)
     {
@@ -237,7 +237,8 @@ static char *expand_variable_brackets(char **to_expand)
 
 static bool is_to_expand(char c)
 {
-    return c == '$' || c == '\'' || c == '"' || c == '`' || c == '\\';
+    return c == '$' || c == '\'' || c == '"' || c == '`' || c == '\\'
+                                                                || c == '~';
 }
 
 char *scan_for_expand(char *line, bool is_quote)
