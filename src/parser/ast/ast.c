@@ -656,6 +656,13 @@ static int handle_for(struct instruction *ast)
                 g_env.breaks--;
                 break;
             }
+
+            if (g_env.continues > 0)
+            {
+                g_env.continues--;
+                if (g_env.continues > 0)
+                    break;
+            }
             continue;
         }
 
@@ -674,6 +681,8 @@ static int handle_for(struct instruction *ast)
             if (g_env.continues > 0)
             {
                 g_env.continues--;
+                if (g_env.continues > 0)
+                    break;
                 continue;
             }
         }
@@ -683,6 +692,9 @@ static int handle_for(struct instruction *ast)
             g_env.breaks--;
             break;
         }
+
+        if (g_env.continues > 0)
+            break;
 
         destroy_path_glob(glob);
     }
