@@ -30,6 +30,8 @@
 
 bool g_have_to_stop = 0; //to break in case of signal
 
+#define IFS " \t\n"
+
 static char *expand(char **to_expand);
 char *scan_for_expand(char *line, bool is_quote);
 static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip);
@@ -158,19 +160,19 @@ static void fill_command_and_params(struct command_container *command,
 {
     char *beg = expansion;
     free(command->command);
-    command->command = strdup(strtok_r(expansion, " ", &expansion));
+    command->command = strdup(strtok_r(expansion, IFS, &expansion));
     //first parameter is command
     array_list_append(parameters, strdup(command->command));
 
     char *param;
-    while ((param = strtok_r(NULL, " ", &expansion)) != NULL)
+    while ((param = strtok_r(NULL, IFS, &expansion)) != NULL)
         array_list_append(parameters, strdup(param));
     free(beg);
 }
 
 static bool is_multiple_words(char *expansion)
 {
-    return strpbrk(expansion, " ") != NULL;
+    return strpbrk(expansion, IFS) != NULL;
 }
 
 static char *expand_variable(char **to_expand)
@@ -328,11 +330,11 @@ static void insert_sub_var(struct array_list *expanded_parameters,
     }
 
     //first call without NULL
-    array_list_append(expanded_parameters, strdup(strtok_r(expansion, " \n\t",
+    array_list_append(expanded_parameters, strdup(strtok_r(expansion, IFS,
                                                                 &expansion)));
 
     char *param;
-    while ((param = strtok_r(NULL, " \n\t", &expansion)) != NULL)
+    while ((param = strtok_r(NULL, IFS, &expansion)) != NULL)
         array_list_append(expanded_parameters, strdup(param));
     free(beg);
 }
