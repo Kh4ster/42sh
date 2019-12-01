@@ -4,7 +4,7 @@
 - name: complex command substitution and execution 2 w/ var
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var
 
-- name: complex command substitution and execution 3 w/ var
+- name: complex command substitution and execution 3 w/ arith expansion
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var + $((5+3))
 
 - name: complex command substitution and execution 4

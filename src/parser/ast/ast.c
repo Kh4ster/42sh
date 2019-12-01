@@ -32,6 +32,7 @@ bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char **to_expand);
 char *scan_for_expand(char *line, bool is_quote);
+static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip);
 
 extern int get_nb_params(char **params)
 {
@@ -77,9 +78,14 @@ static char* expand_path(char *str)
 
 
 //to really understand take this example $(echo $(echo ok))
-static char *expand_nested_command(char *cursor, char *to_expand)
+static char *expand_nested_command(char *cursor, char *to_expand,
+                                                        char char_stopped_on)
 {
-    char *result = scan_for_expand(cursor, false);
+    char *result;
+    if (char_stopped_on == '$')
+        result = expand_cmd(cursor, ')', 2);
+    else
+        result = expand_cmd(cursor, '`', 1);
     char *end = cursor;
     end += strlen(end); //move to \0 set in recursive call (matching ))
     end++; //skip \0
@@ -96,8 +102,6 @@ static char *expand_nested_command(char *cursor, char *to_expand)
     free(result);
     return new_to_expand;
 }
-
-static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip);
 
 static char *le_chapeau_de_expand_cmd(char **to_expand,
                                         char to_stop,
@@ -130,7 +134,7 @@ static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
             //recursive call to expand command
             if ((*cursor == '$' && cursor[1] == '(') || *cursor == '`')
             {
-                to_expand = expand_nested_command(cursor, to_expand);
+                to_expand = expand_nested_command(cursor, to_expand, *cursor);
                 cursor = to_expand;
                 to_free = true;
             }
