@@ -45,8 +45,7 @@ static char handle_ascii(char *str, char c)
 {
     int octal = 8;
     int hexa = 16;
-    char *arg = NULL;
-    strcpy(arg, str + 1);
+    str += 1;
     char *error;
     char value;
     if (c == '0')
