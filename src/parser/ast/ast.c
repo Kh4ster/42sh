@@ -26,11 +26,12 @@
 #include "../../data_structures/array_list.h"
 #include "../../data_structures/data_string.h"
 #include "../../variables/expand_special_variables.h"
+#include "../../path_expention/path_exepension.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
 static char *expand(char **to_expand);
-char *scan_for_expand(char *line);
+char *scan_for_expand(char *line, bool is_quote);
 
 extern int get_nb_params(char **params)
 {
@@ -44,135 +45,41 @@ extern int get_nb_params(char **params)
     return res;
 }
 
-
-static struct array_list *add_glob_to_cmd_aux(char **params, char *pattern,
-                    int *i)
+static char *expand_tilde(char *str)
 {
-    struct path_globbing *glob = sh_glob(pattern);
+    if (strcmp("~", str) == 0)
+        return strdup(getenv("HOME"));
+    if (strcmp("~+", str) == 0)
+        return get_current_dir_name();
+    if (strcmp("~-", str) == 0)
+        return strdup(g_env.old_pwd);
+    return "mdr"; //never happens
+}
 
-    if (!glob)
+static char* expand_path(char *str)
+{
+    struct path_globbing *glob = sh_glob(str);
+
+    if (glob == NULL) //no match
         return NULL;
 
-    struct array_list *list = array_list_init();
-
-    for (int j = 1; j < *i; j++)
-        array_list_append(list, strdup(params[j]));
-
-    for (int j = 0; j < glob->nb_matchs; j++)
-        array_list_append(list, strdup(glob->matches->content[j]));
-
-    (*i)++;
-    for (; params[*i]; (*i)++)
-        array_list_append(list, strdup(params[*i]));
+    struct string *string = string_init();
+    for (int i = 0; i < glob->nb_matchs; ++i)
+    {
+        if (i != 0)
+            string_append_char(string, ' ');
+        string_append(string, glob->matches->content[i]);
+    }
 
     destroy_path_glob(glob);
-    return list;
-}
-
-
-static struct command_container *add_glob_to_cmd(struct command_container *cmd)
-{
-    for (int i = 0; i < get_nb_params(cmd->params); i++)
-    {
-        struct array_list *list = add_glob_to_cmd_aux(cmd->params,
-                                cmd->params[i], &i);
-
-        if (!list)
-            continue;
-
-        struct command_container *new =
-                    command_create(cmd->command, list);
-        free(list->content);
-        free(list);
-        command_destroy(&cmd);
-        cmd = new;
-    }
-    return cmd;
-}
-
-
-static void expand_tilde_in_params(char **params)
-{
-    for (int i = 0; params[i]; i++)
-    {
-        if (strcmp("~", params[i]) == 0)
-        {
-            free(params[i]);
-            params[i] = strdup(getenv("HOME"));
-        }
-
-        if (strcmp("~+", params[i]) == 0)
-        {
-            free(params[i]);
-            params[i] = get_current_dir_name();
-        }
-
-        if (strcmp("~-", params[i]) == 0)
-        {
-            free(params[i]);
-            params[i] = strdup(g_env.old_pwd);
-        }
-    }
-}
-
-static void expand_tilde(struct command_container *cmd)
-{
-    if (strcmp("~", cmd->command) == 0)
-    {
-        free(cmd->command);
-        cmd->command = strdup(getenv("HOME"));
-    }
-
-    if (strcmp("~+", cmd->command) == 0)
-    {
-        free(cmd->command);
-        cmd->command = get_current_dir_name();
-    }
-
-    if (strcmp("~-", cmd->command) == 0)
-    {
-        free(cmd->command);
-        cmd->command = strdup(g_env.old_pwd);
-    }
-    expand_tilde_in_params(cmd->params);
-}
-
-static struct command_container *build_cmd(struct array_list *params,
-                                                char **params_cmd)
-{
-    struct array_list *list = array_list_init();
-
-    for (size_t i = 1; i < params->nb_element; i++)
-        array_list_append(list, strdup(params->content[i]));
-
-    for (size_t i = 0; params_cmd[i]; i++)
-        array_list_append(list, strdup(params_cmd[i]));
-
-    struct command_container *cmd = command_create(params->content[0], list);
-    free(list->content);
-    free(list);
-    return cmd;
-}
-
-
-static void expand_glob_cmd(struct instruction *cmd_i)
-{
-    struct command_container *cmd = cmd_i->data;
-    struct path_globbing *glob = sh_glob(cmd->command);
-
-    if (!glob)
-        return;
-
-    cmd_i->data = build_cmd(glob->matches, cmd->params);
-    command_destroy(&cmd);
-    destroy_path_glob(glob);
+    return string_get_content(&string);
 }
 
 
 //to really understand take this example $(echo $(echo ok))
 static char *expand_nested_command(char *cursor, char *to_expand)
 {
-    char *result = scan_for_expand(cursor);
+    char *result = scan_for_expand(cursor, false);
     char *end = cursor;
     end += strlen(end); //move to \0 set in recursive call (matching ))
     end++; //skip \0
@@ -311,18 +218,27 @@ static char *expand_variable_brackets(char **to_expand)
     return result;
 }
 
-static bool is_to_expand(char c)
+static bool is_to_expand(char c, bool is_quote)
 {
-    return c == '$' || c == '\'' || c == '"' || c == '`' || c == '\\';
+    return c == '$' || c == '\'' || c == '"' || c == '`'
+                                                || (c == '\\' && !is_quote);
 }
 
-char *scan_for_expand(char *line)
+char *scan_for_expand(char *line, bool is_quote)
 {
+    //first check if can be a path expansion
+    if (!is_quote && is_path_expansion(line))
+    {
+        char *result;
+        if ((result = expand_path(line)) != NULL)
+            return result;
+    }
+
     struct string *new_line = string_init();
 
     for (; *line != '\0'; line++)
     {
-        if (is_to_expand(*line))
+        if (is_to_expand(*line, is_quote))
         {
             char *expansion = expand(&line);
             string_append(new_line, expansion);
@@ -361,7 +277,7 @@ char *expand_quote(char **cursor)
         }
         **cursor = '\0'; //set " to 0
         *cursor = *cursor + 1;
-        return scan_for_expand(beg);
+        return scan_for_expand(beg, true);
     }
     else // \ handling
     {
@@ -371,8 +287,16 @@ char *expand_quote(char **cursor)
     }
 }
 
+static bool is_tidle(char *str)
+{
+    return strcmp(str, "~") == 0 || strcmp(str, "~+") == 0
+                                                    || strcmp(str, "~-") == 0;
+}
+
 static char *expand(char **to_expand)
 {
+    if (is_tidle(*to_expand))
+        return expand_tilde(*to_expand);
     if (**to_expand == '\'' || **to_expand == '"' || **to_expand == '\\')
         return expand_quote(to_expand);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
@@ -400,11 +324,11 @@ static void insert_sub_var(struct array_list *expanded_parameters,
     }
 
     //first call without NULL
-    array_list_append(expanded_parameters, strdup(strtok_r(expansion, " ",
+    array_list_append(expanded_parameters, strdup(strtok_r(expansion, " \n\t",
                                                                 &expansion)));
 
     char *param;
-    while ((param = strtok_r(NULL, " ", &expansion)) != NULL)
+    while ((param = strtok_r(NULL, " \n\t", &expansion)) != NULL)
         array_list_append(expanded_parameters, strdup(param));
     free(beg);
 }
@@ -414,14 +338,14 @@ static int handle_expand_command(struct instruction *command_i)
     struct command_container *command = command_i->data;
     struct array_list *expanded_parameters = array_list_init();
 
-    char *expansion = scan_for_expand(command->command);
+    char *expansion = scan_for_expand(command->command, false);
     if (*expansion == '\0') //expand empty var
     {
         free(expansion);
         size_t i = 1;
         while (command->params[i] != NULL) //while empty var we remove
         {
-            expansion = scan_for_expand(command->params[i]);
+            expansion = scan_for_expand(command->params[i], false);
             if (*expansion == '\0')
             {
                 free(expansion);
@@ -449,7 +373,7 @@ static int handle_expand_command(struct instruction *command_i)
     bool is_first = true; //to know first paramter ($a $b echo-> echo is first)
     for (size_t i = 0; command->params[i] != NULL; ++i)
     {
-        expansion = scan_for_expand(command->params[i]);
+        expansion = scan_for_expand(command->params[i], false);
         if (*expansion == '\0') //empty var
         {
             free(expansion);
@@ -484,9 +408,6 @@ static int handle_expand_command(struct instruction *command_i)
     //set it
     command->params = new_param_list;
 
-    expand_tilde(command_i->data);
-    expand_glob_cmd(command_i);
-    command_i->data = add_glob_to_cmd(command_i->data);
     return 1;
 }
 
@@ -579,7 +500,7 @@ static int handle_commands(struct instruction *ast)
 
     /* execute commande with zak function */
     if (is_func(ast))
-        return exec_func(ast);
+        to_return = exec_func(ast);
     else if (is_builtin(ast))
         to_return = exec_builtin(ast);
     else
@@ -778,7 +699,7 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
-        char *expantion = scan_for_expand(patterns->content[i]);
+        char *expantion = scan_for_expand(patterns->content[i], false);
 
         if (patterns->content[i] != expantion)
         {
@@ -797,7 +718,7 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 static int handle_case(struct instruction *ast)
 {
     struct case_clause *case_clause = ast->data;
-    char *expantion = scan_for_expand(case_clause->pattern);
+    char *expantion = scan_for_expand(case_clause->pattern, false);
 
     if (case_clause->pattern != expantion)
     {
@@ -815,10 +736,9 @@ static int handle_case(struct instruction *ast)
     return 0;
 }
 
-
 extern int execute_ast(struct instruction *ast)
 {
-    if (!ast || !ast->data)
+    if (!ast)
         return 0;
 
     if (signal(SIGINT, handle_sigint) == SIG_ERR)
