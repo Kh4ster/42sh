@@ -119,7 +119,7 @@ static char *le_chapeau_de_expand_cmd(char **to_expand,
     char *beg = strdup(*to_expand);
     char *end_parenthesis = beg + nb_to_skip;
     find_corresponding_parenthesis(&end_parenthesis, NULL);
-    *to_expand += (end_parenthesis - beg);
+    *to_expand += (end_parenthesis - beg - 1);
     *end_parenthesis = '\0';
     char *result = expand_cmd(beg, to_stop, nb_to_skip);
     free(beg);
