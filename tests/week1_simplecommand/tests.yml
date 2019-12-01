@@ -52,7 +52,7 @@
 - name: echo 1 && echo 2 && echo 3
   stdin: echo 1 && echo 2 && echo 3
 
-- name: ok=; echo && || (\n)*
+- name: ok=; echo && || (\n)* (très tricky)
   options:
     - ../tests/week1_simplecommand/test4.sh
   checks:

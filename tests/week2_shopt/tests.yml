@@ -31,19 +31,27 @@
      - has_stderr
 
 - name: ./42sh +O jiodsq
-- stdin: ./42sh +O jiodsq
+  stdin: ./42sh +O jiodsq
   checks:
      - returncode
      - has_stderr
 
 - name: ./42sh -O jiodsq
-- stdin: ./42sh -O jiodsq
+  stdin: ./42sh -O jiodsq
   checks:
      - returncode
      - has_stderr
 
 - name: ./42sh -O ast_print script.sh
-- stdin: echo shopt > script.sh; ./42sh -O ast_print script.sh; rm script.sh; rm ast.dot
+  stdin: echo shopt > script.sh; ./42sh -O ast_print script.sh; rm script.sh; rm ast.dot
   checks:
      - stdout
      - returncode
+
+- name: shopt xpg_echo (red is the new green)
+  stdin: shopt xpg_echo | grep xpg_echo
+
+- name: shopt xpg_echo (returncode)
+  stdin: shopt xpg_echo
+  checks:
+    - returncode

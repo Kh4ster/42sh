@@ -1,0 +1,84 @@
+- name: cd; ls
+  stdin: cd; ls
+
+- name: cd .
+  stdin: cd .; ls
+
+- name: cd ./
+  stdin: cd ./; ls
+
+- name: cd ..
+  stdin: cd ..; ls
+
+- name: cd ..; ls; cd -; ls
+  stdin: cd ..; ls; cd -; ls
+
+- name: cd --
+  stdin: cd --
+
+- name: cd -- dir
+  stdin: mkdir dir; cd -- dir; ls; cd ..; rm -rf dir
+
+- name: cd --; ls
+  stdin: cd --; ls
+
+- name: cd ../
+  stdin: cd ../; ls
+
+- name: cd ../.
+  stdin: cd ../.; ls
+
+- name: cd ../..
+  stdin: cd ../..; ls
+
+- name: cd ...
+  stdin: cd ...
+  checks:
+    - returncode
+    - has_stderr
+
+- name: cd .. .
+  stdin: cd .. .
+  checks:
+    - returncode
+    - has_stderr
+
+- name: cd dir 1
+  stdin: mkdir dir; cd dir; ls; cd ..; rm -r dir
+
+- name: cd dir 2
+  stdin: mkdir dir; cd dir; ls; mkdir toto; cd toto; ls; cd ..; cd ..; rm -rf dir
+
+- name: cd dir 3
+  stdin: |
+      mkdir dir; cd dir///////////
+      ls
+      cd ..; rm -rf dir
+
+- name: cd dir 4
+  stdin: |
+        mkdir dir1; cd dir1
+        mkdir dir2; cd dir2
+        mkdir dir3; cd dir3
+        mkdir dir4; cd dir4
+        mkdir dir5; cd dir5
+        mkdir dir6; cd dir6
+        cd ..; cd ..; cd ..; cd ..; cd ..; cd ..
+        cd dir1/dir2/dir3/dir4/dir5/dir6
+        cd ..; cd ..; cd ..; cd ..; cd ..; cd ..
+        rm -rf dir1
+
+- name: cd bad_dir
+  stdin: cd bad_dir
+  checks:
+    - returncode
+    - has_stderr
+
+- name: cd ~
+  stdin: cd ~
+
+- name: cd *
+  stdin: cd *
+  checks:
+    - returncode
+    - has_stderr

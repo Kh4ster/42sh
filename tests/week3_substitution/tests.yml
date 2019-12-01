@@ -1,20 +1,23 @@
-- name: complex command substitution and execution 1
+- name: complex command substitution and execution 1 w/ var
   stdin: echo $(var=test; echo $var) $var
 
-- name: complex command substitution and execution 2
+- name: complex command substitution and execution 2 w/ var
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var
 
-- name: complex command substitution and execution 3
+- name: complex command substitution and execution 3 w/ arith expansion
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var + $((5+3))
 
 - name: complex command substitution and execution 4
-  stdin: $(echo $(echo "("))
+  stdin: $(echo $(echo ")"))
+  checks:
+    - returncode
+    - has_stderr
 
 - name: complex command substitution and execution 5
   stdin: echo $(echo $(echo ok))
 
 - name: complex command substitution and execution 6
-  stdin: echo $(echo $(echo "("))
+  stdin: echo $(echo $(echo ")"))
 
 - name: complex command substitution and execution 7
   stdin: echo $( $(echo echo | $(echo cat) '())'))
@@ -38,21 +41,6 @@
     - returncode
     - has_stderr
 
-- name: variable assignement syntax error (var =test) 1
-  stdin: var =test; echo $var
-  checks:
-    - returncode
-    - has_stderr
-
-- name: variable assignement syntax error (var = test) 2
-  stdin: var = test; echo $var
-  checks:
-    - returncode
-    - has_stderr
-
-- name: variable assignement syntax edge case (var= test)
-  stdin: var= test; echo $var
-
 - name: complex command substitution and execution 9
   stdin: echo $(echo $(echo ok ok ok))
 
@@ -63,7 +51,7 @@
   stdin: vara=test; echo $(echo $var)a
 
 - name: complex command substitution and execution 12
-  stdin: $(va=test; echo $var)
+  stdin: echo $(va=test; echo $var)
 
 - name: complex command substitution and execution 13
   stdin: va=test; echo $var
@@ -73,7 +61,7 @@
     - ../tests/week3_substitution/test2.sh
 
 - name: complex command substitution and execution 15
-  stdin: $(echo ok ok $(echo ok ok echo))
+  stdin: echo $(echo ok ok $(echo ok ok echo))
 
 - name: complex command substitution and execution 16
   options:
@@ -91,3 +79,9 @@
   options:
     - ../tests/week3_substitution/test6.sh
 
+- name: complex command substitution and execution 20
+  stdin: $(va=test; echo $var)
+
+- name: complex command substitution mix back quote dollard
+  options:
+    - ../test/week3_subtitution/test7.sh
