@@ -144,7 +144,7 @@ static int handle_option_no_var(char *opt_name)
 
     for (size_t i = 0; i < size_array; ++i)
         if ((on) ? val_options[i] : !val_options[i])
-            printf("%s %s\n", options[i], (on) ? "on" : "off");
+            printf("%s\t%s\n", options[i], (on) ? "on" : "off");
 
     return 0;
 }
@@ -201,7 +201,8 @@ int shopt(char *options[])
         {
             if (is_shopt_var(options[i])) //case call to shopt and valid variable
             {
-                printf("%s %s\n", options[i], (g_env.options.option_xpg_echo) ? "on" : "off");
+                printf("%s\t\t%s\n", options[i],
+                        (g_env.options.option_xpg_echo) ? "on" : "off");
             }
             else
             {

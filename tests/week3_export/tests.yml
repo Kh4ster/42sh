@@ -48,6 +48,6 @@
 
 - name: export -n acus test
   stdin: |
-    export a=b
-    export -n a=c
-    export -p | grep a
+    export TOTO=b
+    export -n TOTO=c
+    export -p | grep TOTO
