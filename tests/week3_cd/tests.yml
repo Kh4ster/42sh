@@ -10,17 +10,14 @@
 - name: cd ..
   stdin: cd ..; ls
 
-- name: cd -
-  stdin: cd -
+- name: cd ..; ls; cd -; ls
+  stdin: cd ..; ls; cd -; ls
 
 - name: cd --
   stdin: cd --
 
 - name: cd -- dir
   stdin: mkdir dir; cd -- dir; ls; cd ..; rm -rf dir
-
-- name: cd -; ls
-  stdin: cd -; ls
 
 - name: cd --; ls
   stdin: cd --; ls
