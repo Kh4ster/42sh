@@ -1,0 +1,46 @@
+- name: echo *
+  stdin: echo *
+
+- name: echo /*
+  stdin: echo /*
+  timeout: 1
+
+- name: echo ../*/*//////
+  stdin: echo ../*/*//////
+
+- name: echo src/*/
+  stdin: echo src/*/
+
+- name: while *; do echo ok; done
+  stdin: while *; do echo ok; done
+  checks:
+    - has stderr
+
+- name: echo ../tests/*
+  stdin: echo ../tests/*
+
+- name: ../src* titi toto
+  stdin: ../src* titi toto
+  checks:
+    - has_stderr
+
+- name: echo ../src////*////*
+  stdin: echo ../src////*////*
+
+- name: for i in ../*; do echo $i ; done
+  stdin: for i in ../*; do echo $i ; done
+
+- name: test dotglob
+  stdin: echo ../*
+  options:
+    - -O dotglob
+
+- name: test nocaseglob
+  stdin: echo ../SRC*
+  options:
+    - -O nocaseglob
+
+- name: test nullglob
+  stdin: echo prout/*
+  options:
+    - -O nullglob

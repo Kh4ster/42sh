@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <err.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "parser.h"
 #include "ast/ast.h"
@@ -462,7 +463,9 @@ static void add_variable(char *var)
 {
     char *name = strtok_r(var, "=", &var);
     char *value = strtok_r(NULL, "=", &var);
+    value = scan_for_expand(value, false);
     hash_insert(g_env.variables, name, value, STRING);
+    free(value);
 }
 
 static struct instruction *parse_simple_command(struct queue *lexer)

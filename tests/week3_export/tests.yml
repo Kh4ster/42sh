@@ -46,3 +46,8 @@
     - has_stdout
     - returncode
 
+- name: export -n acus test
+  stdin: |
+    export TOTO=b
+    export -n TOTO=c
+    export -p | grep TOTO

@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <err.h>
 
 #include "../input_output/get_next_line.h"
 #include "../memory/memory.h"
 #include "cd.h"
+#include "../parser/ast/ast.h"
 
 #define MAX_PATH_LENGTH 4096
 
@@ -47,6 +49,8 @@ int my_chdir(char *dir)
     handle_error_chdir(strlen(dir) < MAX_PATH_LENGTH ? 0 : ENAMETOOLONG , dir);
 
     set_pwd();
+    char *path = xmalloc(MAX_PATH_LENGTH);
+    path = strcpy(path, dir);
 
     // absolute path
     if (dir[0] == '/')
@@ -54,29 +58,33 @@ int my_chdir(char *dir)
         if (chdir(dir) == -1)
         {
             handle_error_chdir(errno, dir);
+            free(path);
             return 1;
         }
-        return 0;
     }
-
-    // relative path
-    char *path = xmalloc(MAX_PATH_LENGTH);
-    path[0] = '\0';
-    if (strlen(g_env.pwd) + strlen(dir) > MAX_PATH_LENGTH)
+    else
     {
-        fprintf(stderr, "cd: %s%s: Path is too long.\n", g_env.pwd, dir);
-        return 1;
-    }
-    strcat(path, g_env.pwd);
-    strcat(path, "/");
-    strcat(path, dir);
+        // relative path
+        path[0] = '\0';
+        if (strlen(g_env.pwd) + strlen(dir) > MAX_PATH_LENGTH)
+        {
+            fprintf(stderr, "cd: %s%s: Path is too long.\n", g_env.pwd, dir);
+            free(path);
+            return 1;
+        }
+        strcat(path, g_env.pwd);
+        strcat(path, "/");
+        strcat(path, dir);
 
-    if (chdir(path) == -1)
-    {
-        handle_error_chdir(errno, dir);
-        free(path);
-        return 1;
+        if (chdir(path) == -1)
+        {
+            handle_error_chdir(errno, dir);
+            free(path);
+            return 1;
+        }
     }
+    free(g_env.old_pwd);
+    g_env.old_pwd = xstrdup(g_env.pwd);
     free(g_env.pwd);
     g_env.pwd = xstrdup(path);
     free(path);
@@ -96,11 +104,33 @@ int cd(char **args)
         return my_chdir(homedir);
     }
 
+    if (strcmp(args[1], "-") == 0 && args[2] == NULL)
+    {
+        if (!g_env.old_pwd)
+        {
+            warnx("OLDPWD not set");
+            return 1;
+        }
+        puts(g_env.old_pwd);
+        return my_chdir(g_env.old_pwd);
+    }
+
     if (args[2] == NULL)
     {
         // go to dir given in args
+        if (strcmp(args[1],"--") == 0)
+        {
+            char *homedir = getenv("HOME");
+            if (homedir == NULL)
+                return 0;
+            return my_chdir(homedir);
+        }
+
         return my_chdir(args[1]);
     }
+
+    if (strcmp(args[1],"--") == 0 && args[3] == NULL)
+        return my_chdir(args[2]);
 
     // too many arguments
     fprintf(stderr, "cd: Too many arguments.\n");

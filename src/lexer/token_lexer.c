@@ -13,6 +13,10 @@
 #include "../error/error.h"
 
 #define DELIMITERS " \\\n\t&|<>\"\'`$();#"
+#define IFS " \n\t&|;()<>"
+
+static void add_next_line_to_current_and_update_cursors(char **cursor,
+        char **second_cursor);
 
 static void skip_class(int (*classifier)(int c), char **cursor)
 {
@@ -27,7 +31,7 @@ void token_lexer_free(struct token_lexer **token)
     *token = NULL;
 }
 
-static char *get_delimiter(char *line, char *delimiters)
+char *get_delimiter(char *line, char *delimiters)
 {
     assert(line != NULL);
     char *delim = strpbrk(line, delimiters);
@@ -57,17 +61,6 @@ static struct token_lexer *create_newline_token(struct token_lexer *new_token)
     return new_token;
 }
 
-static int is_assignement(char *data)
-{
-    while (*data)
-    {
-        if (*data == '=')
-            return 1;
-        data++;
-    }
-    return 0;
-}
-
 static int is_number(char *data)
 {
     for (size_t i = 0; data[i]; i++)
@@ -79,41 +72,49 @@ static int is_number(char *data)
     return 1;
 }
 
-
-static struct token_lexer *create_other_or_keyword_token(
-       struct token_lexer *new_token,
-       char *cursor,
-       char **delim
-)
+static void handle_quoting(char **cursor, char **start_of_token)
 {
-    size_t token_length = *delim - cursor;
-    new_token->data = xstrndup(cursor, token_length);
-
-    // is word a keyword or something else
-    const char *reserved_words[] =
+    if (**cursor == '\'')
     {
-        "!", "{", "}", "case", "do", "done", "elif", "else",
-        "esac", "fi", "for", "if", "in", "then", "until", "while"
-    };
-    size_t i = 0;
-    for (; i < sizeof(reserved_words) / sizeof(char *); i++)
-    {
-        if (strcmp(reserved_words[i], new_token->data) == 0)
+        (*cursor)++;
+        *cursor = get_delimiter(*cursor, "\'\0");
+        while (**cursor != '\'') // end quote not found
         {
-            new_token->type = TOKEN_KEYWORD;
-            return new_token;
+            add_next_line_to_current_and_update_cursors(cursor,
+                    start_of_token);
+            *cursor = get_delimiter(*cursor, "\'\0");
         }
+        (*cursor)++;
     }
-
-    if (is_assignement(new_token->data))
-        new_token->type = TOKEN_ASSIGNEMENT;
-
-    else
-        new_token->type = TOKEN_OTHER;
-
-    return new_token;
+    else if (**cursor == '"')
+    {
+        (*cursor)++;
+        *cursor = get_delimiter(*cursor, "\"\\\0");
+        while (**cursor != '\"')
+        {
+            // Handle backslash
+            if (**cursor == '\\' && *(*cursor + 1) != '\0')
+                *cursor += 2;
+            else if (**cursor == '\0' || **cursor == '\\')
+            {
+                add_next_line_to_current_and_update_cursors(cursor,
+                        start_of_token);
+            }
+            *cursor = get_delimiter(*cursor, "\"\\\0");
+        }
+        (*cursor)++;
+    }
 }
 
+static bool is_ifs(char current)
+{
+    for (char *c = IFS; *c != '\0'; c++)
+    {
+        if (current == *c)
+            return true;
+    }
+    return current == '\0';
+}
 
 static void set_token(struct token_lexer *token,
                 enum token_lexer_type token_type,
@@ -187,19 +188,19 @@ void skip_quoting(char **cursor, char **start_of_token)
     if (**cursor == '\'')
     {
         (*cursor)++;
-        *cursor = get_delimiter(*cursor, "\'\0");
+        *cursor = get_delimiter(*cursor, "\'");
         while (**cursor != '\'') // end quote not found
         {
             add_next_line_to_current_and_update_cursors(cursor,
                     start_of_token);
-            *cursor = get_delimiter(*cursor, "\'\0");
+            *cursor = get_delimiter(*cursor, "\'");
         }
         (*cursor)++;
     }
     else if (**cursor == '"')
     {
         (*cursor)++;
-        *cursor = get_delimiter(*cursor, "\"\\\0");
+        *cursor = get_delimiter(*cursor, "\"\\");
         while (**cursor != '\"')
         {
             // Handle backslash
@@ -210,13 +211,13 @@ void skip_quoting(char **cursor, char **start_of_token)
                 add_next_line_to_current_and_update_cursors(cursor,
                         start_of_token);
             }
-            *cursor = get_delimiter(*cursor, "\"\\\0");
+            *cursor = get_delimiter(*cursor, "\"\\");
         }
         (*cursor)++;
     }
 }
 
-static char *find_corresponding_bracket(char **cursor, char **token_start)
+char *find_corresponding_parenthesis(char **cursor, char **token_start)
 {
     int counter_bracket = 1;
     while (1)
@@ -243,89 +244,119 @@ static char *find_corresponding_bracket(char **cursor, char **token_start)
     return *cursor;
 }
 
-static void handle_dollar(struct token_lexer *new_token, char **cursor)
+static void handle_dollar(char **cursor, char **token_start)
 {
-    // keep beginning of the dollar expression
-    char *token_start = *cursor;
-
     // skip dollar
     (*cursor)++;
 
-    if (**cursor == '\0')
-        set_token(new_token, TOKEN_OTHER, cursor, 1);
-    else if (**cursor == '(')
+    if (**cursor == '(')
     {
         (*cursor)++;
-        char *end_bracket = find_corresponding_bracket(cursor, &token_start);
-        set_token(new_token, TOKEN_OTHER, &token_start,
-                end_bracket - token_start);
+        *cursor = find_corresponding_parenthesis(cursor, token_start);
+    }
+    else if (**cursor == '{')
+    {
+        (*cursor)++;
+        while (**cursor != '\0' && **cursor != '}')
+            (*cursor)++;
+        if (**cursor == '\0')
+        {
+            if (is_interactive())
+                warnx("Bad lexing");
+            else
+                errx(2, "Bad lexing");
+        }
+        else
+        {
+            (*cursor)++;
+        }
     }
     else //case $var
     {
-        while (**cursor && **cursor != ' ')
+        while (!is_ifs(**cursor))
             (*cursor)++;
-        set_token(new_token, TOKEN_OTHER, &token_start,
-                *cursor - token_start);
     }
 }
 
-static void handle_back_quote(struct token_lexer *new_token, char **cursor)
+static void handle_back_quote(char **cursor, char **token_start)
 {
-    // keep beginning of the back_quote expression
-    char *start_of_token = *cursor;
-
     (*cursor)++;
 
     *cursor = get_delimiter(*cursor, "`\0");
     while (**cursor != '`') // end back_quote not found
     {
-        add_next_line_to_current_and_update_cursors(cursor,
-                &start_of_token);
+        add_next_line_to_current_and_update_cursors(cursor, token_start);
         *cursor = get_delimiter(*cursor, "`\0");
     }
-    set_token(new_token, TOKEN_OTHER, &start_of_token,
-            *cursor - start_of_token + 1);
     (*cursor)++;
 }
 
-static void handle_quoting(struct token_lexer *new_token,
-        char **cursor)
+static enum token_lexer_type scan_token(char **cursor, char **token_start);
+
+static void handle_var_assignement(char **cursor, char **token_start)
 {
-    char *start_of_token = *cursor;
-    if (**cursor == '\'')
+    (*cursor)++; //skip =
+    scan_token(cursor, token_start);
+}
+
+static enum token_lexer_type scan_token(char **cursor, char **token_start)
+{
+    while (!is_ifs(**cursor))
     {
-        (*cursor)++;
-        *cursor = get_delimiter(*cursor, "\'\0");
-        while (**cursor != '\'') // end quote not found
+        if (**cursor == '\'' || **cursor == '"')
         {
-            add_next_line_to_current_and_update_cursors(cursor,
-                    &start_of_token);
-            *cursor = get_delimiter(*cursor, "\'\0");
+            handle_quoting(cursor, token_start);
         }
-        set_token(new_token, TOKEN_OTHER, &start_of_token,
-                *cursor - start_of_token + 1);
-        (*cursor)++;
+        else if (**cursor == '$')
+        {
+            handle_dollar(cursor, token_start);
+        }
+        else if (**cursor == '`')
+        {
+            handle_back_quote(cursor, token_start);
+        }
+        else if (**cursor == '=')
+        {
+            handle_var_assignement(cursor, token_start);
+            return TOKEN_ASSIGNEMENT;
+        }
+        else
+            *cursor += 1;
     }
-    else if (**cursor == '"')
+    return TOKEN_OTHER;
+}
+
+static struct token_lexer *create_other_or_keyword_token(
+       struct token_lexer *new_token,
+       char *cursor,
+       char **delim
+)
+{
+    size_t token_length = *delim - cursor;
+    new_token->data = xstrndup(cursor, token_length);
+
+    // is word a keyword or something else
+    static const char *reserved_words[] =
     {
-        (*cursor)++;
-        *cursor = get_delimiter(*cursor, "\"\\\0");
-        while (**cursor != '\"')
+        "!", "{", "}", "case", "do", "done", "elif", "else",
+        "esac", "fi", "for", "if", "in", "then", "until", "while"
+    };
+    size_t i = 0;
+    for (; i < sizeof(reserved_words) / sizeof(char *); i++)
+    {
+        if (strcmp(reserved_words[i], new_token->data) == 0)
         {
-            // Handle backslash
-            if (**cursor == '\\' && *(*cursor + 1) != '\0')
-                *cursor += 2;
-            else if (**cursor == '\0' || **cursor == '\\')
-            {
-                add_next_line_to_current_and_update_cursors(cursor,
-                        &start_of_token);
-            }
-            *cursor = get_delimiter(*cursor, "\"\\\0");
+            new_token->type = TOKEN_KEYWORD;
+            return new_token;
         }
-        set_token(new_token, TOKEN_OTHER, &start_of_token,
-                *cursor - start_of_token + 1);
-        (*cursor)++;
     }
+
+    char *token_start = cursor;
+    enum token_lexer_type type = scan_token(&cursor, &token_start);
+    free(new_token->data);
+    set_token(new_token, type, &token_start, cursor - token_start);
+    *delim = cursor;
+    return new_token;
 }
 
 static void handle_io_number(char *cursor, struct queue *token_queue)
@@ -410,12 +441,6 @@ static int generate_token_aux(struct queue *token_queue, char *cursor,
         return 0;
     }
 
-    else if (*cursor == '#')
-    {
-        handle_comments(token_queue, new_token, delim, 0);
-        return 0;
-    }
-
     else // other delimiters not defined yet
     {
         set_token(new_token, TOKEN_OTHER, delim, 1);
@@ -433,34 +458,20 @@ static struct token_lexer *generate_token(struct queue *token_queue,
 
     struct token_lexer *new_token = xmalloc(sizeof(struct token_lexer));
 
-    if (cursor != *delim) // word pointed by cursor is not a delimiter
+    if (*cursor == '#')
+    {
+        handle_comments(token_queue, new_token, delim, 0);
+        return 0;
+    }
+    else if (cursor != *delim) // word pointed by cursor is not a delimiter
     {
         new_token = create_other_or_keyword_token(new_token, cursor, delim);
     }
-
-    else if (*cursor == '\"' || *cursor == '\'')
-    {
-        handle_quoting(new_token, delim);
-    }
-
-    #if 0
-    else if (*cursor == '\\')
-    {
-        handle_escape(delim);
-    }
-    #endif /* 0 */
-    else if (*cursor == '$')
-    {
-        handle_dollar(new_token, delim);
-    }
-    else if (*cursor == '`')
-    {
-        handle_back_quote(new_token, delim);
-    }
-
     else
+    {
         if (!generate_token_aux(token_queue, cursor, delim, new_token))
             return NULL;
+    }
 
     return new_token;
 }
@@ -474,7 +485,7 @@ struct queue *lexer(char *line, struct queue *token_queue)
     handle_comments(token_queue, NULL, &cursor, 1);
     while (cursor != NULL && *cursor != '\0')
     {
-        char *delim = get_delimiter(cursor, DELIMITERS);
+        char *delim = get_delimiter(cursor, IFS);
         struct token_lexer *token_found = generate_token(token_queue, cursor,
                 &delim);
         if (token_found != NULL)
