@@ -48,14 +48,20 @@ extern int get_nb_params(char **params)
     return res;
 }
 
-static char *expand_tilde(char *str)
+static char *expand_tilde(char **str)
 {
-    if (strcmp("~", str) == 0)
+    if (strcmp("~", *str) == 0)
         return strdup(getenv("HOME"));
-    if (strcmp("~+", str) == 0)
+    if (strcmp("~+", *str) == 0)
+    {
+        (*str)++;
         return get_current_dir_name();
-    if (strcmp("~-", str) == 0)
+    }
+    if (strcmp("~-", *str) == 0)
+    {
+        (*str)++;
         return strdup(g_env.old_pwd);
+    }
     return "mdr"; //never happens
 }
 
@@ -225,7 +231,7 @@ static char *expand_variable_brackets(char **to_expand)
     else
         result = strdup("");
 
-    *to_expand = (*to_expand + i + 1);
+    *to_expand = (*to_expand + i);
     return result;
 }
 
@@ -271,7 +277,6 @@ char *expand_quote(char **cursor)
         char *beg = *cursor;
         *cursor = get_delimiter(*cursor, "\'");
         **cursor = '\0'; //set ' to 0
-        *cursor = *cursor + 1;
         return strdup(beg);
     }
     else if (**cursor == '"')
@@ -287,13 +292,11 @@ char *expand_quote(char **cursor)
             *cursor = get_delimiter(*cursor, "\"\\");
         }
         **cursor = '\0'; //set " to 0
-        *cursor = *cursor + 1;
         return scan_for_expand(beg, true);
     }
     else // \ handling
     {
         (*cursor)++;
-        *cursor = *cursor + 1;
         return strndup(*cursor, 1);
     }
 }
@@ -307,7 +310,7 @@ static bool is_tidle(char *str)
 static char *expand(char **to_expand)
 {
     if (is_tidle(*to_expand))
-        return expand_tilde(*to_expand);
+        return expand_tilde(to_expand);
     if (**to_expand == '\'' || **to_expand == '"' || **to_expand == '\\')
         return expand_quote(to_expand);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
@@ -507,7 +510,10 @@ static int handle_commands(struct instruction *ast)
     int to_return;
 
     if (handle_expand_command(ast) == -1)
+    {
+        command_destroy(&save);
         return 0;
+    }
 
     /* execute commande with zak function */
     if (is_func(ast))
