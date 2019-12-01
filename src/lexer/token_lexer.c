@@ -226,7 +226,7 @@ char *find_corresponding_parenthesis(char **cursor, char **token_start)
         {
             if (**cursor == '\'' || **cursor == '"')
                 skip_quoting(cursor, token_start);
-            if (**cursor == '(')
+            else if (**cursor == '(')
                 counter_bracket++;
             else if (**cursor == ')')
                 counter_bracket--;
