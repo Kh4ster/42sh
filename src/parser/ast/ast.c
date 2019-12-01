@@ -271,11 +271,18 @@ char *expand_quote(char **cursor, bool is_quote)
 {
     if (**cursor == '\'')
     {
-        (*cursor)++;
-        char *beg = *cursor;
-        *cursor = get_delimiter(*cursor, "\'");
-        **cursor = '\0'; //set ' to 0
-        return strdup(beg);
+        if (!is_quote)
+        {
+            (*cursor)++;
+            char *beg = *cursor;
+            *cursor = get_delimiter(*cursor, "\'");
+            **cursor = '\0'; //set ' to 0
+            return strdup(beg);
+        }
+        else
+        {
+            return strdup("'");
+        }
     }
     else if (**cursor == '"')
     {
