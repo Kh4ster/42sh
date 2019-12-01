@@ -165,27 +165,52 @@ int shopt(char *options[])
     if (argc == 1) //case call to shopt only
         return option_list();
 
-    if (!check_options(options[1]))
+
+    if (!check_options(options[1]) && !is_shopt_var(options[1]))
     {
         warnx("Bad option shopt");
         return 2;
     }
 
-    if (options[2] == NULL) //case call with just -u -s
+    if ((options[2] == NULL) && ((strcmp("-s", options[1]) == 0)
+        || (strcmp("-u", options[1]) == 0))) //case call with just -u -s
         return handle_option_no_var(options[1]);
 
-    if (!is_shopt_var(options[2]))
+    if (argc > 2)
     {
-        warnx("Option not in shopt");
-        return 1;
+        if (!is_shopt_var(options[2]))
+        {
+            warnx("Option not in shopt");
+            return 1;
+        }
     }
 
-    if (strcmp("-s", options[1]) == 0)
+    if (strcmp("-s", options[1]) == 0 )
         set_option(options[2]);
     else if (strcmp("-u", options[1]) == 0)
         unset_option(options[2]);
+    else if (strcmp("-q", options[1]) == 0)
+    {
+        if (options[2])
+            return_shopt_value(options[2]);
+        return 0;
+    }
     else
-        return_shopt_value(options[2]);
-
+    {
+        for (int i = 1; i < argc; i++)
+        {
+            if (is_shopt_var(options[i])) //case call to shopt and valid variable
+            {
+                printf("%s %s\n", options[i], (g_env.options.option_xpg_echo) ? "on" : "off");
+            }
+            else
+            {
+                warnx("Option not in shopt");
+                return 1;
+            }
+            if (i == argc - 1)
+            return 0;
+        }
+    }
     return 0;
 }
