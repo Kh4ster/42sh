@@ -1,13 +1,11 @@
 /** @file
 * @brief abstact syntax tree structure
-* @author Coder : cloe.lacombe
-* @author Tester :
-* @author Reviewer :
-* @author Integrator :
+* @author Coder : cloe.lacombe & nicolas.blin & pierrick.made
+* @author Tester : zakaria.ben-allal
+* @author Reviewer : nicolas.blin & pierrick.made
 */
 
-#ifndef AST_H
-#define AST_H
+#include <stdbool.h>
 
 #include "../parser.h"
 
@@ -20,5 +18,4 @@
 extern int get_nb_params(char **params);
 
 extern int execute_ast(struct instruction *ast);
-
-#endif
+char *scan_for_expand(char *line, bool is_quote);
