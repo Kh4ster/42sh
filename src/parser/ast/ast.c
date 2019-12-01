@@ -209,9 +209,9 @@ static char *expand_variable_brackets(char **to_expand)
     (*to_expand)++; //skip $
     (*to_expand)++; //skip {
     size_t i = 0;
-    while ((*to_expand)[i] != '}')
+    while (*(*to_expand + i) != '}')
         ++i;
-    to_expand[i] = '\0'; //remove }
+    *(*to_expand + i) = '\0'; //remove }
     char *value;
 
     char *result = NULL;
