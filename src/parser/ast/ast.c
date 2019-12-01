@@ -32,7 +32,7 @@ bool g_have_to_stop = 0; //to break in case of signal
 
 #define IFS " \t\n"
 
-static char *expand(char **to_expand);
+static char *expand(char **to_expand, bool is_quote);
 char *scan_for_expand(char *line, bool is_quote);
 static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip);
 
@@ -224,10 +224,9 @@ static char *expand_variable_brackets(char **to_expand)
     return result;
 }
 
-static bool is_to_expand(char c, bool is_quote)
+static bool is_to_expand(char c)
 {
-    return c == '$' || c == '\'' || c == '"' || c == '`'
-                                                || (c == '\\' && !is_quote);
+    return c == '$' || c == '\'' || c == '"' || c == '`' || c == '\\';
 }
 
 char *scan_for_expand(char *line, bool is_quote)
@@ -244,9 +243,9 @@ char *scan_for_expand(char *line, bool is_quote)
 
     for (; *line != '\0'; line++)
     {
-        if (is_to_expand(*line, is_quote))
+        if (is_to_expand(*line))
         {
-            char *expansion = expand(&line);
+            char *expansion = expand(&line, is_quote);
             string_append(new_line, expansion);
             free(expansion);
         }
@@ -258,7 +257,7 @@ char *scan_for_expand(char *line, bool is_quote)
     return string_get_content(&new_line);
 }
 
-char *expand_quote(char **cursor)
+char *expand_quote(char **cursor, bool is_quote)
 {
     if (**cursor == '\'')
     {
@@ -266,7 +265,6 @@ char *expand_quote(char **cursor)
         char *beg = *cursor;
         *cursor = get_delimiter(*cursor, "\'");
         **cursor = '\0'; //set ' to 0
-        *cursor = *cursor + 1;
         return strdup(beg);
     }
     else if (**cursor == '"')
@@ -282,14 +280,21 @@ char *expand_quote(char **cursor)
             *cursor = get_delimiter(*cursor, "\"\\");
         }
         **cursor = '\0'; //set " to 0
-        *cursor = *cursor + 1;
         return scan_for_expand(beg, true);
     }
-    else // \ handling
+    else if (**cursor == '\\' && !is_quote)// \ handling outside quotes
+    {
+        *cursor = *cursor + 1;
+        return strndup(*cursor, 1); // keep literal value after the backslash
+    }
+    else // handle backslash in quotes
     {
         (*cursor)++;
-        *cursor = *cursor + 1;
-        return strndup(*cursor, 1);
+        if (**cursor == '$' || **cursor == '`' || **cursor == '"'
+                || **cursor == '\\')
+            return strndup(*cursor, 1);
+        else
+            return strndup(*cursor - 1, 2);
     }
 }
 
@@ -299,12 +304,12 @@ static bool is_tidle(char *str)
                                                     || strcmp(str, "~-") == 0;
 }
 
-static char *expand(char **to_expand)
+static char *expand(char **to_expand, bool is_quote)
 {
     if (is_tidle(*to_expand))
         return expand_tilde(*to_expand);
     if (**to_expand == '\'' || **to_expand == '"' || **to_expand == '\\')
-        return expand_quote(to_expand);
+        return expand_quote(to_expand, is_quote);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
         return le_chapeau_de_expand_cmd(to_expand, ')', 2);
     if (**to_expand == '$' && *(*to_expand + 1) == '{')

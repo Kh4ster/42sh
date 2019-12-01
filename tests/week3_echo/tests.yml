@@ -22,6 +22,15 @@
 - name: echo -n
   stdin: echo -n "Tecmint is a community of Linux Nerds"
 
+- name: echo -nENENENnnene
+  stdin: echo -nENENENnnene "Tecmint is a community of Linux Nerds"
+
+- name: echo -z -nENENENnnene
+  stdin: echo -z -nENENENnnene "Tecmint is a community of Linux Nerds"
+
+- name: echo -e -nENaENENnnene
+  stdin: echo -e -nENaENENnnene "Tecmint is a community of Linux Nerds"
+
 - name: echo -e \a
   stdin: echo -e "Tecmint is a community of \aLinux Nerds"
 
@@ -71,13 +80,13 @@
   stdin: echo -e "Tecmint is a community \cof Linux Nerds"
 
 - name: echo \f
-  stdin: echo $'Trois retours chariot \f \f \f'
+  stdin: echo 'Trois retours chariot \f \f \f'
 
 - name: echo -e \f
-  stdin: echo $'Trois retours chariot \f \f \f'
+  stdin: echo -e 'Trois retours chariot \f \f \f'
 
 - name: echo -E \f
-  stdin: echo $'Trois retours chariot \f \f \f'
+  stdin: echo -E 'Trois retours chariot \f \f \f'
 
 - name: echo -E \e
   stdin: echo -E "toto\evrbet"
