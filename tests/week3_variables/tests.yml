@@ -78,3 +78,23 @@
 
 - name: va=test; echo $var
   stdin: va=test; echo $var
+
+- name: var=$(echo ok); echo ok; echo $var
+  stdin: var=$(echo ok); echo ok; echo $var
+
+- name: var="$test"; test=aaa; echo $var
+  stdin: |
+    var="$test"
+    test=aaa
+    echo $var
+
+- name: toto=papa; var="$toto"; echo $var
+  stdin: |
+    toto=papa
+    var="$toto"
+    echo $var
+- name: var="$toto"; toto=papa; echo $var
+  stdin: |
+    var="$toto"
+    toto=papa
+    echo $var
