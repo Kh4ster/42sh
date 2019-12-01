@@ -25,10 +25,18 @@ static int handle_error(int argc, char **arg)
     }
     for (int i = 0; arg[i]; i++)
     {
-        if (strcmp(arg[i], "=") == 0)
+        if ((strcmp(arg[i], "=") == 0) || ((arg[i][0] != '-')
+            && (strchr(arg[i], '-') != NULL)))
         {
-            fprintf(stderr, "export: '=' not a valid identifier\n");
+            fprintf(stderr, "export: not a valid identifier\n");
             return 1;
+        }
+
+        if ((arg[i][0] == '-') && (strcmp(arg[i], "-p") != 0)
+            && (strcmp(arg[i], "-n") != 0))
+        {
+            fprintf(stderr, "export: invalid option\n");
+            return 2;
         }
     }
     return 0;
@@ -276,8 +284,9 @@ int export(char **argv)
     while (argv[argc] != NULL)
         argc++;
 
-    if (handle_error(argc, argv) == 1) //check if syntax error
-        return 1;
+    int error = handle_error(argc, argv);
+    if ((error == 1) || (error == 2)) //check if syntax error
+        return error;
 
     if (argc == 1 || (strcmp(argv[1], "-p") == 0)
         || (argc == 2 && (strcmp(argv[1], "-n") == 0)))

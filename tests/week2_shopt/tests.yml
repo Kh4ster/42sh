@@ -48,5 +48,10 @@
      - stdout
      - returncode
 
-- name: shopt xpg_echo
+- name: shopt xpg_echo (red is the new green)
+  stdin: shopt xpg_echo | grep xpg_echo
+
+- name: shopt xpg_echo (returncode)
   stdin: shopt xpg_echo
+  checks:
+    - returncode

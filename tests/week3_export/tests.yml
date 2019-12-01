@@ -28,6 +28,24 @@
     - has_stderr
     - returncode
 
+- name: export -invalid
+  stdin: export -invalid
+  checks:
+    - has_stderr
+    - returncode
+
+- name: export inv-alid
+  stdin: export inv-alid
+  checks:
+    - has_stderr
+    - returncode
+
+- name: export var = toto
+  stdin: export var = toto
+  checks:
+    - has_stderr
+    - returncode
+
 - name: export -n
   stdin: export -n
   checks:
