@@ -185,7 +185,7 @@ static char *expand_variable(char **to_expand)
     (*to_expand)++; //skip $
     char *value;
 
-    char *in_case_strpbrk_null = *to_expand;
+    char *beg = *to_expand;
     *to_expand = strpbrk(*to_expand, "$\'\"\\\n");
     char save;
     if (*to_expand != NULL)
@@ -193,14 +193,19 @@ static char *expand_variable(char **to_expand)
          save = **to_expand;
          **to_expand = '\0';
     }
-    else
-        *to_expand = in_case_strpbrk_null;
 
-    if ((value = hash_find(g_env.variables, *to_expand)) == NULL)
+    if ((value = hash_find(g_env.variables, beg)) == NULL)
         value = "";
 
     if (*to_expand != NULL)
         **to_expand = save;
+
+    //if null, want to go to end of line
+    if(*to_expand == NULL)
+        *to_expand = beg + strlen(beg);
+
+    //case we jump to next char and ++ in scan will skip it so scan goes onto it
+    (*to_expand)--;
     return strdup(value);
 }
 
