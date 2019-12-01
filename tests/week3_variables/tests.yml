@@ -70,7 +70,7 @@
     - returncode
     - has_stderr
 
-- name: variable assignement syntax edge case (var= test)
+- name: variable assignement syntax edge case (var= test) (miss prefix)
   stdin: var= test; echo $var
 
 - name: vara=test; echo $(echo $var)a
