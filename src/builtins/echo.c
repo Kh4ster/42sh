@@ -1,10 +1,12 @@
 #include <err.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "echo.h"
 #define STDOUT 1
 
-void handle_options(char **args, int *index, int *opt_e, int *opt_n)
+static void handle_options(char **args, int *index, int *opt_e, int *opt_n)
 {
     // used to break loop in case of bad options
     int bad_opt = 0;
@@ -39,7 +41,22 @@ void handle_options(char **args, int *index, int *opt_e, int *opt_n)
     }
 }
 
-void handle_escape_aux(char *c)
+static char handle_ascii(char *str, char c)
+{
+    int octal = 8;
+    int hexa = 16;
+    char *arg = NULL;
+    strcpy(arg, str + 1);
+    char *error;
+    char value;
+    if (c == '0')
+        value = strtol(str, &error, octal);
+    else
+        value = strtol(str, &error, hexa);
+    return value;
+}
+
+static void handle_escape_aux(char *c)
 {
     if (*c == 'a')
         dprintf(STDOUT, "\a");
@@ -57,13 +74,15 @@ void handle_escape_aux(char *c)
         dprintf(STDOUT, "\t");
     else if (*c == 'v')
         dprintf(STDOUT, "\v");
-    else if (*c == 'x' || *c == '0')
-        dprintf(STDOUT, "TODO"); // octal and hexa to do
+    else if (*c == 'x')
+        dprintf(STDOUT, "%c", handle_ascii(c, *c)); //hexa
+    else if (*c == '0')
+        dprintf(STDOUT, "%c", handle_ascii(c, *c)); //octal
     else
         dprintf(STDOUT, "%c", *c);
 }
 
-int print_with_backslash_escapes(char *arg)
+static int print_with_backslash_escapes(char *arg)
 {
     for (char *c = arg; *c != '\0'; c++)
     {
@@ -78,7 +97,12 @@ int print_with_backslash_escapes(char *arg)
                 break;
             }
             else
+            {
                 handle_escape_aux(c);
+                if ((*c == 'x') || (*c == '0'))
+                    return 0;
+            }
+
         }
 
         else
