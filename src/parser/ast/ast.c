@@ -262,8 +262,6 @@ char *scan_for_expand(char *line, bool is_quote)
         }
         else
             string_append_char(new_line, *line);
-        if (*line == '\0')
-            break;
     }
     return string_get_content(&new_line);
 }
