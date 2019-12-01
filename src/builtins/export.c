@@ -88,32 +88,63 @@ static char *var_name(char *arg)
     }
 }
 
+static char *var_value(char *arg)
+{
+    int n = strlen(arg);
+    int i = 0;
+    int j = 0;
+    char *value = xcalloc(n + 1, sizeof(char));
+    if (strchr(arg, '=') != NULL)
+    {
+        while (arg[i] != '=')
+            i++;
+        i++;
+        while (arg[i])
+        {
+            value[j] = arg[i];
+            i++;
+            j++;
+        }
+        value[j] = '\0';
+    }
+    return value;
+}
+
 //check if we got the right variable
 static int is_right_var(char **var, char *arg, int i)
 {
-    if (strchr(arg, '=') == NULL)
+    char *name1 = var_name(var[i]);
+    char *name2 = var_name(arg);
+    if (strcmp(name1, name2) == 0)
     {
-        char *name = var_name(var[i]);
-        if (strcmp(name, arg) == 0)
-        {
-            free(name);
-            return 0;
-        }
-        free(name);
-        return 1;
+        free(name1);
+        free(name2);
+        return 0;
     }
-    else
-    {
-        if (strcmp(var[i], arg) == 0)
-            return 0;
-    }
+    free(name1);
+    free(name2);
     return 1;
 }
 
 static void simple_export(char **env)
 {
+    char *value = NULL;
+    char *name = NULL;
     for (int i = 0; env[i] != NULL; i++)
-        printf("%s\n", env[i]);
+    {
+        if (strchr(env[i], '=') != NULL)
+        {
+            name = var_name(env[i]);
+            value = var_value(env[i]);
+            printf("export %s=\"%s\"\n", name, value);
+            free(name);
+            free(value);
+            name = NULL;
+            value = NULL;
+        }
+        else
+            printf("export %s\n", env[i]);
+    }
 }
 
 static void export_n(char *arg)
@@ -147,7 +178,7 @@ static void export_n(char *arg)
 
 static void export_var(char *variable)
 {
-    char *save = variable;
+    char *save = strdup(variable);
     char *name = strtok_r(variable, "=", &variable);
     char *value = strtok_r(NULL, "=", &variable);
     hash_insert(g_env.variables, name, value, STRING);
@@ -157,14 +188,81 @@ static void export_var(char *variable)
     g_env.envvar = xrealloc(g_env.envvar, (i + 2) * sizeof(char *));
     g_env.envvar[i] = strdup(save);
     g_env.envvar[i + 1] = NULL;
+    free(save);
+}
+
+static void change_value(char *var, int i)
+{
+    size_t n = strlen(var);
+    char *value = var_value(var);
+    char *name = var_name(g_env.envvar[i]);
+    g_env.envvar[i] = xrealloc(g_env.envvar[i], (n + 1) * sizeof(char));
+    name = xrealloc(name, (n + 1) * sizeof(char));
+    strcat(name, "=");
+    strcat(name, value);
+    strcpy(g_env.envvar[i], name);
+    free(name);
+    free(value);
 }
 
 static int var_exists(char *var)
 {
     for (int i = 0; g_env.envvar[i] != NULL; i++)
     {
-        if (strcmp(g_env.envvar[i], var) == 0)
+        if ((strchr(g_env.envvar[i], '=') == NULL)
+            && strchr(var, '=') == NULL)
+        {
+            if (strcmp(g_env.envvar[i], var) == 0)
             return 0;
+        }
+        if ((strchr(g_env.envvar[i], '=') != NULL)
+            && strchr(var, '=') == NULL)
+        {
+            char *name = var_name(g_env.envvar[i]);
+            if (strcmp(name, var) == 0)
+            {
+                free(name);
+                return 0;
+            }
+            free(name);
+            name = NULL;
+        }
+        if ((strchr(g_env.envvar[i], '=') == NULL)
+            && strchr(var, '=') != NULL)
+        {
+            char *name = var_name(var);
+            if (strcmp(g_env.envvar[i], name) == 0)
+            {
+                change_value(var, i);
+                free(name);
+                return 0;
+            }
+            free(name);
+            name = NULL;
+        }
+
+        if ((strchr(g_env.envvar[i], '=') != NULL)
+            && strchr(var, '=') != NULL)
+        {
+            if (strcmp(g_env.envvar[i], var) == 0)
+            {
+                return 0;
+            }
+
+            char *name1 = var_name(g_env.envvar[i]);
+            char *name2 = var_name(var);
+            if (strcmp(name1, name2) == 0)
+            {
+                change_value(var, i);
+                free(name1);
+                free(name2);
+                return 0;
+            }
+            free(name1);
+            free(name2);
+            name1 = NULL;
+            name2 = NULL;
+        }
     }
     return 1;
 }

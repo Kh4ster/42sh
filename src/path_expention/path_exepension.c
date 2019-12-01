@@ -37,11 +37,11 @@ static char *strlwr(char *str)
 }
 #endif
 
-static int is_path_expansion(char *pattern)
+int is_path_expansion(char *pattern)
 {
     assert(pattern);
 
-    for (size_t i = 0; pattern[i]; i++)
+    for (size_t i = 0; pattern[i] != '\0'; i++)
     {
         if (pattern[i] == '*')
             return 1;
@@ -61,6 +61,9 @@ static int get_fnmatch_flags(void)
 {
     int flags = FNM_PATHNAME;
 
+    if (!g_env.options.option_dot_glob)
+        flags = flags | FNM_PERIOD;
+
     if (g_env.options.option_nocaseglob)
         flags = flags | FNM_CASEFOLD;
 
@@ -74,9 +77,6 @@ static int get_fnmatch_flags(void)
 static int correct_file_name(char *file_name)
 {
     if (strcmp(file_name, ".") == 0 || strcmp(file_name, "..") == 0)
-        return 0;
-
-    if (*file_name == '.' && !g_env.options.option_dot_glob)
         return 0;
 
     return 1;
@@ -114,6 +114,7 @@ static void add_string_to_glob(struct path_globbing *path_glob, char *s)
     path_glob->nb_matchs++;
 }
 
+static DIR *open_dir(char *dir_name);
 
 static int match_filesnames(char *path, DIR *current_dir,
                               struct path_globbing *path_glob, char *pattern)
@@ -135,11 +136,11 @@ static int match_filesnames(char *path, DIR *current_dir,
 
         if (current_file->d_type == DT_DIR)
         {
-            if (nb_recursion)
+            if (nb_recursion > 0)
             {
                 g_nb_recursion--;
 
-                DIR *new_dir = opendir(tmp);
+                DIR *new_dir = open_dir(tmp);
 
                 if (new_dir)
                 {
@@ -222,11 +223,10 @@ static char *get_dir_name(char *pattern)
 
     char *end_path = strrchr(current_path, '/');
 
-    if (end_path != current_path)
+    if (!end_path)
     {
-        char *to_return = strndup(current_path, end_path - current_path);
         free(current_path);
-        return to_return;
+        return strdup("");
     }
 
     return current_path;
@@ -244,6 +244,22 @@ static void init_nb_recursions(char *pattern)
 }
 
 
+static char *remove_slashs(char *dir_name)
+{
+    for (size_t i = 0; dir_name[i]; i++)
+    {
+        if (dir_name[i] == '/')
+        {
+            for (size_t j = i; dir_name[j + 1] == '/';)
+            {
+                memmove(&dir_name[j], &dir_name[j + 1], strlen(dir_name) - j);
+            }
+        }
+    }
+
+    return dir_name;
+}
+
 static DIR *open_dir(char *dir_name)
 {
     if (!*dir_name)
@@ -254,16 +270,28 @@ static DIR *open_dir(char *dir_name)
         return dir;
     }
 
-    DIR *dir = opendir(dir_name);
+    char *new_dir = remove_slashs(strdup(dir_name));
+    DIR *dir = opendir(new_dir);
+    free(new_dir);
     return dir;
 }
 
+
+static char *remove_ending_slashs_from_pattern(char *pattern)
+{
+    char *begin_pattern = strpbrk(pattern, "*?[");
+
+    remove_slashs(begin_pattern);
+
+    return pattern;
+}
 
 extern struct path_globbing *sh_glob(char *pattern)
 {
     if (!is_path_expansion(pattern))
         return NULL;
 
+    pattern = remove_ending_slashs_from_pattern(pattern);
     init_nb_recursions(pattern);
     char *dir_name = get_dir_name(pattern);
     DIR *current_dir_d = open_dir(dir_name);
