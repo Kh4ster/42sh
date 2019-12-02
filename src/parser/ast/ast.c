@@ -548,7 +548,7 @@ static int handle_while(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
     int return_value = 0;
-    g_env.is_in_loop = 1;
+    g_env.is_in_loop++;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions) == 0)
     {
@@ -568,7 +568,7 @@ static int handle_while(struct instruction *ast)
     }
 
     g_have_to_stop = false;
-    g_env.is_in_loop = 0;
+    g_env.is_in_loop--;
     return return_value;
 }
 
@@ -577,7 +577,7 @@ static int handle_until(struct instruction *ast)
 {
     struct while_instruction *while_instruction = ast->data;
     int return_value = 0;
-    g_env.is_in_loop = 1;
+    g_env.is_in_loop++;
 
     while (!g_have_to_stop && execute_ast(while_instruction->conditions))
     {
@@ -598,7 +598,7 @@ static int handle_until(struct instruction *ast)
     }
 
     g_have_to_stop = false;
-    g_env.is_in_loop = 0;
+    g_env.is_in_loop--;
     return return_value;
 }
 
@@ -635,7 +635,7 @@ static int handle_for(struct instruction *ast)
     struct array_list *var_values = instruction_for->var_values;
     int return_value;
 
-    g_env.is_in_loop = 1;
+    g_env.is_in_loop++;
 
     if (!var_values)
         return 0;
@@ -656,6 +656,13 @@ static int handle_for(struct instruction *ast)
                 g_env.breaks--;
                 break;
             }
+
+            if (g_env.continues > 0)
+            {
+                g_env.continues--;
+                if (g_env.continues > 0)
+                    break;
+            }
             continue;
         }
 
@@ -674,6 +681,8 @@ static int handle_for(struct instruction *ast)
             if (g_env.continues > 0)
             {
                 g_env.continues--;
+                if (g_env.continues > 0)
+                    break;
                 continue;
             }
         }
@@ -684,10 +693,13 @@ static int handle_for(struct instruction *ast)
             break;
         }
 
+        if (g_env.continues > 0)
+            break;
+
         destroy_path_glob(glob);
     }
 
-    g_env.is_in_loop = 0;
+    g_env.is_in_loop--;
     return return_value;
 }
 
