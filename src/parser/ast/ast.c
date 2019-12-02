@@ -36,6 +36,7 @@ static char *expand(char **to_expand, bool is_quote, bool *was_quote);
 char *scan_for_expand(char *line, bool is_quote, bool *was_quote);
 static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip);
 
+
 extern int get_nb_params(char **params)
 {
     int res = 0;
@@ -47,6 +48,7 @@ extern int get_nb_params(char **params)
 
     return res;
 }
+
 
 static char *expand_tilde(char **str)
 {
@@ -64,6 +66,7 @@ static char *expand_tilde(char **str)
     }
     return "mdr"; //never happens
 }
+
 
 static char* expand_path(char *str)
 {
@@ -111,6 +114,7 @@ static char *expand_nested_command(char *cursor, char *to_expand,
     return new_to_expand;
 }
 
+
 static char *le_chapeau_de_expand_cmd(char **to_expand,
                                         char to_stop,
                                         int nb_to_skip
@@ -125,6 +129,7 @@ static char *le_chapeau_de_expand_cmd(char **to_expand,
     free(beg);
     return result;
 }
+
 
 static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
 {
@@ -159,6 +164,7 @@ static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip)
     return result;
 }
 
+
 static void fill_command_and_params(struct command_container *command,
                                     char *expansion,
                                     struct array_list *parameters
@@ -176,17 +182,22 @@ static void fill_command_and_params(struct command_container *command,
     free(beg);
 }
 
+
 static bool is_multiple_words(char *expansion)
 {
     return strpbrk(expansion, IFS) != NULL;
 }
+
 
 static char *expand_variable(char **to_expand)
 {
     char *special_variable = expand_special_variables(*to_expand);
 
     if (special_variable != NULL)
+    {
+        *to_expand = *to_expand + (strlen(*to_expand) - 1);
         return special_variable;
+    }
 
     (*to_expand)++; //skip $
     char *value;
@@ -215,6 +226,7 @@ static char *expand_variable(char **to_expand)
     return strdup(value);
 }
 
+
 static char *expand_variable_brackets(char **to_expand)
 {
     (*to_expand)++; //skip $
@@ -235,11 +247,13 @@ static char *expand_variable_brackets(char **to_expand)
     return result;
 }
 
+
 static bool is_to_expand(char c)
 {
     return c == '$' || c == '\'' || c == '"' || c == '`' || c == '\\'
                                                                 || c == '~';
 }
+
 
 char *scan_for_expand(char *line, bool is_quote, bool *was_quote)
 {
@@ -264,8 +278,10 @@ char *scan_for_expand(char *line, bool is_quote, bool *was_quote)
         else
             string_append_char(new_line, *line);
     }
+
     return string_get_content(&new_line);
 }
+
 
 char *expand_quote(char **cursor, bool is_quote, bool *was_quote)
 {
@@ -319,11 +335,13 @@ char *expand_quote(char **cursor, bool is_quote, bool *was_quote)
     }
 }
 
+
 static bool is_tidle(char *str)
 {
     return strcmp(str, "~") == 0 || strcmp(str, "~+") == 0
                                                     || strcmp(str, "~-") == 0;
 }
+
 
 static char *expand(char **to_expand, bool is_quote, bool *was_quote)
 {
@@ -339,10 +357,13 @@ static char *expand(char **to_expand, bool is_quote, bool *was_quote)
         return expand_variable(to_expand);
     if (**to_expand == '`')
         return le_chapeau_de_expand_cmd(to_expand, '`', 1);
+    if (is_path_expansion(*to_expand) && !is_quote && !*was_quote)
+        return expand_path(*to_expand);
 
     //strdup cause need to be able to free anything from expand
     return strdup(*to_expand); //no expansion
 }
+
 
 static void insert_sub_var(struct array_list *expanded_parameters,
                                             char *expansion,
@@ -365,6 +386,7 @@ static void insert_sub_var(struct array_list *expanded_parameters,
         array_list_append(expanded_parameters, strdup(param));
     free(beg);
 }
+
 
 static int handle_expand_command(struct instruction *command_i)
 {
@@ -445,6 +467,7 @@ static int handle_expand_command(struct instruction *command_i)
     return 1;
 }
 
+
 void handle_sigint(int signal)
 {
     if (signal == SIGINT)
@@ -453,6 +476,7 @@ void handle_sigint(int signal)
         g_have_to_stop = true;
     }
 }
+
 
 static int handle_if(struct instruction *ast)
 {
@@ -467,6 +491,7 @@ static int handle_if(struct instruction *ast)
     struct instruction *else_clause = if_struct->else_container;
     return execute_ast(else_clause);
 }
+
 
 static int handle_and_or_instruction(struct instruction *ast)
 {
@@ -486,6 +511,7 @@ static int handle_and_or_instruction(struct instruction *ast)
     return return_code;
 }
 
+
 static bool is_func(struct instruction *ast)
 {
     struct command_container *command = ast->data;
@@ -494,12 +520,14 @@ static bool is_func(struct instruction *ast)
     return hash_find(g_env.functions, command->command) != NULL;
 }
 
+
 static int exec_func(struct instruction *ast)
 {
     struct command_container *command = ast->data;
     struct instruction *code = hash_find(g_env.functions, command->command);
     return execute_ast(code);
 }
+
 
 static bool is_builtin(struct instruction *ast)
 {
@@ -508,6 +536,7 @@ static bool is_builtin(struct instruction *ast)
         return false;
     return hash_find_builtin(g_env.builtins, command->command) != NULL;
 }
+
 
 //for now only execute shopt
 static int exec_builtin(struct instruction *ast)

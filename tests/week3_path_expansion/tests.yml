@@ -9,7 +9,7 @@
   stdin: echo ../*/*//////
 
 - name: echo src/*/
-  stdin: echo src/*/
+  stdin: echo ../src/*/
 
 - name: while *; do echo ok; done
   stdin: while *; do echo ok; done
