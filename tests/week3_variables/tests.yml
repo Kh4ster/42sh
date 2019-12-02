@@ -101,3 +101,24 @@
     var="$toto"
     toto=papa
     echo $var
+
+- name: echo $?
+  stdin: cmd_notfnd; echo $?
+
+- name: echo $$
+  stdin: echo $$
+
+- name: echo $# $1 $2 $@
+  options:
+    - ../tests/week3_variables/test1.sh
+    - 42 42 42
+
+- name: echo $RANDOM
+  stdin: echo $RANDOM
+
+- name: echo $UID
+  stdin: echo $UID
+
+- name: echo $SHELLOPTS
+  stdin: echo $SHELLOPTS
+

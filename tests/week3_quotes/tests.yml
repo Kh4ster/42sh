@@ -39,3 +39,20 @@
 
 - name: echo "ok""ok"/\"ok""
   stdin: echo "ok""ok"/\"ok""
+
+- name: complex quoting 1
+  stdin: test= ;echo 'jio               y'
+
+- name: complex quoting 2
+  options:
+    - ../tests/week3_quotes/test1.sh
+
+- name: complex quoting 3
+  stdin: echo "'"
+
+- name: complex quoting 4
+  stdin: echo '"'
+
+- name: complex quoting 5
+  options:
+    - ../tests/week3_quotes/test5.sh
