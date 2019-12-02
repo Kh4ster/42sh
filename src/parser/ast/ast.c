@@ -191,14 +191,6 @@ static bool is_multiple_words(char *expansion)
 
 static char *expand_variable(char **to_expand)
 {
-    char *special_variable = expand_special_variables(*to_expand);
-
-    if (special_variable != NULL)
-    {
-        *to_expand = *to_expand + (strlen(*to_expand) - 1);
-        return special_variable;
-    }
-
     (*to_expand)++; //skip $
     char *value;
 
@@ -207,8 +199,8 @@ static char *expand_variable(char **to_expand)
     char save;
     if (*to_expand != NULL)
     {
-         save = **to_expand;
-         **to_expand = '\0';
+        save = **to_expand;
+        **to_expand = '\0';
     }
 
     if ((value = hash_find(g_env.variables, beg)) == NULL)
@@ -351,6 +343,16 @@ static char *expand(char **to_expand, bool is_quote, bool *was_quote)
         return expand_quote(to_expand, is_quote, was_quote);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
         return le_chapeau_de_expand_cmd(to_expand, ')', 2);
+    if (**to_expand == '$')
+    {
+        char *result;
+        result = expand_special_variables(*to_expand);
+
+        if (result != NULL)
+        {       *to_expand += strlen(*to_expand) - 1;
+            return result;
+        }
+    }
     if (**to_expand == '$' && *(*to_expand + 1) == '{')
         return expand_variable_brackets(to_expand);
     if (**to_expand == '$')

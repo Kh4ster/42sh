@@ -104,6 +104,9 @@
 
 - name: echo $?
   stdin: cmd_notfnd; echo $?
+  checks:
+    - has_stderr
+    - stdout
 
 - name: echo $$
   stdin: echo $$
