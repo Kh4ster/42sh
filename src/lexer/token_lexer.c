@@ -128,7 +128,6 @@ static void set_token(struct token_lexer *token,
 }
 
 static void handle_comments(struct queue *token_queue,
-                    struct token_lexer *new_token,
                     char **cursor,
                     int is_linestart)
 {
@@ -151,7 +150,6 @@ static void handle_comments(struct queue *token_queue,
         last_token->data = strncat(last_token->data, *cursor, delim - *cursor);
         *cursor = delim;
     }
-    free(new_token);
 }
 
 static void add_next_line_to_current_and_update_cursors(char **cursor,
@@ -470,7 +468,8 @@ static struct token_lexer *generate_token(struct queue *token_queue,
 
     if (*cursor == '#')
     {
-        handle_comments(token_queue, new_token, delim, 0);
+        handle_comments(token_queue, delim, 0);
+        free(new_token);
         return 0;
     }
     else if (cursor != *delim) // word pointed by cursor is not a delimiter
@@ -492,7 +491,7 @@ struct queue *lexer(char *line, struct queue *token_queue)
         token_queue = queue_init();
 
     char *cursor = line;
-    handle_comments(token_queue, NULL, &cursor, 1);
+    handle_comments(token_queue, &cursor, 1);
     while (cursor != NULL && *cursor != '\0')
     {
         char *delim = get_delimiter(cursor, IFS);
