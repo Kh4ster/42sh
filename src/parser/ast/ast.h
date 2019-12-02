@@ -18,4 +18,4 @@
 extern int get_nb_params(char **params);
 
 extern int execute_ast(struct instruction *ast);
-char *scan_for_expand(char *line, bool is_quote);
+char *scan_for_expand(char *line, bool is_quote, bool *was_quote);

@@ -39,7 +39,7 @@ static char *strlwr(char *str)
 
 int is_path_expansion(char *pattern)
 {
-    assert(pattern);
+    assert(pattern != NULL);
 
     for (size_t i = 0; pattern[i] != '\0'; i++)
     {

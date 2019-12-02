@@ -32,8 +32,8 @@ bool g_have_to_stop = 0; //to break in case of signal
 
 #define IFS " \t\n"
 
-static char *expand(char **to_expand, bool is_quote);
-char *scan_for_expand(char *line, bool is_quote);
+static char *expand(char **to_expand, bool is_quote, bool *was_quote);
+char *scan_for_expand(char *line, bool is_quote, bool *was_quote);
 static char *expand_cmd(char *to_expand, char to_stop, int nb_to_skip);
 
 extern int get_nb_params(char **params)
@@ -241,7 +241,7 @@ static bool is_to_expand(char c)
                                                                 || c == '~';
 }
 
-char *scan_for_expand(char *line, bool is_quote)
+char *scan_for_expand(char *line, bool is_quote, bool *was_quote)
 {
     //first check if can be a path expansion
     if (!is_quote && is_path_expansion(line))
@@ -257,7 +257,7 @@ char *scan_for_expand(char *line, bool is_quote)
     {
         if (is_to_expand(*line))
         {
-            char *expansion = expand(&line, is_quote);
+            char *expansion = expand(&line, is_quote, was_quote);
             string_append(new_line, expansion);
             free(expansion);
         }
@@ -267,12 +267,14 @@ char *scan_for_expand(char *line, bool is_quote)
     return string_get_content(&new_line);
 }
 
-char *expand_quote(char **cursor, bool is_quote)
+char *expand_quote(char **cursor, bool is_quote, bool *was_quote)
 {
     if (**cursor == '\'')
     {
         if (!is_quote)
         {
+            if (was_quote != NULL)
+                *was_quote = true;
             (*cursor)++;
             char *beg = *cursor;
             *cursor = get_delimiter(*cursor, "\'");
@@ -287,6 +289,8 @@ char *expand_quote(char **cursor, bool is_quote)
     else if (**cursor == '"')
     {
         (*cursor)++;
+        if (was_quote != NULL)
+            *was_quote = true;
         char *beg = *cursor;
         *cursor = get_delimiter(*cursor, "\"\\");
         while (**cursor != '\"')
@@ -297,7 +301,7 @@ char *expand_quote(char **cursor, bool is_quote)
             *cursor = get_delimiter(*cursor, "\"\\");
         }
         **cursor = '\0'; //set " to 0
-        return scan_for_expand(beg, true);
+        return scan_for_expand(beg, true, was_quote);
     }
     else if (**cursor == '\\' && !is_quote)// \ handling outside quotes
     {
@@ -321,12 +325,12 @@ static bool is_tidle(char *str)
                                                     || strcmp(str, "~-") == 0;
 }
 
-static char *expand(char **to_expand, bool is_quote)
+static char *expand(char **to_expand, bool is_quote, bool *was_quote)
 {
     if (is_tidle(*to_expand))
         return expand_tilde(to_expand);
     if (**to_expand == '\'' || **to_expand == '"' || **to_expand == '\\')
-        return expand_quote(to_expand, is_quote);
+        return expand_quote(to_expand, is_quote, was_quote);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
         return le_chapeau_de_expand_cmd(to_expand, ')', 2);
     if (**to_expand == '$' && *(*to_expand + 1) == '{')
@@ -341,11 +345,12 @@ static char *expand(char **to_expand, bool is_quote)
 }
 
 static void insert_sub_var(struct array_list *expanded_parameters,
-                                            char *expansion
+                                            char *expansion,
+                                            bool *was_quote
 )
 {
     char *beg = expansion; //cause strtok_r will make expansion move
-    if (!is_multiple_words(expansion)) //expansion only gave one word
+    if (*was_quote || !is_multiple_words(expansion))
     {
         array_list_append(expanded_parameters, expansion);
         return;
@@ -366,14 +371,14 @@ static int handle_expand_command(struct instruction *command_i)
     struct command_container *command = command_i->data;
     struct array_list *expanded_parameters = array_list_init();
 
-    char *expansion = scan_for_expand(command->command, false);
+    char *expansion = scan_for_expand(command->command, false, NULL);
     if (*expansion == '\0') //expand empty var
     {
         free(expansion);
         size_t i = 1;
         while (command->params[i] != NULL) //while empty var we remove
         {
-            expansion = scan_for_expand(command->params[i], false);
+            expansion = scan_for_expand(command->params[i], false, NULL);
             if (*expansion == '\0')
             {
                 free(expansion);
@@ -401,7 +406,8 @@ static int handle_expand_command(struct instruction *command_i)
     bool is_first = true; //to know first paramter ($a $b echo-> echo is first)
     for (size_t i = 0; command->params[i] != NULL; ++i)
     {
-        expansion = scan_for_expand(command->params[i], false);
+        bool was_quote = false;
+        expansion = scan_for_expand(command->params[i], false, &was_quote);
         if (*expansion == '\0') //empty var
         {
             free(expansion);
@@ -410,7 +416,7 @@ static int handle_expand_command(struct instruction *command_i)
         else
         {
             if (!is_first) //the first param being command already pushed
-                insert_sub_var(expanded_parameters, expansion);
+                insert_sub_var(expanded_parameters, expansion, &was_quote);
             else
                 free(expansion);
             is_first = false;
@@ -742,7 +748,7 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
-        char *expantion = scan_for_expand(patterns->content[i], false);
+        char *expantion = scan_for_expand(patterns->content[i], false, NULL);
 
         if (patterns->content[i] != expantion)
         {
@@ -757,11 +763,10 @@ static int check_patterns(char *pattern, struct array_list *patterns)
     return 0;
 }
 
-
 static int handle_case(struct instruction *ast)
 {
     struct case_clause *case_clause = ast->data;
-    char *expantion = scan_for_expand(case_clause->pattern, false);
+    char *expantion = scan_for_expand(case_clause->pattern, false, NULL);
 
     if (case_clause->pattern != expantion)
     {

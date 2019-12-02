@@ -223,7 +223,10 @@ char *find_corresponding_parenthesis(char **cursor, char **token_start)
         while (**cursor != '\0' && counter_bracket != 0)
         {
             if (**cursor == '\'' || **cursor == '"')
+            {
                 skip_quoting(cursor, token_start);
+                continue;
+            }
             else if (**cursor == '(')
                 counter_bracket++;
             else if (**cursor == ')')

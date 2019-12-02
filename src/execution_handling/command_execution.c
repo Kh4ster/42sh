@@ -40,6 +40,18 @@ int exec_cmd(struct instruction *cmd_container)
     return WEXITSTATUS(wstatus);
 }
 
+static void trim_return_line(char *str)
+{
+    char *beg = str;
+    str += strlen(str) - 1;
+    //- 1 cause we can remove the char beg but not dereference the char before
+    while (str != beg - 1 && *str == '\n')
+    {
+        *str = '\0';
+        str--;
+    }
+}
+
 char *get_result_from_42sh(char *command)
 {
     int tube[2];
@@ -67,8 +79,7 @@ char *get_result_from_42sh(char *command)
     if (xread(str, tube[0]) == -1)
         errx(-1, "Bad read"); //-1 ?
 
-    if (str->content[0] != '\0') //else go to index -1
-        str->content[strlen(str->content) - 1] = 0; //! dunno why has to rm \n
+    trim_return_line(str->content);
 
     dup2(save_stdout, 1); //put back stdout
     close(tube[0]);     //close read side
