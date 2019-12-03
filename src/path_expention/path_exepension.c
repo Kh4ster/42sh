@@ -43,6 +43,8 @@ int is_path_expansion(char *pattern)
 
     for (size_t i = 0; pattern[i] != '\0'; i++)
     {
+        if (pattern[i] == '$')
+            return 0;
         if (pattern[i] == '*')
             return 1;
 
@@ -239,6 +241,10 @@ static void init_nb_recursions(char *pattern)
     char tmp = *begin_pattern;
     *begin_pattern = '\0';
     char *end_path = strrchr(pattern, '/');
+
+    if (!end_path)
+        return;
+
     *begin_pattern = tmp;
 
     for (int i = end_path - pattern + 1; pattern[i]; i++)

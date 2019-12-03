@@ -124,3 +124,19 @@
 
 - name: echo $SHELLOPTS
   stdin: echo $SHELLOPTS
+
+- name: echo $?toto
+  stdin: echo $?toto
+
+- name: echo $1tata
+  stdin: echo $1tata
+
+- name: echo $1 $2 $3toto
+  options: 
+    - ../tests/week3_variables/test2.sh
+    - titi tata toto tutu
+
+- name: echo $0tata
+  options:
+    - ../tests/week3_variables/test3.sh
+    - tete
