@@ -223,6 +223,7 @@ void hash_init(struct hash_map *s, size_t size)
     }
 }
 
+
 void hash_free(struct hash_map *s)
 {
     for (size_t i = 0; i < s->size; ++i)
