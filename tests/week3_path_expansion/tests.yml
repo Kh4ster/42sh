@@ -33,14 +33,31 @@
 - name: test dotglob
   stdin: echo ../*
   options:
-    - -O dotglob
+    - -O
+    - dotglob
 
 - name: test nocaseglob
   stdin: echo ../SRC*
   options:
-    - -O nocaseglob
+    - -O
+    - nocaseglob
 
 - name: test nullglob
   stdin: echo prout/*
   options:
-    - -O nullglob
+    - -O
+    - nullglob
+
+- name: test dir1/dir2/f*/f*
+  stdin: echo dir1/dir2/f*/f*
+
+- name: test dir1/dir2/f*/
+  stdin: echo dir1/dir2/f*/
+
+- name: test dir1/dir2/f*/[a-z]?
+  stdin: echo dir1/dir2/f*/[a-z]?
+
+- name: test dir1/dir2/f*/[a-z]+
+  stdin: echo dir1/dir2/f*/[a-z]+
+
+

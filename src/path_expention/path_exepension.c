@@ -241,11 +241,10 @@ static void init_nb_recursions(char *pattern)
     char tmp = *begin_pattern;
     *begin_pattern = '\0';
     char *end_path = strrchr(pattern, '/');
+    *begin_pattern = tmp;
 
     if (!end_path)
         return;
-
-    *begin_pattern = tmp;
 
     for (int i = end_path - pattern + 1; pattern[i]; i++)
     {
