@@ -16,6 +16,36 @@
 - name: echo "*"
   stdin: echo "*"
 
+- name: echo """
+  stdin: echo """
+
+- name: echo ""
+  stdin: echo ""
+
+- name: echo $
+  stdin: echo $
+
+- name: echo $$
+  stdin: echo $$
+
+- name: echo $()
+  stdin: echo $()
+
+- name: echo ``
+  stdin: echo ``
+
+- name: echo '
+  stdin: echo '
+
+- name: echo ''
+  stdin: echo ''
+
+- name: echo ${}
+  stdin: echo ${}
+
+- name: echo ~$(echo ok)$
+  stdin: echo ~$(echo ok)$
+
 - name: echo "$toto"
   stdin: toto=papa; echo "$toto"
 
