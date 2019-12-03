@@ -18,3 +18,12 @@
 
 - name: echo tests/*
   stdin: echo tests/*
+
+- name: echo ~
+  stdin: echo ~
+
+- name: echo ~-
+  stdin: echo ~-
+
+- name: echo ~+
+  stdin: echo ~+

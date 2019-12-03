@@ -102,6 +102,9 @@
 - name: echo $?
   stdin: cmd_notfnd; echo $?
 
+- name: echo $?toto
+  stdin: echo $?toto
+
 - name: echo $$
   stdin: echo $$
 
@@ -119,3 +122,17 @@
 - name: echo $SHELLOPTS
   stdin: echo $SHELLOPTS
 
+- name: var=test; echo $(echo $var "jio" ' l' *)
+  stdin: var=test; echo $(echo $var "jio" ' l' *)
+
+- name: var=test; echo $(var=oui; echo $var)
+  stdin: var=test; echo $(var=oui; echo $var)
+
+- name: var=acu; echo $(echo $var)
+  stdin: var=acu; echo $(echo $var)
+
+- name: FILE="/etc/resolv.conf"; echo "File is \$FILE "
+  stdin: FILE="/etc/resolv.conf"; echo "File is \$FILE "
+
+- name: FILE="/etc/resolv.conf"; echo "File is $FILE "
+  stdin: FILE="/etc/resolv.conf"; echo "File is $FILE "

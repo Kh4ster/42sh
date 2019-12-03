@@ -84,3 +84,15 @@
 
 - name: echo -e \e
   stdin: echo -e "toto\evrbet"
+
+- name: echo \
+  stdin: echo \
+
+- name: echo -e "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+  stdin: echo -e "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+
+- name: echo -E "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+  stdin: echo -E "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+
+- name: echo -e "ddc@//\n/\\dcd%C\fC/'/#/%\ef'c*edc"
+  stdin: echo -e "ddc@/'\n'//\\dcd%\tCC/'/#/%\ef'\vc*edc"
