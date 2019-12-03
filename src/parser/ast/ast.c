@@ -305,6 +305,8 @@ char *expand_quote(char **cursor, bool is_quote, bool *was_quote)
     }
     else if (**cursor == '\\' && !is_quote)// \ handling outside quotes
     {
+        if (*(*cursor + 1) == '\0') /*line end with \*/
+            return strdup("");
         *cursor = *cursor + 1;
         return strndup(*cursor, 1); // keep literal value after the backslash
     }
