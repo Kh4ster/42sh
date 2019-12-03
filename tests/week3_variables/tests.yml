@@ -124,4 +124,3 @@
 
 - name: echo $SHELLOPTS
   stdin: echo $SHELLOPTS
-

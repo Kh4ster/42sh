@@ -54,6 +54,7 @@ static char *expand_tilde(char **str)
 {
     if (strcmp("~", *str) == 0)
         return strdup(getenv("HOME"));
+
     if (strcmp("~+", *str) == 0)
     {
         (*str)++;
@@ -61,14 +62,21 @@ static char *expand_tilde(char **str)
     }
     if (strcmp("~-", *str) == 0)
     {
-        (*str)++;
-        return strdup(g_env.old_pwd);
+        if (g_env.old_pwd)
+        {
+            (*str)++;
+            return strdup(g_env.old_pwd);
+        }
     }
-    return "mdr"; //never happens
+
+    char *to_return = strdup(*str);
+    (*str) += strlen(*str) - 1;
+
+    return to_return; //never happens
 }
 
 
-static char* expand_path(char *str)
+static char *expand_path(char *str)
 {
     struct path_globbing *glob = sh_glob(str);
 
@@ -335,6 +343,31 @@ static bool is_tidle(char *str)
 }
 
 
+static char *expand_if_special_variable(char **to_expand)
+{
+    char *result;
+    char *end_spec;
+    char *cpy_expansion = strdup(*to_expand);
+
+    if (*cpy_expansion + 1 == '{')
+        end_spec = strpbrk(cpy_expansion, "}");
+    else
+        end_spec = strpbrk(cpy_expansion + 1, "0123456789#$@?*");
+
+    if (end_spec)
+    {
+        *(end_spec + 1) = '\0';
+    }
+
+    result = expand_special_variables(cpy_expansion);
+
+    if (result != NULL)
+        *to_expand += strlen(cpy_expansion) - 1;
+
+    free(cpy_expansion);
+    return result;
+}
+
 static char *expand(char **to_expand, bool is_quote, bool *was_quote)
 {
     if (is_tidle(*to_expand))
@@ -343,16 +376,15 @@ static char *expand(char **to_expand, bool is_quote, bool *was_quote)
         return expand_quote(to_expand, is_quote, was_quote);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
         return le_chapeau_de_expand_cmd(to_expand, ')', 2);
+
     if (**to_expand == '$')
     {
         char *result;
-        result = expand_special_variables(*to_expand);
 
-        if (result != NULL)
-        {       *to_expand += strlen(*to_expand) - 1;
+        if ((result = expand_if_special_variable(to_expand)) != NULL)
             return result;
-        }
     }
+
     if (**to_expand == '$' && *(*to_expand + 1) == '{')
         return expand_variable_brackets(to_expand);
     if (**to_expand == '$')
@@ -363,7 +395,9 @@ static char *expand(char **to_expand, bool is_quote, bool *was_quote)
         return expand_path(*to_expand);
 
     //strdup cause need to be able to free anything from expand
-    return strdup(*to_expand); //no expansion
+    char *to_return = strdup(*to_expand); //no expansion
+    *to_expand += strlen(*to_expand) - 1;
+    return to_return;
 }
 
 
