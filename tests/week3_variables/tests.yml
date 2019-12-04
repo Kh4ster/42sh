@@ -79,11 +79,23 @@
 - name: $(va=test; echo $var)
   stdin: $(va=test; echo $var)
 
+- name: var=toto; echo $(var=ok; echo $var $(echo $var))
+  stdin: var=toto; echo $(var=ok; echo $var $(echo $var))
+
+- name: var=toto; echo $(echo $var $(var=ok; echo $var))
+  stdin: var=toto; echo $(echo $var $(var=ok; echo $var))
+
+- name: var=toto; echo $(echo ok &&var=ok; echo $var $(echo $var))
+  stdin: var=toto; echo $(echo ok &&var=ok; echo $var $(echo $var))
+
 - name: va=test; echo $var
   stdin: va=test; echo $var
 
 - name: var=$(echo ok); echo ok; echo $var
   stdin: var=$(echo ok); echo ok; echo $var
+
+- name: var=toto; $(var= ;echo $var)
+  stdin: var=toto; $(var= ;echo $var)
 
 - name: var="$test"; test=aaa; echo $var
   stdin: |
