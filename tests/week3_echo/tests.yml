@@ -22,15 +22,6 @@
 - name: echo -n
   stdin: echo -n "Tecmint is a community of Linux Nerds"
 
-- name: echo -nENENENnnene
-  stdin: echo -nENENENnnene "Tecmint is a community of Linux Nerds"
-
-- name: echo -z -nENENENnnene
-  stdin: echo -z -nENENENnnene "Tecmint is a community of Linux Nerds"
-
-- name: echo -e -nENaENENnnene
-  stdin: echo -e -nENaENENnnene "Tecmint is a community of Linux Nerds"
-
 - name: echo -e \a
   stdin: echo -e "Tecmint is a community of \aLinux Nerds"
 
@@ -80,16 +71,28 @@
   stdin: echo -e "Tecmint is a community \cof Linux Nerds"
 
 - name: echo \f
-  stdin: echo 'Trois retours chariot \f \f \f'
+  stdin: echo $'Trois retours chariot \f \f \f'
 
 - name: echo -e \f
-  stdin: echo -e 'Trois retours chariot \f \f \f'
+  stdin: echo -e $'Trois retours chariot \f \f \f'
 
 - name: echo -E \f
-  stdin: echo -E 'Trois retours chariot \f \f \f'
+  stdin: echo -E $'Trois retours chariot \f \f \f'
 
 - name: echo -E \e
   stdin: echo -E "toto\evrbet"
 
 - name: echo -e \e
   stdin: echo -e "toto\evrbet"
+
+- name: echo \
+  stdin: echo \
+
+- name: echo -e "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+  stdin: echo -e "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+
+- name: echo -E "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+  stdin: echo -E "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+
+- name: echo -e "ddc@/'\n'//\\dcd%\tCC/'/#/%\ef'\vc*edc"
+  stdin: echo -e "ddc@/'\n'//\\dcd%\tCC/'/#/%\ef'\vc*edc"

@@ -85,3 +85,18 @@
 - name: complex command substitution mix back quote dollard
   options:
     - ../test/week3_subtitution/test7.sh
+- name: $(echo toto)/
+  stdin: $(echo toto)/
+
+- name: $(echo toto)\
+  stdin: $(echo toto)\
+  checks:
+    - returncode
+    - has_stderr
+
+- name: echo ok\
+  stdin: echo ok\
+
+- name: echo \
+  stdin: echo \
+
