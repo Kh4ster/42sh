@@ -12,10 +12,10 @@
 /** @struct node
 * @brief One node of a stack containing its value and a pointer to the next node
 */
-struct node
+struct stack_node
 {
     void *data;
-    struct node *next;
+    struct stack_node *next;
 };
 
 
@@ -25,7 +25,7 @@ its size
 */
 struct stack
 {
-    struct node *head;
+    struct stack_node *head;
     size_t size;
 };
 
