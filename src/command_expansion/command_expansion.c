@@ -143,13 +143,13 @@ static char *expand_variable_brackets(char **to_expand)
     return result;
 }
 
-bool is_to_expand(char c)
+static bool is_to_expand(char c)
 {
     return c == '$' || c == '\'' || c == '"' || c == '`' || c == '\\'
                                                                 || c == '~';
 }
 
-char *scan_for_expand(char *line, bool is_quote, bool *was_quote)
+char *scan_for_expand(char *line, bool is_quote, int *was_quote)
 {
     //first check if can be a path expansion
     if (!is_quote && is_path_expansion(line))
@@ -175,14 +175,14 @@ char *scan_for_expand(char *line, bool is_quote, bool *was_quote)
     return string_get_content(&new_line);
 }
 
-char *expand_quote(char **cursor, bool is_quote, bool *was_quote)
+char *expand_quote(char **cursor, bool is_quote, int *was_quote)
 {
     if (**cursor == '\'')
     {
-        if (!is_quote)
+        if (!is_quote) //is quote inside quote return quote
         {
             if (was_quote != NULL)
-                *was_quote = true;
+                *was_quote = 1;
             (*cursor)++;
             char *beg = *cursor;
             *cursor = get_delimiter(*cursor, "\'");
@@ -190,15 +190,13 @@ char *expand_quote(char **cursor, bool is_quote, bool *was_quote)
             return strdup(beg);
         }
         else
-        {
             return strdup("'");
-        }
     }
     else if (**cursor == '"')
     {
         (*cursor)++;
         if (was_quote != NULL)
-            *was_quote = true;
+            *was_quote = 2;
         char *beg = *cursor;
         *cursor = get_delimiter(*cursor, "\"\\");
         while (**cursor != '\"')
@@ -235,7 +233,7 @@ static bool is_tidle(char *str)
                                                     || strcmp(str, "~-") == 0;
 }
 
-char *expand(char **to_expand, bool is_quote, bool *was_quote)
+char *expand(char **to_expand, bool is_quote, int *was_quote)
 {
     if (is_tidle(*to_expand))
         return expand_tilde(to_expand);
@@ -256,7 +254,7 @@ char *expand(char **to_expand, bool is_quote, bool *was_quote)
 
 static void insert_sub_var(struct array_list *expanded_parameters,
                                             char *expansion,
-                                            bool *was_quote
+                                            int *was_quote
 )
 {
     char *beg = expansion; //cause strtok_r will make expansion move
@@ -316,7 +314,7 @@ int handle_expand_command(struct instruction *command_i)
     bool is_first = true; //to know first paramter ($a $b echo-> echo is first)
     for (size_t i = 0; command->params[i] != NULL; ++i)
     {
-        bool was_quote = false;
+        int was_quote = 0;
         expansion = scan_for_expand(command->params[i], false, &was_quote);
         if (*expansion == '\0') //empty var
         {

@@ -28,7 +28,7 @@ char *hat_of_expand_cmd(char **to_expand,
 */
 char *custom_scan(char *line,
                 bool is_quote,
-                bool *was_quote,
+                int *was_quote,
                 struct hash_map *inner_var);
 
 /**

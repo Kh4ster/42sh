@@ -55,7 +55,7 @@ static void trim_return_line(char *str)
 
 char *get_result_from_42sh(char *command, struct hash_map *inner_var)
 {
-    bool was_quoted = false;
+    int was_quoted = 0;
     command = custom_scan(command, false, &was_quoted, inner_var);
 
     int tube[2];
@@ -93,9 +93,15 @@ char *get_result_from_42sh(char *command, struct hash_map *inner_var)
     if (was_quoted)
     {
         char *quoted_result = xcalloc(str->index + 3, sizeof(char));
-        strcat(quoted_result, "\"");
+        if (was_quoted == 2)
+            strcat(quoted_result, "\"");
+        else //single quote
+            strcat(quoted_result, "\"");
         strcat(quoted_result, str->content);
-        strcat(quoted_result, "\"");
+        if (was_quoted == 2)
+            strcat(quoted_result, "\"");
+        else //single quote
+            strcat(quoted_result, "\"");
         string_free(&str);
         return quoted_result;
     }

@@ -65,8 +65,8 @@ static void add_to_inner_var(char *beg, char *cursor, struct hash_map *inner_var
 
 static bool is_not_inner_var(char *line, struct hash_map *inner_var)
 {
-    if (*line != '$') //if not dollar, expansion will be done in command
-        return false;
+    if (*line != '$') //if not dollar, it's not inner var
+        return true;
     line++; //skip dollar
     if (*(line + 1) == '{')
         line++;
@@ -81,9 +81,14 @@ static bool is_not_inner_var(char *line, struct hash_map *inner_var)
     return result == NULL;
 }
 
+static bool custom_is_to_expand(char c)
+{
+    return c == '$' || c == '`' || c == '\\' || c == '~';
+}
+
 char *custom_scan(char *line,
                         bool is_quote,
-                        bool *was_quote,
+                        int *was_quote,
                         struct hash_map *inner_var
 )
 {
@@ -91,14 +96,20 @@ char *custom_scan(char *line,
 
     for (; *line != '\0'; line++)
     {
-        if (is_to_expand(*line) && is_not_inner_var(line, inner_var))
+        if (custom_is_to_expand(*line) && is_not_inner_var(line, inner_var))
         {
             char *expansion = expand(&line, is_quote, was_quote);
             string_append(new_line, expansion);
             free(expansion);
         }
         else
+        {
+            if (*line == '\'')
+                *was_quote = 1;
+            else if (*line == '"')
+                *was_quote = 2;
             string_append_char(new_line, *line);
+        }
     }
     return string_get_content(&new_line);
 }
