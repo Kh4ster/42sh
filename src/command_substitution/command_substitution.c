@@ -52,10 +52,10 @@ static bool is_not_delimiter(char caracter)
     return true;
 }
 
-static void add_to_inner_var(char *cursor, struct hash_map *inner_var)
+static void add_to_inner_var(char *beg, char *cursor, struct hash_map *inner_var)
 {
     char *equal_sign = cursor;
-    while (is_not_delimiter(*cursor))
+    while (cursor >= beg && is_not_delimiter(*cursor))
         cursor--;
     cursor++; //skip symbol
     char *var_name = strndup(cursor, equal_sign - cursor);
@@ -127,7 +127,7 @@ char *expand_cmd(char *to_expand,
                                                     to_expand,
                                                     *cursor,
                                                     inner_var);
-                if (to_free)
+                if (to_free) //already expanded a first one
                     free(to_expand);
                 to_expand = expansion;
                 cursor = to_expand;
@@ -137,7 +137,7 @@ char *expand_cmd(char *to_expand,
                 cursor++;
             else if (*cursor == '=')    //fell on a var assignement
             {
-                add_to_inner_var(cursor, inner_var);
+                add_to_inner_var(to_expand, cursor, inner_var);
                 cursor++;
             }
         }
