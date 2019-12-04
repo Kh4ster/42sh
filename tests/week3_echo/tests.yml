@@ -25,6 +25,9 @@
 - name: echo -e \a
   stdin: echo -e "Tecmint is a community of \aLinux Nerds"
 
+- name: var="/\\fd\/\e5%vf#\-"; echo -e $var
+  stdin: var="/\\fd\/\e5%vf#\-"; echo -e $var
+
 - name: echo -e "\\"
   stdin: echo -e "\\"
 

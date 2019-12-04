@@ -114,6 +114,9 @@
     toto=papa
     echo $var
 
+- name: var="/\\fd\/\e5%vf#\-"; echo $var
+  stdin: var="/\\fd\/\e5%vf#\-"; echo $var
+
 - name: echo $?
   stdin: cmd_notfnd; echo $?
 
