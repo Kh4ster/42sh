@@ -231,7 +231,7 @@ int main(int argc, char *argv[], char *env[])
     while (42 && !is_end)
     {
         int error = 0;
-        g_env.prompt = "42sh$ ";
+        g_env.prompt = 1;
         struct instruction *ast = parse_input(lexer, &is_end, &error);
 
         if (ast)
