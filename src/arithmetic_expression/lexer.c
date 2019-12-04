@@ -9,7 +9,7 @@
 
 static void skip_blank(char **cursor)
 {
-    while (isblank(**cursor))
+    while (isspace(**cursor))
         (*cursor)++;
 }
 
@@ -172,7 +172,7 @@ static int get_priority(enum token_type type)
     else if (type == TOKEN_NOT)
         return 5;
 
-    // error in given token
+    // parenthesis or error in given token
     return -2;
 }
 
