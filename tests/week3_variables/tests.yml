@@ -1,7 +1,7 @@
 - name: papa=toto echo ${papa}
   stdin: papa=toto; echo ${papa}
 
-- name: papa=toto echo ${{papa}}
+- name: papa=toto echo ${{papa}} (ultra chiant car { var valide)
   stdin: papa=toto; echo ${{papa}}
   checks:
     - returncode
@@ -19,7 +19,7 @@
 - name: papa=toto echo {${papa}}
   stdin: papa=toto; echo {${papa}}
 
-- name: papa=toto echo ${}{papa}
+- name: papa=toto echo ${}{papa} (chiant parce que peu être pris comme des char)
   stdin: papa=toto; echo ${}{papa}
   checks:
     - returncode
@@ -36,6 +36,9 @@
     papa=toto
     echo ${papa
     \}
+  checks:
+    - returncode
+    - has_stderr
 
 - name: papa=toto echo $papa}
   stdin: papa=toto; echo $papa}
@@ -67,7 +70,7 @@
     - returncode
     - has_stderr
 
-- name: variable assignement syntax edge case (var= test)
+- name: variable assignement syntax edge case (var= test) (miss prefix)
   stdin: var= test; echo $var
 
 - name: vara=test; echo $(echo $var)a

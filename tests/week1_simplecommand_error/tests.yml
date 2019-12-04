@@ -68,7 +68,6 @@
 - name : echo toto \n || echo papa ; && echo dcdv ; || ech
   stdin : echo toto \n || echo papa ; && echo dcdv ; || ech
   checks:
-    - has_stdout
     - has_stderr
     - returncode
 

@@ -28,6 +28,27 @@ static struct hash_slot* get_slot(struct hash_map *set, char *key)
     return s;
 }
 
+static void hash_update(struct hash_map *set,
+                char *key,
+                void *data)
+{
+    struct hash_slot *s = get_slot(set, key);
+
+    if (s->key == NULL) //key no present
+        return;
+
+    while (strcmp(s->key, key) != 0)
+    {
+        s = s->next;
+        if (s == NULL)
+            return;
+    }
+
+    free(s->data);
+    s->data = strdup(data);
+}
+
+
 void hash_insert(struct hash_map *set,
                 char *key,
                 void *data,
@@ -71,6 +92,8 @@ void hash_insert(struct hash_map *set,
             s = s->next;
         s->next = new;
     }
+    else
+        hash_update(set, key, data);
 }
 
 void hash_insert_builtin(struct hash_map *set,
@@ -149,7 +172,7 @@ int hash_remove(struct hash_map *set, char *key)
     return free_slot(s);
 }
 
-void* hash_find(struct hash_map *set, char *key)
+void *hash_find(struct hash_map *set, char *key)
 {
     assert(key != NULL);
 

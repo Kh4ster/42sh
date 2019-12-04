@@ -55,6 +55,9 @@
 - name: echo -e "\xHH"
   stdin: echo -e "\x40"
 
+- name: echo -e "abc\x01yabc"
+  stdin: echo -e "abc\x01yabc"
+
 - name: echo -e "\0NNN"
   stdin: echo -e "\0176"
 
@@ -74,10 +77,10 @@
   stdin: echo $'Trois retours chariot \f \f \f'
 
 - name: echo -e \f
-  stdin: echo $'Trois retours chariot \f \f \f'
+  stdin: echo -e $'Trois retours chariot \f \f \f'
 
 - name: echo -E \f
-  stdin: echo $'Trois retours chariot \f \f \f'
+  stdin: echo -E $'Trois retours chariot \f \f \f'
 
 - name: echo -E \e
   stdin: echo -E "toto\evrbet"
@@ -88,11 +91,23 @@
 - name: echo \
   stdin: echo \
 
-- name: echo -e "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+- name: complex echo 1
   stdin: echo -e "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
 
-- name: echo -E "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+- name: complex echo 2
   stdin: echo -E "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
 
-- name: echo -e "ddc@//\n/\\dcd%C\fC/'/#/%\ef'c*edc"
+- name: complex echo 3
   stdin: echo -e "ddc@/'\n'//\\dcd%\tCC/'/#/%\ef'\vc*edc"
+
+- name: complex echo 4
+  stdin: echo -e "\\e\4423467 \\e\123 !\n\c21ÿFFÿff\\1999\\29a\\xT"
+
+- name: complex echo 5
+  stdin: echo -e "\\e\4423467 \\e\123 \\b !\n\c21ÿFFÿff\\1999\\29a\\xT"
+
+- name: complex echo 6
+  stdin: echo -e "\\e\4423467 \\e\123 \\b!\n\c21ÿFFÿff\\1999\\29a\\xT"
+
+- name: complex echo 7
+  stdin: echo -e "abc \\\x01\n\cyabc"

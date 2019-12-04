@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <err.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "parser.h"
 #include "ast/ast.h"
@@ -15,6 +16,7 @@
 #include "../data_structures/array_list.h"
 #include "../data_structures/hash_map.h"
 #include "../redirections_handling/redirect.h"
+#include "../data_structures/data_string.h"
 
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)
@@ -22,6 +24,8 @@
 #define NEXT_IS_OTHER() next_is_other(lexer)
 #define NEXT_IS_ASSIGNEMENT() next_is_assignement(lexer)
 #define NEXT_IS_NUMBER() next_is_number(lexer)
+
+#define IFS " \t\n"
 
 static bool next_is_assignement(struct queue *lexer)
 {
@@ -458,11 +462,39 @@ static struct instruction *add_command_redirection(
     return redirection;
 }
 
+//for variable we just want 1 space between variable
+static char *slice_expansion(char *var)
+{
+    if (var[0] == '\0') //empty after expansion
+        return var;
+
+    char *beg = var;
+    struct string *sliced_value = string_init();
+    string_append(sliced_value, strtok_r(var, IFS, &var));
+    char *slice;
+    while ((slice = strtok_r(var, IFS, &var)) != NULL)
+    {
+        slice--;
+        *slice = ' '; //insert one space juste before
+        string_append(sliced_value, slice);
+    }
+    char *content = string_get_content(&sliced_value);
+    free(beg);
+    return content;
+}
+
 static void add_variable(char *var)
 {
     char *name = strtok_r(var, "=", &var);
     char *value = strtok_r(NULL, "=", &var);
+
+    if (value == NULL) //empty var value
+        value = strdup("");
+    else
+        value = slice_expansion(scan_for_expand(value, false, NULL));
+
     hash_insert(g_env.variables, name, value, STRING);
+    free(value);
 }
 
 static struct instruction *parse_simple_command(struct queue *lexer)

@@ -18,3 +18,5 @@ struct path_globbing {
 extern void destroy_path_glob(struct path_globbing *p_glob);
 
 extern struct path_globbing *sh_glob(char *pattern);
+
+int is_path_expansion(char *pattern);

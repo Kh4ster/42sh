@@ -58,7 +58,7 @@
 - name: echo "$toto'"
   stdin: toto=papa; echo "$toto'"
 
-- name: echo "$toto'"
+- name: echo "$toto'" backslash
   stdin: toto=papa; echo "$toto\""
 
 - name: echo "$toto\"'"""

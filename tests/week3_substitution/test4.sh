@@ -1,2 +1,2 @@
 var=test
-$(echo $var)
+echo $(echo $var)
