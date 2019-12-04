@@ -16,7 +16,7 @@
 - name: echo "*"
   stdin: echo "*"
 
-- name: echo """
+- name: echo """ (chiant pour savoir la fin)
   stdin: echo """
 
 - name: echo ""
@@ -36,12 +36,18 @@
 
 - name: echo '
   stdin: echo '
+  checks:
+  - returncode
+  - has_stderr
 
 - name: echo ''
   stdin: echo ''
 
 - name: echo ${}
   stdin: echo ${}
+  checks:
+  - returncode
+  - has_stderr
 
 - name: echo ~$(echo ok)$
   stdin: echo ~$(echo ok)$
@@ -85,4 +91,4 @@
 
 - name: complex quoting 5
   options:
-    - ../tests/week3_quotes/test5.sh
+    - ../tests/week3_quotes/test2.sh

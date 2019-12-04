@@ -58,7 +58,9 @@ set(SRC_FILES
     src/builtins/exit.c
     src/builtins/export.c
     src/path_expention/path_exepension.c
-    src/variables/expand_special_variables.c
+    src/special_variables/expand_special_variables.c
+    src/command_substitution/command_substitution.c
+    src/command_expansion/command_expansion.c
 )
 
 # ---- List of test files (unit tests) ----

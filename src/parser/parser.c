@@ -17,6 +17,7 @@
 #include "../data_structures/hash_map.h"
 #include "../redirections_handling/redirect.h"
 #include "../data_structures/data_string.h"
+#include "../command_expansion/command_expansion.h"
 
 #define NEXT_IS(X) next_is(lexer, X)
 #define EAT() eat_token(lexer)

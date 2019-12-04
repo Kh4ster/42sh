@@ -15,6 +15,7 @@
 #include "../input_output/read.h"
 #include "../data_structures/data_string.h"
 #include "../input_output/get_next_line.h"
+#include "../command_substitution/command_substitution.h"
 
 int exec_cmd(struct instruction *cmd_container)
 {
@@ -52,8 +53,10 @@ static void trim_return_line(char *str)
     }
 }
 
-char *get_result_from_42sh(char *command)
+char *get_result_from_42sh(char *command, struct hash_map *inner_var)
 {
+    command = custom_scan(command, false, NULL, inner_var);
+
     int tube[2];
     if (pipe(tube) == -1)
         errx(-1, "Bad pipe"); //-1 ?
@@ -84,6 +87,7 @@ char *get_result_from_42sh(char *command)
     dup2(save_stdout, 1); //put back stdout
     close(tube[0]);     //close read side
     close(save_stdout);
+    free(command);
 
     return string_get_content(&str);
 }

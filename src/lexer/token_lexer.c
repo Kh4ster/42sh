@@ -267,7 +267,14 @@ static void handle_dollar(char **cursor, char **token_start)
     }
     else if (**cursor == '{')
     {
-        (*cursor)++;
+        (*cursor)++; //skip {
+        if (**cursor == '}')
+        {
+            if (is_interactive())
+                warnx("Bad lexing");
+            else
+                errx(2, "Bad lexing");
+        }
         while (**cursor != '\0' && **cursor != '}')
             (*cursor)++;
         if (**cursor == '\0')
