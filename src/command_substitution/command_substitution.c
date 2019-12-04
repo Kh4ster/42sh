@@ -123,10 +123,13 @@ char *expand_cmd(char *to_expand,
             //recursive call to expand command
             if ((*cursor == '$' && cursor[1] == '(') || *cursor == '`')
             {
-                to_expand = expand_nested_command(cursor,
+                char *expansion = expand_nested_command(cursor,
                                                     to_expand,
                                                     *cursor,
                                                     inner_var);
+                if (to_free)
+                    free(to_expand);
+                to_expand = expansion;
                 cursor = to_expand;
                 to_free = true;
             }
