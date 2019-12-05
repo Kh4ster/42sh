@@ -10,4 +10,3 @@
 - name: many operations 2
   stdin: d=$(($d+3/5-2*12244+d+6)); echo $d
 
-- name: 
