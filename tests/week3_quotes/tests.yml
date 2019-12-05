@@ -16,6 +16,36 @@
 - name: echo "*"
   stdin: echo "*"
 
+- name: echo """
+  stdin: echo """
+
+- name: echo ""
+  stdin: echo ""
+
+- name: echo $
+  stdin: echo $
+
+- name: echo $$
+  stdin: echo $$
+
+- name: echo $()
+  stdin: echo $()
+
+- name: echo ``
+  stdin: echo ``
+
+- name: echo '
+  stdin: echo '
+
+- name: echo ''
+  stdin: echo ''
+
+- name: echo ${}
+  stdin: echo ${}
+
+- name: echo ~$(echo ok)$
+  stdin: echo ~$(echo ok)$
+
 - name: echo "$toto"
   stdin: toto=papa; echo "$toto"
 
@@ -40,6 +70,12 @@
 - name: echo "ok""ok"/\"ok""
   stdin: echo "ok""ok"/\"ok""
 
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$""$abc" )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$""$abc" )
+
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$"'$abc' )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$"'$abc' )
+
 - name: complex quoting 1
   stdin: test= ;echo 'jio               y'
 
@@ -56,3 +92,37 @@
 - name: complex quoting 5
   options:
     - ../tests/week3_quotes/test5.sh
+
+- name: ls "./"
+  stdin: ls "./"
+
+- name: ls "../"
+  stdin: ls "../"
+
+- name: cd "-"
+  stdin: cd "-"
+
+- name : echo "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+  stdin: echo "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
+
+- name: echo -e "ddc@/'\n'//\\dcd%\tC\cC/'/#/%\ef//\v'\vc*edc"
+  stdin: echo -e "ddc@/'\n'//\\dcd%\tC\cC/'/#/%\ef//\v'\vc*edc"
+
+- name: echo "/etc/$*.conf"
+  stdin: echo "/etc/$*.conf"
+
+- name: echo '/etc/$*.conf'
+  stdin: echo '/etc/$*.conf'
+
+- name: FILE="/etc/resolv.conf"; echo "File is '$FILE'2022 "
+  stdin: FILE="/etc/resolv.conf"; echo "File is '$FILE'2022 "
+
+- name: FILE="/etc/resolv.conf"; echo "File is "$FILE"2022 "
+  stdin: FILE="/etc/resolv.conf"; echo "File is "$FILE"2022 "
+
+- name: FILE="/etc/resolv.conf"; echo "File is \"$FILE "
+  stdin: FILE="/etc/resolv.conf"; echo "File is \"$FILE "
+
+- name: FILE="/etc/resolv.conf"; echo "File is \\"$FILE2022\"
+  stdin: FILE="/etc/resolv.conf"; echo "File is \\"$FILE2022\"
+
