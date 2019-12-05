@@ -27,6 +27,8 @@
 #include "../../data_structures/data_string.h"
 #include "../../variables/expand_special_variables.h"
 #include "../../path_expention/path_exepension.h"
+#include "../../arithmetic_expression/parser.h"
+#include "../../arithmetic_expression/tree.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
 
@@ -325,12 +327,44 @@ static bool is_tidle(char *str)
                                                     || strcmp(str, "~-") == 0;
 }
 
+
+
+static char *handle_expand_arithmetic(char **to_expand)
+{
+    char *begin = *to_expand + 3;
+    char *end = strrchr(begin, ')');
+    char *to_compute = strndup(begin, end - begin - 1);
+    struct node *root = parser(to_compute);
+    int result = 1;
+
+    if (root)
+    {
+        result = evaluate_tree(root);
+        destroy_ar_tree(root);
+    }
+
+    char *to_return = NULL;
+
+    int error = asprintf(&to_return, "%d", result);
+
+    *to_expand += strlen(to_compute) + 4;
+
+    free(to_compute);
+
+    if (error == -1)
+        return NULL;
+    return to_return;
+}
+
+
 static char *expand(char **to_expand, bool is_quote, bool *was_quote)
 {
     if (is_tidle(*to_expand))
         return expand_tilde(to_expand);
     if (**to_expand == '\'' || **to_expand == '"' || **to_expand == '\\')
         return expand_quote(to_expand, is_quote, was_quote);
+    if (strncmp(*to_expand, "$((", 3) == 0)
+        return handle_expand_arithmetic(to_expand);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
         return le_chapeau_de_expand_cmd(to_expand, ')', 2);
     if (**to_expand == '$' && *(*to_expand + 1) == '{')

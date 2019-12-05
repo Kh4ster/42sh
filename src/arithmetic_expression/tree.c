@@ -8,12 +8,12 @@ extern struct node *create_tree(struct stack *out)
 {
     struct node *current = stack_pop(out);
 
-    if (current->type == TOKEN_OPERAND)
+    if (current->type == AR_TOKEN_OPERAND)
         return current;
 
-    if (current->data.operators->type == TOKEN_NOT ||
-                    current->data.operators->type == TOKEN_BITWISE_NOT ||
-                    current->data.operators->type == TOKEN_UNARY_MINUS)
+    if (current->data.operators->type == AR_TOKEN_NOT ||
+                    current->data.operators->type == AR_TOKEN_BITWISE_NOT ||
+                    current->data.operators->type == AR_TOKEN_UNARY_MINUS)
         current->data.operators->left_child = create_tree(out);
     else
     {
@@ -27,38 +27,38 @@ extern struct node *create_tree(struct stack *out)
 
 extern int evaluate_tree(struct node *tree)
 {
-    if (tree->type == TOKEN_OPERAND)
+    if (tree->type == AR_TOKEN_OPERAND)
         return tree->data.data;
 
     struct operators *data = tree->data.operators;
 
     switch (data->type)
         {
-        case TOKEN_AND:
+        case AR_TOKEN_AND:
             return evaluate_tree(data->left_child) && evaluate_tree(data->right_child);
-        case TOKEN_OR:
+        case AR_TOKEN_OR:
             return evaluate_tree(data->left_child) || evaluate_tree(data->right_child);
-        case TOKEN_BITWISE_AND:
+        case AR_TOKEN_BITWISE_AND:
             return evaluate_tree(data->left_child) & evaluate_tree(data->right_child);
-        case TOKEN_BITWISE_OR:
+        case AR_TOKEN_BITWISE_OR:
             return evaluate_tree(data->left_child) | evaluate_tree(data->right_child);
-        case TOKEN_BITWISE_XOR:
+        case AR_TOKEN_BITWISE_XOR:
             return evaluate_tree(data->left_child) ^ evaluate_tree(data->right_child);
-        case TOKEN_BITWISE_NOT:
+        case AR_TOKEN_BITWISE_NOT:
             return ~evaluate_tree(data->left_child);
-        case TOKEN_PLUS:
+        case AR_TOKEN_PLUS:
             return evaluate_tree(data->left_child) + evaluate_tree(data->right_child);
-        case TOKEN_MINUS:
+        case AR_TOKEN_MINUS:
             return evaluate_tree(data->left_child) - evaluate_tree(data->right_child);
-        case TOKEN_MULTIPLY:
+        case AR_TOKEN_MULTIPLY:
             return evaluate_tree(data->left_child) * evaluate_tree(data->right_child);
-        case TOKEN_DIVIDE:
+        case AR_TOKEN_DIVIDE:
             return evaluate_tree(data->left_child) / evaluate_tree(data->right_child);
-        case TOKEN_POWER:
+        case AR_TOKEN_POWER:
             return pow(evaluate_tree(data->left_child), evaluate_tree(data->right_child));
-        case TOKEN_NOT:
+        case AR_TOKEN_NOT:
             return !evaluate_tree(data->left_child);
-        case TOKEN_UNARY_MINUS:
+        case AR_TOKEN_UNARY_MINUS:
             return -evaluate_tree(data->left_child);
         default:
             return 0;
@@ -66,16 +66,16 @@ extern int evaluate_tree(struct node *tree)
     return 0;
 }
 
-extern void destroy_tree(struct node *tree)
+extern void destroy_ar_tree(struct node *tree)
 {
-    if (tree->type == TOKEN_OPERAND)
+    if (tree->type == AR_TOKEN_OPERAND)
     {
         free(tree);
         return;
     }
 
-    destroy_tree(tree->data.operators->left_child);
-    destroy_tree(tree->data.operators->right_child);
+    destroy_ar_tree(tree->data.operators->left_child);
+    destroy_ar_tree(tree->data.operators->right_child);
 
     free(tree);
 }

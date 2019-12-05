@@ -29,19 +29,19 @@ static int handle_and_or_power(char *line, enum token_type *data_type,
     if (strncmp(line, "&&", 2) == 0)
     {
         *data = xstrndup(line, 2);
-        *data_type = TOKEN_AND;
+        *data_type = AR_TOKEN_AND;
         return 1;
     }
     else if (strncmp(line, "||", 2) == 0)
     {
         *data = xstrndup(line, 2);
-        *data_type = TOKEN_OR;
+        *data_type = AR_TOKEN_OR;
         return 1;
     }
     else if (strncmp(line, "**", 2) == 0)
     {
         *data = xstrndup(line, 2);
-        *data_type = TOKEN_POWER;
+        *data_type = AR_TOKEN_POWER;
         return 1;
     }
     return 0;
@@ -54,19 +54,19 @@ static int handle_parenthesis_not(char *line, enum token_type *data_type,
     if (strncmp(line, "(", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_LEFT_PARENTHESIS;
+        *data_type = AR_TOKEN_LEFT_PARENTHESIS;
         return 1;
     }
     else if (strncmp(line, ")", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_RIGHT_PARENTHESIS;
+        *data_type = AR_TOKEN_RIGHT_PARENTHESIS;
         return 1;
     }
     else if (strncmp(line, "!", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_NOT;
+        *data_type = AR_TOKEN_NOT;
         return 1;
     }
     return 0;
@@ -79,25 +79,25 @@ static int handle_bitwise(char *line, enum token_type *data_type,
     if (strncmp(line, "&", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_BITWISE_AND;
+        *data_type = AR_TOKEN_BITWISE_AND;
         return 1;
     }
     else if (strncmp(line, "|", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_BITWISE_OR;
+        *data_type = AR_TOKEN_BITWISE_OR;
         return 1;
     }
     else if (strncmp(line, "~", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_BITWISE_NOT;
+        *data_type = AR_TOKEN_BITWISE_NOT;
         return 1;
     }
     else if (strncmp(line, "^", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_BITWISE_XOR;
+        *data_type = AR_TOKEN_BITWISE_XOR;
         return 1;
     }
     return 0;
@@ -110,25 +110,25 @@ static int handle_basics_operators(char *line, enum token_type *data_type,
     if (strncmp(line, "+", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_PLUS;
+        *data_type = AR_TOKEN_PLUS;
         return 1;
     }
     else if (strncmp(line, "-", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_MINUS;
+        *data_type = AR_TOKEN_MINUS;
         return 1;
     }
     else if (strncmp(line, "*", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_MULTIPLY;
+        *data_type = AR_TOKEN_MULTIPLY;
         return 1;
     }
     else if (strncmp(line, "/", 1) == 0)
     {
         *data = xstrndup(line, 1);
-        *data_type = TOKEN_DIVIDE;
+        *data_type = AR_TOKEN_DIVIDE;
         return 1;
     }
     return 0;
@@ -138,7 +138,7 @@ static int handle_basics_operators(char *line, enum token_type *data_type,
 static enum token_type get_type_and_set_data(char **line, char **data)
 {
     // set default return type
-    enum token_type data_type = TOKEN_PARAM;
+    enum token_type data_type = AR_TOKEN_PARAM;
 
     if (handle_and_or_power(*line, &data_type, data)) // && || **
         *line += 2;
@@ -163,23 +163,23 @@ static enum token_type get_type_and_set_data(char **line, char **data)
 
 static int get_priority(enum token_type type)
 {
-    if (type == TOKEN_PARAM)
+    if (type == AR_TOKEN_PARAM)
         return -1;
-    else if (type == TOKEN_AND || type == TOKEN_OR)
+    else if (type == AR_TOKEN_AND || type == AR_TOKEN_OR)
         return 0;
-    else if (type == TOKEN_BITWISE_OR)
+    else if (type == AR_TOKEN_BITWISE_OR)
         return 1;
-    else if (type == TOKEN_BITWISE_XOR)
+    else if (type == AR_TOKEN_BITWISE_XOR)
         return 2;
-    else if (type == TOKEN_BITWISE_AND)
+    else if (type == AR_TOKEN_BITWISE_AND)
         return 3;
-    else if (type == TOKEN_PLUS || type == TOKEN_MINUS)
+    else if (type == AR_TOKEN_PLUS || type == AR_TOKEN_MINUS)
         return 4;
-    else if (type == TOKEN_MULTIPLY || type == TOKEN_DIVIDE)
+    else if (type == AR_TOKEN_MULTIPLY || type == AR_TOKEN_DIVIDE)
         return 5;
-    else if (type == TOKEN_POWER)
+    else if (type == AR_TOKEN_POWER)
         return 6;
-    else if (type == TOKEN_NOT || type == TOKEN_BITWISE_NOT)
+    else if (type == AR_TOKEN_NOT || type == AR_TOKEN_BITWISE_NOT)
         return 7;
 
     //TODO: Minus & plus unary

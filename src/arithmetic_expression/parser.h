@@ -11,8 +11,8 @@
 
 
 enum type_node {
-    TOKEN_OPERATOR,
-    TOKEN_OPERAND
+    AR_TOKEN_OPERATOR,
+    AR_TOKEN_OPERAND
 };
 
 

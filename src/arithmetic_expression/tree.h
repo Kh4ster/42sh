@@ -14,4 +14,4 @@ extern struct node *create_tree(struct stack *out);
 
 extern int evaluate_tree(struct node *tree);
 
-extern void destroy_tree(struct node *tree);
+extern void destroy_ar_tree(struct node *tree);
