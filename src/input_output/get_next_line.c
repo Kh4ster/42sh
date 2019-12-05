@@ -7,10 +7,13 @@
 #include <signal.h>
 
 #include "get_next_line.h"
+#include "prompt.h"
 #include "../parameters_handling/parameters_handler.h"
 #include "../parameters_handling/options.h"
 #include "../data_structures/queue.h"
+#include "../data_structures/hash_map.h"
 #include "../parser/parser.h"
+#include "../data_structures/data_string.h"
 
 struct shell_environment g_env = {0};
 
@@ -30,7 +33,7 @@ static void prep_terminal(int meta_flag)
         rl_prep_terminal(meta_flag);
 }
 
-char *get_next_line(const char *prompt)
+char *get_next_line(int prompt)
 {
     rl_prep_term_function = prep_terminal;
 
@@ -49,14 +52,16 @@ char *get_next_line(const char *prompt)
     if (!is_interactive())
     {
         rl_bind_key ('\t', rl_insert);
-        prompt = NULL;
+        prompt = 0;
     }
     else
     {
         rl_bind_key ('\t', rl_complete);
     }
 
-    char *new_line = readline(prompt);
+    char *prompt_str = get_prompt(prompt);
+    char *new_line = readline(prompt_str);
+    free(prompt_str);
 
     if (!g_env.is_parsing_ressource)
         add_history(new_line);

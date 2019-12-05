@@ -1,5 +1,5 @@
 /** @file
-* @brief handling prompt script
+* @brief contain all g_env and handle next line
 * @author Coder : nicolas.blin & pierrick.made
 * @author Tester : nicolas.blin
 * @author Reviewer : pierrick.made & nicolas.blin
@@ -46,11 +46,11 @@ struct shell_environment
 int is_interactive(void);
 
 /**
-* @brief returns a new line from the received prompt string
-* @param prompt string
+* @brief returns a new line from the received prompt int
+* @param prompt number
 * @return new line string
 */
-char *get_next_line(const char *prompt);
+char *get_next_line(int prompt);
 
 /**
 * @brief corresponding to PS[1-2]
