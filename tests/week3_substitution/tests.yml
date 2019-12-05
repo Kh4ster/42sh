@@ -100,3 +100,17 @@
 - name: echo \
   stdin: echo \
 
+- name: echo $(echo ok $(echo ok) $(echo ok) abc )
+  stdin: echo $(echo ok $(echo ok) $(echo ok) abc )
+
+- name: $(echo $(echo ')'))
+  stdin: $(echo $(echo ')'))
+
+- name: echo $(echo ok $(echo ok) $(echo ok) '$'\abc )
+  stdin: echo $(echo ok $(echo ok) $(echo ok) '$'\abc )
+
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$$abc" )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$$abc" )
+
+
+

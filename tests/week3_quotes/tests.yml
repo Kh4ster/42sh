@@ -70,6 +70,12 @@
 - name: echo "ok""ok"/\"ok""
   stdin: echo "ok""ok"/\"ok""
 
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$""$abc" )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$""$abc" )
+
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$"'$abc' )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$"'$abc' )
+
 - name: complex quoting 1
   stdin: test= ;echo 'jio               y'
 
