@@ -332,8 +332,9 @@ static bool is_tidle(char *str)
 static char *handle_expand_arithmetic(char **to_expand)
 {
     char *begin = *to_expand + 3;
-    char *end = strrchr(begin, ')');
-    char *to_compute = strndup(begin, end - begin - 1);
+
+    char *end = strstr(begin, "))");
+    char *to_compute = strndup(begin, end - begin);
     struct node *root = parser(to_compute);
     int result = 1;
 

@@ -5,7 +5,10 @@
 #include "parser.h"
 #include "tree.h"
 #include "../data_structures/stack.h"
+#include "../data_structures/hash_map.h"
 #include "../memory/memory.h"
+#include "../input_output/get_next_line.h"
+
 
 #define VALUE_PARENTHISIS 10
 
@@ -31,7 +34,21 @@ static struct operators *create_operator(enum token_type type)
 static void push_operand_to_stack(struct stack *out, struct token *operand)
 {
     union node_data data;
-    data.data = atoi(operand->data);
+
+    char *op_data;
+    char *cpy_data = operand->data;
+
+    if (*operand->data == '$')
+        cpy_data++;
+
+    while ((op_data = hash_find(g_env.variables, cpy_data)) != NULL)
+    {
+        cpy_data = op_data;
+        if (*cpy_data == '$')
+            cpy_data++;
+    }
+
+    data.data = atoi(cpy_data);
 
     stack_push(out, create_node(AR_TOKEN_OPERAND, data));
     token_free(&operand);
