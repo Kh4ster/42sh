@@ -43,6 +43,8 @@ int is_path_expansion(char *pattern)
 
     for (size_t i = 0; pattern[i] != '\0'; i++)
     {
+        if (pattern[i] == '$')
+            return 0;
         if (pattern[i] == '*')
             return 1;
 
@@ -229,14 +231,22 @@ static char *get_dir_name(char *pattern)
         return strdup("");
     }
 
+    *(end_path + 1) = '\0';
     return current_path;
 }
 
 static void init_nb_recursions(char *pattern)
 {
     char *begin_pattern = strpbrk(pattern, "*?[");
+    char tmp = *begin_pattern;
+    *begin_pattern = '\0';
+    char *end_path = strrchr(pattern, '/');
+    *begin_pattern = tmp;
 
-    for (int i = begin_pattern - pattern; pattern[i]; i++)
+    if (!end_path)
+        return;
+
+    for (int i = end_path - pattern + 1; pattern[i]; i++)
     {
         if (pattern[i] == '/' && is_path_expansion(pattern + i))
             g_nb_recursion++;
