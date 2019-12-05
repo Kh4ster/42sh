@@ -172,7 +172,11 @@ static void init_all(struct hash_map *functions,
     g_env.options.option_expand_aliases = true;
     g_env.options.option_sourcepath = true;
     g_env.old_pwd = NULL;
+    set_pwd();
 
+    // Default Prompt
+    hash_insert(variables, "PS1", "42sh$ ", STRING);
+    hash_insert(variables, "PS2", "> ", STRING);
 
     // History
     char *history_path = get_history_file_path();
@@ -231,7 +235,7 @@ int main(int argc, char *argv[], char *env[])
     while (42 && !is_end)
     {
         int error = 0;
-        g_env.prompt = "42sh$ ";
+        g_env.prompt = 1;
         struct instruction *ast = parse_input(lexer, &is_end, &error);
 
         if (ast)

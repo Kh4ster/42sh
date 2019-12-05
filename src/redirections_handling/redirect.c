@@ -228,7 +228,7 @@ static int handle_heredoc(struct redirection *redirection, int execute)
     if (!temp)
     {
         temp = tmpfile();
-        char *current_line = get_next_line("> ");
+        char *current_line = get_next_line(g_env.prompt);
 
         while (current_line &&
                 strncmp(delimiter, current_line, strlen(delimiter)) != 0)
@@ -236,7 +236,7 @@ static int handle_heredoc(struct redirection *redirection, int execute)
             fputs(current_line, temp);
             fputc('\n', temp);
             free(current_line);
-            current_line = get_next_line("> ");
+            current_line = get_next_line(g_env.prompt);
         }
 
         if (!current_line)
@@ -276,7 +276,7 @@ static int handle_redirect_minus(struct redirection *redirection, int execute)
     if (!temp)
     {
         temp = tmpfile();
-        char *current_line = get_next_line("> ");
+        char *current_line = get_next_line(g_env.prompt);
 
         while (current_line &&
                 strcmp(delimiter, current_line) != 0)
@@ -285,7 +285,7 @@ static int handle_redirect_minus(struct redirection *redirection, int execute)
             fputs(cpy_line, temp);
             fputc('\n', temp);
             free(current_line);
-            current_line = get_next_line("> ");
+            current_line = get_next_line(g_env.prompt);
         }
 
         if (!current_line)

@@ -1,5 +1,5 @@
 /** @file
-* @brief handling prompt script
+* @brief contain all g_env and handle next line
 * @author Coder : nicolas.blin & pierrick.made
 * @author Tester : nicolas.blin
 * @author Reviewer : pierrick.made & nicolas.blin
@@ -20,7 +20,7 @@ struct shell_environment
 {
     char *pwd; /**< @brief shell current position */
     struct boot_params options; /**< @brief parameters given to 42sh */
-    char *prompt; /**< @brief ps1 or ps2 prompt */
+    int prompt; /**< @brief ps1 or ps2 prompt */
     int is_parsing_ressource; /**< @brief check if valid */
     struct hash_map *functions; /**< @brief hashmap containing functions */
     struct hash_map *builtins; /**< @brief hashmap containing builtins */
@@ -32,8 +32,8 @@ struct shell_environment
     int noclobber_set; /**< @brief handle noclobber variable */
     char last_return_value; /**< @brief last returned value */
     char *path_to_binary; /**< @brief where the binary is executed */
-    char **envvar; /**< @brief containing environement variables list*/
-    char **old_envvar; /**< @brief containing old environement variables list*/
+    char **envvar; /**< @brief containing environment variables list*/
+    char **old_envvar; /**< @brief containing old environment variables list*/
     char *old_pwd;
     int argc;
     char **argv;
@@ -46,8 +46,14 @@ struct shell_environment
 int is_interactive(void);
 
 /**
-* @brief returns a new line from the received prompt string
-* @param prompt string
+* @brief returns a new line from the received prompt int
+* @param prompt number
 * @return new line string
 */
-char *get_next_line(const char *prompt);
+char *get_next_line(int prompt);
+
+/**
+* @brief corresponding to PS[1-2]
+* @param ps_num 1 or 2 corresponding to the PS1 or PS2
+*/
+char *get_prompt(int ps_num);
