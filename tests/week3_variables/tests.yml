@@ -114,6 +114,13 @@
     toto=papa
     echo $var
 
+- name: $abc=toto; echo $(echo ok $(echo ok) $(echo ok) '$''$abc' )
+  stdin: $abc=toto; echo $(echo ok $(echo ok) $(echo ok) '$''$abc' )
+  checks:
+    - has_stderr
+    - stdout
+    - returncode
+
 - name: echo $?
   stdin: cmd_notfnd; echo $?
 

@@ -1,21 +1,3 @@
-- name: echo *
-  stdin: echo *
-
-- name: echo /*
-  stdin: echo /*
-  timeout: 1
-
-- name: echo ../*/*//////
-  stdin: echo ../*/*//////
-
-- name: echo src/*/
-  stdin: echo src/*/
-
-- name: while *; do echo ok; done
-  stdin: while *; do echo ok; done
-  checks:
-    - has stderr
-
 - name: echo ../tests/*
   stdin: echo ../tests/*
 
@@ -44,3 +26,30 @@
   stdin: echo prout/*
   options:
     - -O nullglob
+
+- name: echo *
+  stdin: echo *
+
+- name: echo /*
+  stdin: echo /*
+  timeout: 1
+
+- name: echo */*//////
+  stdin: echo */*//////
+
+- name: echo src/*/
+  stdin: echo src/*/
+
+- name: while *; do echo ok; done
+  stdin: while *; do echo ok; done
+  checks:
+    - has stderr
+
+- name: echo ~
+  stdin: echo ~
+
+- name: echo ~-
+  stdin: echo ~-
+
+- name: echo ~+
+  stdin: echo ~+
