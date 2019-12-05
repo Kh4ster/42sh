@@ -20,7 +20,7 @@ static void execute_shell(void)
 
     while (42)
     {
-        g_env.prompt = "42sh$ ";
+        g_env.prompt = 1;
         struct instruction *ast = parse_input(lexer, &is_end, &error);
         execute_ast(ast);
         destroy_tree(ast);

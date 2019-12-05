@@ -38,7 +38,7 @@ char *expand_special_variables(char *variable)
 {
     char *new_var = NULL;
 
-    if (strcmp("$?", variable) == 0)
+    if (strcmp("$?", variable) == 0 || strcmp("${?}", variable) == 0)
     {
         int return_value = asprintf(&new_var, "%d", g_env.last_return_value);
         if (return_value != -1)
@@ -46,17 +46,17 @@ char *expand_special_variables(char *variable)
         return NULL;
     }
 
-    if (strcmp("$OLDPWD", variable) == 0)
+    if (strcmp("$OLDPWD", variable) == 0 || strcmp("${OLDPWD}", variable) == 0)
     {
         if (g_env.old_pwd)
             return strdup(g_env.old_pwd);
         return strdup("");
     }
 
-    if (strcmp("$IFS", variable) == 0)
+    if (strcmp("$IFS", variable) == 0 || strcmp("${IFS}", variable) == 0)
         return strdup(getenv("IFS"));
 
-    if (strcmp("$$", variable) == 0)
+    if (strcmp("$$", variable) == 0 || strcmp("${$}", variable) == 0)
     {
         int return_value = asprintf(&new_var, "%d", getpid());
         if (return_value != -1)
@@ -64,7 +64,7 @@ char *expand_special_variables(char *variable)
         return NULL;
     }
 
-    if (strcmp("$RANDOM", variable) == 0)
+    if (strcmp("$RANDOM", variable) == 0 || strcmp("${RANDOM}", variable) == 0)
     {
         int return_value = asprintf(&new_var, "%d", rand());
         if (return_value != -1)
@@ -72,7 +72,7 @@ char *expand_special_variables(char *variable)
         return NULL;
     }
 
-    if (strcmp("$UID", variable) == 0)
+    if (strcmp("$UID", variable) == 0 || strcmp("${UID}", variable) == 0)
     {
         int return_value = asprintf(&new_var, "%d", getuid());
         if (return_value != -1)
@@ -80,7 +80,7 @@ char *expand_special_variables(char *variable)
         return NULL;
     }
 
-    if (strcmp("$#", variable) == 0)
+    if (strcmp("$#", variable) == 0 || strcmp("${#}", variable) == 0)
     {
         int return_value = asprintf(&new_var, "%d", g_env.argc);
         if (return_value != -1)
@@ -88,7 +88,8 @@ char *expand_special_variables(char *variable)
         return NULL;
     }
 
-    if (fnmatch("$[0-9]*", variable, 0) == 0)
+    if (fnmatch("$[0-9]*", variable, 0) == 0
+        || fnmatch("${[0-9]*}", variable, 0) == 0)
     {
         if (is_interactive() && strcmp(variable, "$0") == 0)
             return strdup("42sh");
@@ -98,7 +99,8 @@ char *expand_special_variables(char *variable)
         return strdup("");
     }
 
-    if (strcmp("$@", variable) == 0 || strcmp("$*", variable) == 0)
+    if (strcmp("$@", variable) == 0 || strcmp("$*", variable) == 0
+        || strcmp("${@}", variable) == 0 || strcmp("${*}", variable) == 0)
         return expand_all();
 
     return NULL;

@@ -520,7 +520,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
         free(g_env.current_line);
     char *next_line = get_next_line(g_env.prompt);
 
-    g_env.prompt = "> "; //change prompt to ps2 with lexing
+    g_env.prompt = 2; //change prompt to ps2 with lexing
 
     g_env.current_line = next_line;
 

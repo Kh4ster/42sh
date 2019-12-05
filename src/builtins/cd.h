@@ -13,3 +13,8 @@
 * @return success : 0 , fail : same behavior as cd builtin
 */
 int cd(char **args);
+
+/**
+* @brief set g_env.pwd
+*/
+void set_pwd(void);

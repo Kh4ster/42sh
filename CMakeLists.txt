@@ -59,6 +59,7 @@ set(SRC_FILES
     src/builtins/export.c
     src/path_expention/path_exepension.c
     src/variables/expand_special_variables.c
+    src/input_output/prompt.c
 )
 
 # ---- List of test files (unit tests) ----
