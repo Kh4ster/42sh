@@ -9,6 +9,24 @@
 
 #define VALUE_PARENTHISIS 10
 
+
+static void destroy_node(struct node **node)
+{
+    struct node *to_free = *node;
+
+    if (to_free->type == TOKEN_OPERAND)
+    {
+        free(to_free);
+        node = NULL;
+        return;
+    }
+
+    free(to_free->data.operators);
+    free(to_free);
+    to_free = NULL;
+}
+
+
 static struct node *create_node(enum type_node type, union node_data data)
 {
     struct node *new_node = xmalloc(sizeof(struct node));
@@ -16,7 +34,6 @@ static struct node *create_node(enum type_node type, union node_data data)
     new_node->data = data;
     return new_node;
 }
-
 
 static struct operators *create_operator(enum token_type type)
 {
@@ -54,6 +71,7 @@ static void move_stack(struct stack *operators_stack, struct stack *out,
             union node_data new_data;
             new_data.operators = create_operator(head_stack->type);
             stack_push(out, create_node(TOKEN_OPERATOR, new_data));
+            token_free(&head_stack);
         }
         else
             break;
@@ -83,6 +101,26 @@ static int handle_parenthisis(enum token_type type, int *nb_parenthesis)
 }
 
 
+static void destroy_stacks(struct stack *op, struct stack *out)
+{
+    while (size_stack(op))
+    {
+        struct token *to_free = stack_pop(op);
+        token_free(&to_free);
+    }
+
+    free(op);
+
+    while(size_stack(out))
+    {
+        struct node *node = stack_pop(out);
+        destroy_node(&node);
+    }
+
+    free(out);
+}
+
+
 extern struct node *parser(char *line)
 {
     struct stack *out = init_stack();
@@ -99,7 +137,7 @@ extern struct node *parser(char *line)
             if (handle_parenthisis(current_token->type, &nb_parenthesis) == 1)
             {
                 warnx("Bad parsing: wrong parenthesis");
-                //TODO: stack destroy
+                destroy_stacks(operators, out);
                 return NULL;
             }
 
@@ -124,17 +162,18 @@ extern struct node *parser(char *line)
         }
 
         old_type = current_token->type;
-        //token_free(&current_token);
     }
 
     if (nb_parenthesis)
     {
         warnx("Bad parsing: wrong parenthesis");
-        //TODO: destroy stacks
+        destroy_stacks(operators, out);    
         return NULL;
     }
 
     move_stack(operators, out, NULL, 0);
-    //TODO: destroy stacks
-    return create_tree(out);
+    free(operators);
+    struct node *to_return = create_tree(out);
+    free(out);
+    return to_return;
 }

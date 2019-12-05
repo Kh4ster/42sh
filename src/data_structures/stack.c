@@ -7,7 +7,7 @@
 
 struct stack *init_stack(void)
 {
-    struct stack *stack = xmalloc(sizeof(struct stack *));
+    struct stack *stack = xmalloc(sizeof(struct stack));
     stack->head = NULL;
     stack->size = 0;
     return stack;
@@ -59,3 +59,4 @@ size_t size_stack(struct stack *stack)
 
     return stack->size;
 }
+

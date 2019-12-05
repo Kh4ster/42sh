@@ -219,9 +219,11 @@ struct token *token_get_next(char **line)
 }
 
 
-void token_free(struct token **token_to_free)
+void token_free(struct token **to_free)
 {
-    free((*token_to_free)->data);
-    free(*token_to_free);
-    *token_to_free = NULL;
+    struct token *token_to_free = *to_free;
+
+    free((token_to_free)->data);
+    free(token_to_free);
+    token_to_free = NULL;
 }
