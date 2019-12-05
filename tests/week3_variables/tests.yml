@@ -114,6 +114,8 @@
     toto=papa
     echo $var
 
+- name: var="/\\fd\/\e5%vf#\-"; echo $var
+  stdin: var="/\\fd\/\e5%vf#\-"; echo $var
 - name: $abc=toto; echo $(echo ok $(echo ok) $(echo ok) '$''$abc' )
   stdin: $abc=toto; echo $(echo ok $(echo ok) $(echo ok) '$''$abc' )
   checks:
@@ -158,3 +160,6 @@
 
 - name: FILE="/etc/resolv.conf"; echo "File is $FILE "
   stdin: FILE="/etc/resolv.conf"; echo "File is $FILE "
+
+- name: toto=0; toto=1; echo $toto; toto=2; toto=3; toto=4; echo $toto; toto=5
+  stdin: toto=0; toto=1; echo $toto; toto=2; toto=3; toto=4; echo $toto; toto=5

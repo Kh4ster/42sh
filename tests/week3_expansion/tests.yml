@@ -12,20 +12,32 @@
 - name: for i in ../*; do echo $i ; done
   stdin: for i in ../*; do echo $i ; done
 
-- name: test dotglob
-  stdin: echo ../*
+- name: dotglob test
   options:
-    - -O dotglob
+    - ../tests/week3_expansion/test1.sh
 
-- name: test nocaseglob
-  stdin: echo ../SRC*
-  options:
-    - -O nocaseglob
+- name: extglob test
+  stdin: |
+    touch fic fic866866.log fic866.log fic.log
+    shopt -s extglob
+    ls fic?(866).log
+    ls fic*(866).log
+    rm fic fic866866.log fic866.log fic.log
 
-- name: test nullglob
-  stdin: echo prout/*
-  options:
-    - -O nullglob
+- name: test nocaseglob 1
+  stdin: touch toto; shopt -s nocaseglob; ls T*; rm toto
+
+- name: test nocaseglob 2
+  stdin: touch toto; shopt -u nocaseglob; ls T*; rm toto
+  checks:
+    - has_stderr
+    - returncode
+
+- name: test nullglob 1
+  stdin: shopt -s nullglob; echo *.
+
+- name: test nullglob 2
+  stdin: shopt -u nullglob; echo *.
 
 - name: echo *
   stdin: echo *
