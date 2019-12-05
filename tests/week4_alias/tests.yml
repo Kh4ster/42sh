@@ -1,0 +1,64 @@
+- name: alias toto=papa
+  stdin: alias toto=papa; alias; unalias toto
+
+- name: unalias toto
+  stdin: alias toto=papa; alias; unalias toto; alias
+
+- name: unalias error 1
+  stdin: alias toto=papa; unalias papa
+  checkins:
+      - returncode
+      - has_stderr
+
+- name: alias toto=papa papa=toto
+  stdin: |
+    alias toto=papa papa=toto; alias
+    unalias toto papa
+
+- name: unalias error 2
+  stdin: alias toto=papa papa=lala; unalias papa papa
+  checkins:
+      - returncode
+      - has_stderr
+      - stdin
+
+- name: recursive alias 1
+  stdin: alias toto=papa toto=titi toto=tata toto=lala toto=acu; alias; unalias toto; alias
+
+- name: recursive alias 2
+  stdin: alias toto=papa toto=titi toto=tata toto=lala toto=toto; alias; unalias toto; alias
+
+- name: alias coin="echo '\_ô<'"
+  stdin: alias coin="echo '\_ô<'"; alias
+
+- name: alias ls=
+  stdin: |
+    alias ls= ; alias
+    ls
+    unalias ls
+    ls
+
+- name: alias ls=toto
+  stdin: |
+    alias ls=toto ; alias
+    ls
+    unalias ls
+    ls
+  checkins:
+      - returncode
+      - has_stderr
+      - stdin
+
+- name: alias error 1
+  stdin: alias toto =papa; alias; unalias toto
+  checkins:
+      - returncode
+      - has_stderr
+      - stdin
+
+- name: alias error 2
+  stdin: alias toto= papa; alias; unalias toto
+  checkins:
+      - returncode
+      - has_stderr
+      - stdin
