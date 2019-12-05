@@ -7,7 +7,7 @@
 #include "../data_structures/stack.h"
 #include "../memory/memory.h"
 
-#define VALUE_PARENTHISIS 6
+#define VALUE_PARENTHISIS 10
 
 static struct node *create_node(enum type_node type, union node_data data)
 {
@@ -32,7 +32,6 @@ static void push_operand_to_stack(struct stack *out, struct token *operand)
 {
     union node_data data;
     data.data = atoi(operand->data);
-    token_free(&operand);
 
     stack_push(out, create_node(TOKEN_OPERAND, data));
 }
@@ -54,6 +53,8 @@ static void move_stack(struct stack *operators_stack, struct stack *out,
             new_data.operators = create_operator(head_stack->type);
             stack_push(out, create_node(TOKEN_OPERATOR, new_data));
         }
+        else
+            break;
     }
 
     stack_push(operators_stack, operators);
@@ -78,12 +79,14 @@ static int handle_parenthisis(char c, int *nb_parenthesis)
     return 0;
 }
 
+
 extern struct node *parser(char *line)
 {
     struct stack *out = init_stack();
     struct stack *operators = init_stack();
     struct token *current_token;
     int nb_parenthesis = 0;
+    int old_type = TOKEN_PLUS;
 
     while (*line && ((current_token = token_get_next(&line)) != NULL))
     {
@@ -104,7 +107,21 @@ extern struct node *parser(char *line)
             push_operand_to_stack(out, current_token);
 
         else
+        {
+            if (old_type != TOKEN_PARAM)
+            {
+                if (current_token->type == TOKEN_MINUS)
+                {
+                    current_token->type = TOKEN_UNARY_MINUS;
+                    current_token->priority = 9;
+                }
+            }
+
             move_stack(operators, out, current_token, nb_parenthesis);
+        }
+
+        old_type = current_token->type;
+        //token_free(&current_token);
     }
 
     if (nb_parenthesis)
@@ -117,4 +134,3 @@ extern struct node *parser(char *line)
     move_stack(operators, out, NULL, 0);
     return create_tree(out);
 }
-

@@ -13,6 +13,7 @@ static void skip_blank(char **cursor)
         (*cursor)++;
 }
 
+
 char *xstrndup(char *str, size_t n)
 {
     char *copy_str = strndup(str, n);
@@ -20,6 +21,7 @@ char *xstrndup(char *str, size_t n)
         memory_exhausted();
     return copy_str;
 }
+
 
 static int handle_and_or_power(char *line, enum token_type *data_type,
         char **data)
@@ -45,6 +47,7 @@ static int handle_and_or_power(char *line, enum token_type *data_type,
     return 0;
 }
 
+
 static int handle_parenthesis_not(char *line, enum token_type *data_type,
         char **data)
 {
@@ -68,6 +71,7 @@ static int handle_parenthesis_not(char *line, enum token_type *data_type,
     }
     return 0;
 }
+
 
 static int handle_bitwise(char *line, enum token_type *data_type,
         char **data)
@@ -99,6 +103,7 @@ static int handle_bitwise(char *line, enum token_type *data_type,
     return 0;
 }
 
+
 static int handle_basics_operators(char *line, enum token_type *data_type,
         char **data)
 {
@@ -129,6 +134,7 @@ static int handle_basics_operators(char *line, enum token_type *data_type,
     return 0;
 }
 
+
 static enum token_type get_type_and_set_data(char **line, char **data)
 {
     // set default return type
@@ -154,27 +160,33 @@ static enum token_type get_type_and_set_data(char **line, char **data)
     return data_type;
 }
 
+
 static int get_priority(enum token_type type)
 {
     if (type == TOKEN_PARAM)
         return -1;
     else if (type == TOKEN_AND || type == TOKEN_OR)
         return 0;
-    else if (type == TOKEN_BITWISE_AND || type == TOKEN_BITWISE_OR
-            || type == TOKEN_BITWISE_NOT || type == TOKEN_BITWISE_XOR)
+    else if (type == TOKEN_BITWISE_OR)
         return 1;
-    else if (type == TOKEN_PLUS || type == TOKEN_MINUS)
+    else if (type == TOKEN_BITWISE_XOR)
         return 2;
-    else if (type == TOKEN_MULTIPLY || type == TOKEN_DIVIDE)
+    else if (type == TOKEN_BITWISE_AND)
         return 3;
-    else if (type == TOKEN_POWER)
+    else if (type == TOKEN_PLUS || type == TOKEN_MINUS)
         return 4;
-    else if (type == TOKEN_NOT)
+    else if (type == TOKEN_MULTIPLY || type == TOKEN_DIVIDE)
         return 5;
+    else if (type == TOKEN_POWER)
+        return 6;
+    else if (type == TOKEN_NOT || type == TOKEN_BITWISE_NOT)
+        return 7;
 
+    //TODO: Minus & plus unary
     // parenthesis or error in given token
     return -2;
 }
+
 
 struct token *token_create(enum token_type type, int priority, char *data)
 {
@@ -205,6 +217,7 @@ struct token *token_get_next(char **line)
     // return token
     return token_create(new_type, new_priority, new_data);
 }
+
 
 void token_free(struct token **token_to_free)
 {

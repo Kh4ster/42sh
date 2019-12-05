@@ -6,6 +6,7 @@
 */
 
 #pragma once
+#include <stddef.h>
 
 enum token_type{
     TOKEN_PARAM,
@@ -21,6 +22,7 @@ enum token_type{
     TOKEN_DIVIDE,
     TOKEN_POWER,
     TOKEN_NOT,
+    TOKEN_UNARY_MINUS,
     TOKEN_LEFT_PARENTHESIS,
     TOKEN_RIGHT_PARENTHESIS
 };
