@@ -335,6 +335,9 @@ static char *handle_expand_arithmetic(char **to_expand)
 
     char *end = strstr(begin, "))");
     char *to_compute = strndup(begin, end - begin);
+    size_t jump = strlen(to_compute);
+
+    to_compute = scan_for_expand(to_compute, true, NULL);
     struct node *root = parser(to_compute);
     int result = 1;
 
@@ -348,7 +351,7 @@ static char *handle_expand_arithmetic(char **to_expand)
 
     int error = asprintf(&to_return, "%d", result);
 
-    *to_expand += strlen(to_compute) + 4;
+    *to_expand += jump + 4;
 
     free(to_compute);
 
@@ -875,9 +878,9 @@ extern int execute_ast(struct instruction *ast)
     }
 
     g_env.last_return_value = return_value;
+    
     if (ast->next != NULL && !g_env.breaks && !g_env.continues)
-    {
         return_value = execute_ast(ast->next);
-    }
+    
     return return_value;
 }

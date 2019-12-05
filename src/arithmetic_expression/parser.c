@@ -45,19 +45,11 @@ static struct operators *create_operator(enum token_type type)
 static void push_operand_to_stack(struct stack *out, struct token *operand)
 {
     union node_data data;
-
-    char *op_data;
     char *cpy_data = operand->data;
+    char *data_op;
 
-    if (*operand->data == '$')
-        cpy_data++;
-
-    while ((op_data = hash_find(g_env.variables, cpy_data)) != NULL)
-    {
-        cpy_data = op_data;
-        if (*cpy_data == '$')
-            cpy_data++;
-    }
+    if ((data_op = hash_find(g_env.variables, cpy_data)) != NULL)
+        cpy_data = data_op;
 
     data.data = atoi(cpy_data);
 
@@ -193,8 +185,7 @@ extern struct node *parser(char *line)
                             current_token, out, operators);
             }
 
-            if ((old_type == current_token->type) &&
-                    (current_token->type == AR_TOKEN_PARAM))
+            if (old_type == AR_TOKEN_PARAM && current_token->type == AR_TOKEN_PARAM)
                 handle_error("Bad parsing: expected operator", current_token,
                         out, operators);
 
