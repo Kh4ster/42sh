@@ -16,13 +16,13 @@
   options:
     - ../tests/week3_expansion/test1.sh
 
-- name: extglob test
-  stdin: |
-    touch fic fic866866.log fic866.log fic.log
-    shopt -s extglob
-    ls fic?(866).log
-    ls fic*(866).log
-    rm fic fic866866.log fic866.log fic.log
+#- name: extglob test
+#  stdin: |
+#    touch fic fic866866.log fic866.log fic.log
+#    shopt -s extglob
+#    ls fic?(866).log
+#    ls fic*(866).log
+#    rm fic fic866866.log fic866.log fic.log
 
 - name: test nocaseglob 1
   stdin: touch toto; shopt -s nocaseglob; ls T*; rm toto
