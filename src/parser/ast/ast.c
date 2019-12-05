@@ -560,8 +560,16 @@ static bool is_func(struct instruction *ast)
 static int exec_func(struct instruction *ast)
 {
     struct command_container *command = ast->data;
+    int old_argc = g_env.argc;
+    char **old_argv = g_env.argv;
+    g_env.argc = get_nb_params(command->params) - 1;
+    g_env.argv = command->params;
     struct instruction *code = hash_find(g_env.functions, command->command);
-    return execute_ast(code);
+    int to_return = execute_ast(code);
+    g_env.argc = old_argc;
+    g_env.argv = old_argv;
+    return to_return;
+
 }
 
 
