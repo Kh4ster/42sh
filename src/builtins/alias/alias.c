@@ -48,7 +48,7 @@ static void print_aliases(struct array_list *aliases)
     for (size_t i = 0; i < aliases->nb_element; i++)
     {
         char *to_print = aliases->content[i];
-        printf("alias %s\n", to_print);
+        printf("%s\n", to_print);
     }
 
     array_list_destroy(aliases);
@@ -69,7 +69,7 @@ static void create_and_print_aliases()
         if (!content)
             continue;
 
-        int error = asprintf(&new, "%s=%s", hash_m->slots[i].key, content);
+        int error = asprintf(&new, "%s='%s'", hash_m->slots[i].key, content);
 
         if (error == -1)
         {
@@ -94,7 +94,7 @@ static int print_alias(char *name, char *content)
         return 1;
     }
 
-    printf("alias %s=%s\n", name, content);
+    printf("%s='%s'\n", name, content);
     return 0;
 }
 

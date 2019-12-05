@@ -15,7 +15,10 @@ static void print_usage(void)
 static int handle_unalias(char *alias)
 {
     if (!hash_remove(g_env.aliases, alias))
+    {
+        warnx("unalias: %s not found", alias);
         return 1;
+    }
 
     return 0;
 }
@@ -40,7 +43,7 @@ int unalias(char **args)
 
     int to_return = 0;
 
-    for (size_t i = 0; args[i]; i++)
+    for (size_t i = 1; args[i]; i++)
     {
         int new_return = handle_unalias(args[i]);
 
