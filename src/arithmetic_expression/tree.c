@@ -77,5 +77,6 @@ extern void destroy_ar_tree(struct node *tree)
     destroy_ar_tree(tree->data.operators->left_child);
     destroy_ar_tree(tree->data.operators->right_child);
 
+    free(tree->data.operators);
     free(tree);
 }

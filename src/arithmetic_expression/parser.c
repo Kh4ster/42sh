@@ -34,6 +34,7 @@ static void push_operand_to_stack(struct stack *out, struct token *operand)
     data.data = atoi(operand->data);
 
     stack_push(out, create_node(AR_TOKEN_OPERAND, data));
+    token_free(&operand);
 }
 
 
@@ -54,6 +55,7 @@ static void move_stack(struct stack *operators_stack, struct stack *out,
             union node_data new_data;
             new_data.operators = create_operator(head_stack->type);
             stack_push(out, create_node(AR_TOKEN_OPERATOR, new_data));
+            token_free(&head_stack);
         }
         else
             break;
@@ -98,17 +100,21 @@ extern struct node *parser(char *line)
         {
             if (handle_parenthisis(current_token->type, &nb_parenthesis) == 1)
             {
+                token_free(&current_token);
                 warnx("Bad parsing: wrong parenthesis");
                 //TODO: stack destroy
                 return NULL;
             }
 
+            token_free(&current_token);
             continue;
         }
 
         if (current_token->type == AR_TOKEN_PARAM)
+        {
             push_operand_to_stack(out, current_token);
-
+            old_type = AR_TOKEN_PARAM;
+        }
         else
         {
             if (old_type != AR_TOKEN_PARAM)
@@ -121,9 +127,9 @@ extern struct node *parser(char *line)
             }
 
             move_stack(operators, out, current_token, nb_parenthesis);
+            old_type = current_token->type;
         }
 
-        old_type = current_token->type;
         //token_free(&current_token);
     }
 
@@ -135,6 +141,8 @@ extern struct node *parser(char *line)
     }
 
     move_stack(operators, out, NULL, 0);
-    //TODO: destroy stacks
-    return create_tree(out);
+    free(operators);
+    struct node *to_return = create_tree(out);
+    free(out);
+    return to_return;
 }
