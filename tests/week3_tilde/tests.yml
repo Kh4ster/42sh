@@ -4,9 +4,6 @@
 - name: echo ~+
   stdin: echo ~+
 
-- name: echo ~-
-  stdin: echo ~-
-
 - name: cd ../ ; echo ~-
   stdin: cd ../ ; echo ~-
 
