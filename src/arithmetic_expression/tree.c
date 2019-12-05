@@ -13,7 +13,8 @@ extern struct node *create_tree(struct stack *out)
 
     if (current->data.operators->type == AR_TOKEN_NOT ||
                     current->data.operators->type == AR_TOKEN_BITWISE_NOT ||
-                    current->data.operators->type == AR_TOKEN_UNARY_MINUS)
+                    current->data.operators->type == AR_TOKEN_UNARY_MINUS ||
+                    current->data.operators->type == AR_TOKEN_UNARY_PLUS)
         current->data.operators->left_child = create_tree(out);
     else
     {
@@ -60,6 +61,8 @@ extern int evaluate_tree(struct node *tree)
             return !evaluate_tree(data->left_child);
         case AR_TOKEN_UNARY_MINUS:
             return -evaluate_tree(data->left_child);
+        case AR_TOKEN_UNARY_PLUS:
+            return evaluate_tree(data->left_child);
         default:
             return 0;
         }

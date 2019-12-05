@@ -12,6 +12,17 @@
 
 #define VALUE_PARENTHISIS 10
 
+
+static void node_destroy(struct node **node)
+{
+    if ((*node)->type == AR_TOKEN_OPERATOR)
+        free((*node)->data.operators);
+
+    free(*node);
+    *node = NULL;
+}
+
+
 static struct node *create_node(enum type_node type, union node_data data)
 {
     struct node *new_node = xmalloc(sizeof(struct node));
@@ -102,6 +113,41 @@ static int handle_parenthisis(enum token_type type, int *nb_parenthesis)
 }
 
 
+
+static void destroy_stacks(struct stack *operators, struct stack *out)
+{
+    while (size_stack(operators))
+    {
+        struct token *current = stack_pop(operators);
+        token_free(&current);
+    }
+
+    free(operators);
+
+    while (size_stack(out))
+    {
+        struct node *current = stack_pop(out);
+        node_destroy(&current);
+    }
+
+    free(out);
+}
+
+
+static void *handle_error(char *error, struct token *token, struct stack *out,
+                                            struct stack *op)
+{
+    warnx(error);
+
+    if (token)
+        token_free(&token);
+
+    destroy_stacks(op, out);
+    
+    return NULL;
+}
+
+
 extern struct node *parser(char *line)
 {
     struct stack *out = init_stack();
@@ -116,12 +162,8 @@ extern struct node *parser(char *line)
             current_token->type == AR_TOKEN_RIGHT_PARENTHESIS)
         {
             if (handle_parenthisis(current_token->type, &nb_parenthesis) == 1)
-            {
-                token_free(&current_token);
-                warnx("Bad parsing: wrong parenthesis");
-                //TODO: stack destroy
-                return NULL;
-            }
+                return handle_error("Bad parsing: wrong parenthesis",
+                        current_token, out, operators);
 
             token_free(&current_token);
             continue;
@@ -141,21 +183,29 @@ extern struct node *parser(char *line)
                     current_token->type = AR_TOKEN_UNARY_MINUS;
                     current_token->priority = 9;
                 }
+                else if (current_token->type == AR_TOKEN_PLUS)
+                {
+                    current_token->type = AR_TOKEN_UNARY_PLUS;
+                    current_token->priority = 9;
+                }
+                else
+                    return handle_error("Bad parsing: expected operand",
+                            current_token, out, operators);
             }
+
+            if ((old_type == current_token->type) &&
+                    (current_token->type == AR_TOKEN_PARAM))
+                handle_error("Bad parsing: expected operator", current_token,
+                        out, operators);
 
             move_stack(operators, out, current_token, nb_parenthesis);
             old_type = current_token->type;
         }
-
-        //token_free(&current_token);
     }
 
     if (nb_parenthesis)
-    {
-        warnx("Bad parsing: wrong parenthesis");
-        //TODO: destroy stacks
-        return NULL;
-    }
+        return handle_error("Bad parsing: wrong parenthesis", NULL, out,
+                operators);
 
     move_stack(operators, out, NULL, 0);
     free(operators);
