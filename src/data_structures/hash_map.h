@@ -98,3 +98,5 @@ builtin hash_find_builtin(struct hash_map *set, char *key);
 * @relates hash_map
 */
 void hash_free(struct hash_map *s);
+
+int hash_remove(struct hash_map *set, char *key);
