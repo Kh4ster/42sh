@@ -40,12 +40,14 @@ static void push_operand_to_stack(struct stack *out, struct token *operand)
 static void move_stack(struct stack *operators_stack, struct stack *out,
                                         struct token *operators, int nb_par)
 {
+    if (operators)
+        operators->priority += nb_par * VALUE_PARENTHISIS;
+
     while (size_stack(operators_stack))
     {
         struct token *head_stack = stack_peek(operators_stack);
 
-        if (!operators || head_stack->priority
-                        > (operators->priority + nb_par * VALUE_PARENTHISIS))
+        if (!operators || head_stack->priority > operators->priority)
         {
             head_stack = stack_pop(operators_stack);
 
@@ -57,16 +59,17 @@ static void move_stack(struct stack *operators_stack, struct stack *out,
             break;
     }
 
-    stack_push(operators_stack, operators);
+    if (operators)
+        stack_push(operators_stack, operators);
 }
 
 
-static int handle_parenthisis(char c, int *nb_parenthesis)
+static int handle_parenthisis(enum token_type type, int *nb_parenthesis)
 {
-    if (c == '(')
+    if (type == TOKEN_LEFT_PARENTHESIS)
         (*nb_parenthesis)++;
 
-    else if (c == ')')
+    else if (type == TOKEN_RIGHT_PARENTHESIS)
     {
         if (!nb_parenthesis)
         {
@@ -88,18 +91,18 @@ extern struct node *parser(char *line)
     int nb_parenthesis = 0;
     int old_type = TOKEN_PLUS;
 
-    while (*line && ((current_token = token_get_next(&line)) != NULL))
+    while (line && *line && ((current_token = token_get_next(&line)) != NULL))
     {
-        if (*line == ')' || *line == '(')
+        if (current_token->type == TOKEN_LEFT_PARENTHESIS ||
+            current_token->type == TOKEN_RIGHT_PARENTHESIS)
         {
-            if (handle_parenthisis(*line, &nb_parenthesis) == 1)
+            if (handle_parenthisis(current_token->type, &nb_parenthesis) == 1)
             {
                 warnx("Bad parsing: wrong parenthesis");
                 //TODO: stack destroy
                 return NULL;
             }
 
-            line++;
             continue;
         }
 
@@ -132,5 +135,6 @@ extern struct node *parser(char *line)
     }
 
     move_stack(operators, out, NULL, 0);
+    //TODO: destroy stacks
     return create_tree(out);
 }

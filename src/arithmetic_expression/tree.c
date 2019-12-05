@@ -12,7 +12,8 @@ extern struct node *create_tree(struct stack *out)
         return current;
 
     if (current->data.operators->type == TOKEN_NOT ||
-                        current->data.operators->type == TOKEN_BITWISE_NOT)
+                    current->data.operators->type == TOKEN_BITWISE_NOT ||
+                    current->data.operators->type == TOKEN_UNARY_MINUS)
         current->data.operators->left_child = create_tree(out);
     else
     {
@@ -43,6 +44,8 @@ extern int evaluate_tree(struct node *tree)
             return evaluate_tree(data->left_child) | evaluate_tree(data->right_child);
         case TOKEN_BITWISE_XOR:
             return evaluate_tree(data->left_child) ^ evaluate_tree(data->right_child);
+        case TOKEN_BITWISE_NOT:
+            return ~evaluate_tree(data->left_child);
         case TOKEN_PLUS:
             return evaluate_tree(data->left_child) + evaluate_tree(data->right_child);
         case TOKEN_MINUS:
