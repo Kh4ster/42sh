@@ -16,8 +16,11 @@
 - name: echo "*"
   stdin: echo "*"
 
-- name: echo """ (chiant pour savoir la fin)
+- name: echo """
   stdin: echo """
+  checks:
+    - returncode
+    - has_stderr
 
 - name: echo ""
   stdin: echo ""
@@ -25,8 +28,8 @@
 - name: echo $
   stdin: echo $
 
-- name: echo $$
-  stdin: echo $$
+- name: echo $$ | grep [^0-9]
+  stdin: echo $$ | grep [^0-9]
 
 - name: echo $()
   stdin: echo $()
@@ -107,6 +110,9 @@
 
 - name: cd "-"
   stdin: cd "-"
+  checks:
+    - returncode
+    - has_stderr
 
 - name : echo "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
   stdin: echo "ddc@///\\dcd%CC/'/#/%\ef'c*edc"

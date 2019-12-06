@@ -6,7 +6,7 @@
 
 - name: unalias error 1
   stdin: alias toto=papa; unalias papa
-  checkins:
+  checks:
       - returncode
       - has_stderr
 
@@ -17,7 +17,7 @@
 
 - name: unalias error 2
   stdin: alias toto=papa papa=lala; unalias papa papa
-  checkins:
+  checks:
       - returncode
       - has_stderr
       - stdin
@@ -44,21 +44,21 @@
     ls
     unalias ls
     ls
-  checkins:
+  checks:
       - returncode
       - has_stderr
       - stdin
 
 - name: alias error 1
   stdin: alias toto =papa; alias; unalias toto
-  checkins:
+  checks:
       - returncode
       - has_stderr
       - stdin
 
 - name: alias error 2
   stdin: alias toto= papa; alias; unalias toto
-  checkins:
+  checks:
       - returncode
       - has_stderr
       - stdin

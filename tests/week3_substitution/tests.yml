@@ -18,6 +18,9 @@
 
 - name: complex command substitution and execution 6 (same chiant parce que quote viré)
   stdin: echo $(echo $(echo ")"))
+  checks:
+    - returncode
+    - has_stderr
 
 - name: complex command substitution and execution 7
   stdin: echo $( $(echo echo | $(echo cat) ))
