@@ -78,7 +78,7 @@ static void handle_escape_aux(char *c)
     else if (*c == '0')
         dprintf(STDOUT, "%c", handle_ascii(c, *c)); //octal
     else
-        dprintf(STDOUT, "%c", *c);
+        dprintf(STDOUT, "\\%c", *c);
 }
 
 static int print_with_backslash_escapes(char *arg)
@@ -102,7 +102,7 @@ static int print_with_backslash_escapes(char *arg)
                     return 0;
             }
         }
-        else if (*c != '\\')
+        else // if (*c != '\\')
             dprintf(STDOUT, "%c", *c);
     }
     return 0;
