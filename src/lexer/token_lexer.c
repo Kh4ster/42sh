@@ -271,9 +271,9 @@ static void handle_dollar(char **cursor, char **token_start)
         if (**cursor == '}')
         {
             if (is_interactive())
-                warnx("Bad lexing");
+                warnx("Bad substitution");
             else
-                errx(2, "Bad lexing");
+                errx(1, "Bad substitution");
         }
         while (**cursor != '\0' && **cursor != '}')
             (*cursor)++;
