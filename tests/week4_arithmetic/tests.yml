@@ -10,3 +10,8 @@
 - name: many operations 2
   stdin: d=$(($d+3/5-2*12244+d+6)); echo $d
 
+- name: echo $((3 + 1))$(echo ok)toto
+  stdin: echo $((3 + 1))$(echo ok)toto
+
+- name: echo $((3 + 1)) $(echo ok) toto
+  stdin: echo $((3 + 1)) $(echo ok) toto
