@@ -183,13 +183,10 @@ static void init_all(struct hash_map *functions,
     g_env.old_pwd = NULL;
     set_pwd();
 
-<<<<<<< HEAD
-=======
     // Default Prompt
     hash_insert(variables, "PS1", "42sh$ ", STRING);
     hash_insert(variables, "PS2", "> ", STRING);
 
->>>>>>> develop
     // History
     char *history_path = get_history_file_path();
     using_history();
