@@ -201,7 +201,9 @@ int shopt(char *options[])
         {
             if (is_shopt_var(options[i])) //case call to shopt and valid variable
             {
-                printf("%s\t\t%s\n", options[i],
+                int n = strlen(options[i]);
+                int mod = 7 - (n % 8);
+                printf("%s%*s\t%s\n", options[i], mod, "",
                         (g_env.options.option_xpg_echo) ? "on" : "off");
             }
             else
