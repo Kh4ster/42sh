@@ -135,7 +135,7 @@ static char *expand_variable(char **to_expand)
     char *value;
 
     char *beg = *to_expand;
-    *to_expand = strpbrk(*to_expand, " $\'\"\\\n}{[]?!@`");
+    *to_expand = strpbrk(*to_expand, " $\'\"\\\n}{[]?!@`+-*^&|/");
     if (*to_expand == NULL)
         *to_expand = beg + strlen(beg); //if null go to end
 
@@ -276,7 +276,9 @@ static char *handle_expand_arithmetic(char **to_expand)
     char *to_compute = strndup(begin, end - begin);
     size_t jump = strlen(to_compute);
 
-    to_compute = scan_for_expand(to_compute, true, NULL);
+    char *new_to_compute = scan_for_expand(to_compute, true, NULL);
+    free(to_compute);
+    to_compute = new_to_compute;
     struct node *root = parser(to_compute);
     int result = 1;
 

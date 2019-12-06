@@ -173,14 +173,16 @@ static int get_priority(enum token_type type)
         return 2;
     else if (type == AR_TOKEN_BITWISE_AND)
         return 3;
-    else if (type == AR_TOKEN_PLUS || type == AR_TOKEN_MINUS)
+    else if (type == AR_TOKEN_PLUS)
         return 4;
-    else if (type == AR_TOKEN_MULTIPLY || type == AR_TOKEN_DIVIDE)
+    else if (type == AR_TOKEN_MINUS)
         return 5;
-    else if (type == AR_TOKEN_POWER)
+    else if (type == AR_TOKEN_MULTIPLY || type == AR_TOKEN_DIVIDE)
         return 6;
-    else if (type == AR_TOKEN_NOT || type == AR_TOKEN_BITWISE_NOT)
+    else if (type == AR_TOKEN_POWER)
         return 7;
+    else if (type == AR_TOKEN_NOT || type == AR_TOKEN_BITWISE_NOT)
+        return 8;
 
     //TODO: Minus & plus unary
     // parenthesis or error in given token

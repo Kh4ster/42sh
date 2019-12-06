@@ -8,6 +8,9 @@ extern struct node *create_tree(struct stack *out)
 {
     struct node *current = stack_pop(out);
 
+    if (!current)
+        return NULL;
+
     if (current->type == AR_TOKEN_OPERAND)
         return current;
 
@@ -71,6 +74,9 @@ extern int evaluate_tree(struct node *tree)
 
 extern void destroy_ar_tree(struct node *tree)
 {
+    if (!tree)
+        return;
+
     if (tree->type == AR_TOKEN_OPERAND)
     {
         free(tree);
