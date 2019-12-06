@@ -45,7 +45,10 @@ static void hash_update(struct hash_map *set,
     }
 
     free(s->data);
-    s->data = strdup(data);
+    if (data == NULL)
+        s->data = strdup("");
+    else
+        s->data = strdup(data);
 }
 
 

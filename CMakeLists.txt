@@ -60,7 +60,8 @@ set(SRC_FILES
     src/builtins/alias/alias.c
     src/builtins/alias/unalias.c
     src/path_expention/path_exepension.c
-    src/variables/expand_special_variables.c
+    src/special_variables/expand_special_variables.c
+    src/command_substitution/command_substitution.c
     src/input_output/prompt.c
 )
 

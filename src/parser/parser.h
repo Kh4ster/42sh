@@ -5,10 +5,11 @@
 * @author Reviewer : nicolas.blin cloe.lacombe pierrick.made
 */
 
-#include <stdio.h>
-#include "../data_structures/queue.h"
-
 #pragma once
+
+#include <stdio.h>
+
+#include "../data_structures/queue.h"
 
 /**
 * @enum token_parser_type
