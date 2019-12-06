@@ -27,6 +27,8 @@
 #include "../../data_structures/data_string.h"
 #include "../../special_variables/expand_special_variables.h"
 #include "../../path_expention/path_exepension.h"
+#include "../../arithmetic_expression/parser.h"
+#include "../../arithmetic_expression/tree.h"
 #include "../../command_substitution/command_substitution.h"
 
 bool g_have_to_stop = 0; //to break in case of signal
@@ -271,6 +273,41 @@ static bool is_tidle(char *str)
 }
 
 
+
+static char *handle_expand_arithmetic(char **to_expand)
+{
+    char *begin = *to_expand + 3;
+
+    char *end = strstr(begin, "))");
+    char *to_compute = strndup(begin, end - begin);
+    size_t jump = strlen(to_compute);
+
+    char *new_to_compute = scan_for_expand(to_compute, true, NULL);
+    free(to_compute);
+    to_compute = new_to_compute;
+    struct node *root = parser(to_compute);
+    int result = 1;
+
+    if (root)
+    {
+        result = evaluate_tree(root);
+        destroy_ar_tree(root);
+    }
+
+    char *to_return = NULL;
+
+    int error = asprintf(&to_return, "%d", result);
+
+    *to_expand += jump + 4;
+
+    free(to_compute);
+
+    if (error == -1)
+        return NULL;
+    return to_return;
+}
+
+
 static char *expand_if_special_variable(char **to_expand)
 {
     char *result;
@@ -302,6 +339,8 @@ char *expand(char **to_expand, bool is_quote, int *was_quote)
         return expand_tilde(to_expand);
     if (**to_expand == '\'' || **to_expand == '"' || **to_expand == '\\')
         return expand_quote(to_expand, is_quote, was_quote);
+    if (strncmp(*to_expand, "$((", 3) == 0)
+        return handle_expand_arithmetic(to_expand);
     if (**to_expand == '$' && *(*to_expand + 1) == '(')
         return hat_of_expand_cmd(to_expand, ')', 2);
 
@@ -841,9 +880,9 @@ extern int execute_ast(struct instruction *ast)
     }
 
     g_env.last_return_value = return_value;
+    
     if (ast->next != NULL && !g_env.breaks && !g_env.continues)
-    {
         return_value = execute_ast(ast->next);
-    }
+    
     return return_value;
 }

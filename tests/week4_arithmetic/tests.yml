@@ -15,3 +15,24 @@
 
 - name: echo $((3 + 1)) $(echo ok) toto
   stdin: echo $((3 + 1)) $(echo ok) toto
+
+- name: echo $((3 + 1 - 4))
+  stdin: echo $((3 + 1 - 4));
+
+- name: echo $((3 * 5 - 4 + 1))
+  stdin: echo $((3 * 5 - 4 + 1))
+
+- name: echo $((3 | 1 & 4 ^ 12 | 56 & 4 && 0))
+  stdin: echo $((3 | 1 & 4 ^ 12 | 56 & 4 && 0))
+
+- name: echo $(((3 + 2) * -2))
+  stdin: echo $(((3 + 2) * -2))
+
+- name: echo $((3 + 4 && 0))
+  stdin: echo $((3 + 4 && 0))
+
+- name: echo $((3 | 4 & 11))
+  stdin: echo $((3 | 4 ^ 11))
+
+- name: echo $((3 ** 4 ^ 11))
+  stdin: echo $((3 ** 4 ^ 11))

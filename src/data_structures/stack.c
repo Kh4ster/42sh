@@ -7,7 +7,7 @@
 
 struct stack *init_stack(void)
 {
-    struct stack *stack = xmalloc(sizeof(struct stack *));
+    struct stack *stack = xmalloc(sizeof(struct stack));
     stack->head = NULL;
     stack->size = 0;
     return stack;
@@ -19,7 +19,7 @@ struct stack *stack_push(struct stack *stack, void *element)
     if (!element)
         return stack;
 
-    struct node *new_el = xmalloc(sizeof(struct node));
+    struct stack_node *new_el = xmalloc(sizeof(struct stack_node));
     new_el->data = element;
     new_el->next = stack->head;
     stack->head = new_el;
@@ -33,8 +33,8 @@ void *stack_pop(struct stack *stack)
     if (!stack->head)
         return NULL;
 
-    struct node *head = stack->head;
-    struct node *tmp = head->next;
+    struct stack_node *head = stack->head;
+    struct stack_node *tmp = head->next;
     void *return_value = head->data;
     free(head);
     stack->head = tmp;
@@ -59,3 +59,4 @@ size_t size_stack(struct stack *stack)
 
     return stack->size;
 }
+
