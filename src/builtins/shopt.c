@@ -209,7 +209,7 @@ int shopt(char *options[])
         || (strcmp("-u", options[1]) == 0))) //case call with just -u -s
         return handle_option_no_var(options[1]);
 
-    if (check_error(options, argc) == 1)
+    if (check_error(options, argc) == 1) //option followed by bad var
         return 1;
 
     if (strcmp("-s", options[1]) == 0 )
