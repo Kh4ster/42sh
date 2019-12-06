@@ -19,7 +19,7 @@
 - name: complex command substitution and execution 6
   stdin: echo $(echo $(echo ")"))
 
-- name: complex command substitution and execution 7
+- name: complex command substitution and execution 7 (triple imbrique)
   stdin: echo $( $(echo echo | $(echo cat) ))
 
 - name: complex command substitution and execution 8
