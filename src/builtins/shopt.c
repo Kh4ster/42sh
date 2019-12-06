@@ -164,9 +164,7 @@ static int handle_option_no_var(char *opt_name)
     {
         if ((on) ? val_options[i] : !val_options[i])
         {
-            int n = strlen(options[i]);
-            int mod = 7 - (n % 8);
-            printf("%s%*s\t%s\n", options[i], mod, "", (on) ? "on" : "off");
+            printf("%s%*s\t%s\n", options[i], width(options[i]), "", (on) ? "on" : "off");
         }
     }
     return 0;
@@ -178,6 +176,18 @@ static bool check_options(char *option)
                                                 || strcmp("-q", option) == 0;
 }
 
+static int check_error(char *options[], int argc)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        if (check_options(options[1]) && !is_shopt_var(options[i]))
+        {
+            warnx("%s: invalid shopt variable name", options[i + 1]);
+            return 1;
+        }
+    }
+    return 0;
+}
 int shopt(char *options[])
 {
     int argc = 0;
@@ -199,6 +209,9 @@ int shopt(char *options[])
         || (strcmp("-u", options[1]) == 0))) //case call with just -u -s
         return handle_option_no_var(options[1]);
 
+    if (check_error(options, argc) == 1)
+        return 1;
+
     if (strcmp("-s", options[1]) == 0 )
         set_option(options[2]);
     else if (strcmp("-u", options[1]) == 0)
@@ -216,9 +229,7 @@ int shopt(char *options[])
         {
             if (is_shopt_var(options[i])) //case call to shopt and valid variable
             {
-                int n = strlen(options[i]);
-                int mod = 7 - (n % 8);
-                printf("%s%*s\t%s\n", options[i], mod, "",
+                printf("%s%*s\t%s\n", options[i], width(options[i]), "",
                         (g_env.options.option_xpg_echo) ? "on" : "off");
             }
             else
