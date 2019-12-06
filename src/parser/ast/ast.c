@@ -133,9 +133,11 @@ static char *expand_variable(char **to_expand)
     char *value;
 
     char *beg = *to_expand;
-    *to_expand = strpbrk(*to_expand, " $\'\"\\\n}{[]?!@`");
-    if (*to_expand == NULL)
-        *to_expand = beg + strlen(beg); //if null go to end
+    while ((**to_expand >= 'A' && **to_expand <= 'Z')
+            || **to_expand == '_'
+            || (**to_expand >= 'a' && **to_expand <= 'z')
+            || (**to_expand >= '0' && **to_expand <= '9'))
+        (*to_expand)++;
 
     char *var_name = strndup(beg, *to_expand - beg);
 

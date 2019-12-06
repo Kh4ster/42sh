@@ -62,7 +62,7 @@ static void add_to_inner_var(char *beg, char *cursor, struct hash_map *inner_var
         cursor--;
     cursor++; //skip symbol
     char *var_name = strndup(cursor, equal_sign - cursor);
-    var_value = strndup(equal_sign + 1, var_value - equal_sign);
+    var_value = strndup(equal_sign + 1, var_value - (equal_sign + 1));
     hash_insert(inner_var, var_name, var_value, STRING);
     free(var_name);
     free(var_value);
@@ -76,9 +76,12 @@ static bool is_not_inner_var(char *line, struct hash_map *inner_var)
     if (*(line + 1) == '{')
         line++;
 
-    char *delim = strpbrk(line, "$\'\"\\\n}{[]?!@`");
-    if (delim == NULL) //did not match so go to end of line
-         delim = line + strlen(line);
+    char *delim = line;
+    while ((*delim >= 'A' && *delim <= 'Z')
+            || *delim == '_'
+            || (*delim >= 'a' && *delim <= 'z')
+            || (*delim >= '0' && *delim <= '9'))
+        delim++;
 
     char *var_name = strndup(line, delim - line);
     void *result = hash_find(inner_var, var_name);
@@ -100,10 +103,11 @@ static char* expand_inner_var(char **to_expand, struct hash_map *inner_var)
     char *value;
 
     char *beg = *to_expand;
-    *to_expand = strpbrk(*to_expand, " $\'\"\\\n}{[]?!@`");
-    if (*to_expand == NULL)
-        *to_expand = beg + strlen(beg); //if null go to end
-
+    while ((**to_expand >= 'A' && **to_expand <= 'Z')
+            || **to_expand == '_'
+            || (**to_expand >= 'a' && **to_expand <= 'z')
+            || (**to_expand >= '0' && **to_expand <= '9'))
+        (*to_expand)++;
     char *var_name = strndup(beg, *to_expand - beg);
 
     if ((value = hash_find(inner_var, var_name)) == NULL)
@@ -130,31 +134,26 @@ char *custom_scan(char *line,
             if (*line == '"')
             {
                 *was_quote = 2;
-                if (is_not_inner_var(line + 1, inner_var) && *(line + 1) == '$')
-                {
-                    char *expansion = expand(&line, is_quote, was_quote);
-                    string_append(new_line, expansion);
-                    free(expansion);
-                }
-                else
-                {
-                    string_append_char(new_line, *line);
+                string_append_char(new_line, '"');
+                line++;
+                char *beg = line;
+                while (*line != '"')
                     line++;
-                    while (*line != '"')
-                    {
-                        string_append_char(new_line, *line);
-                        line++;
-                    }
-                    string_append_char(new_line, *line);
-                }
+                char *inner = strndup(beg, line - beg);
+                char *result = custom_scan(inner, true, was_quote, inner_var);
+                string_append(new_line, result);
+                string_append_char(new_line, '"');
+                free(inner);
+                free(result);
             }
-            else
+            else //case $
             {
                 char *expansion = expand(&line, is_quote, was_quote);
                 string_append(new_line, expansion);
                 free(expansion);
             }
         }
+        //if is inner var need expand -> $(var=baba; echo $(echo $var))
         else if (!is_not_inner_var(line, inner_var))
         {
             char *expansion = expand_inner_var(&line, inner_var);
