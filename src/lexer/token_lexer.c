@@ -104,6 +104,13 @@ static void handle_quoting(char **cursor, char **start_of_token)
         }
         (*cursor)++;
     }
+    else if (**cursor == '\\')
+    {
+        (*cursor)++; // skip backslash
+        if (**cursor == '\0') // if backslash at end of line, get_next_line
+            add_next_line_to_current_and_update_cursors(cursor, start_of_token);
+        (*cursor)++; // skip next char
+    }
 }
 
 static bool is_ifs(char current)
@@ -213,6 +220,13 @@ void skip_quoting(char **cursor, char **start_of_token)
         }
         (*cursor)++;
     }
+    else if (**cursor == '\\')
+    {
+        (*cursor)++; // skip backslash
+        if (**cursor == '\0') // if backslash at end of line, get_next_line
+            add_next_line_to_current_and_update_cursors(cursor, start_of_token);
+        (*cursor)++; // skip next char
+    }
 }
 
 char *find_corresponding_parenthesis(char **cursor, char **token_start)
@@ -222,7 +236,7 @@ char *find_corresponding_parenthesis(char **cursor, char **token_start)
     {
         while (**cursor != '\0' && counter_bracket != 0)
         {
-            if (**cursor == '\'' || **cursor == '"')
+            if (**cursor == '\'' || **cursor == '"' || **cursor == '\\')
             {
                 skip_quoting(cursor, token_start);
                 continue;
@@ -321,7 +335,7 @@ static enum token_lexer_type scan_token(char **cursor, char **token_start)
 {
     while (!is_ifs(**cursor))
     {
-        if (**cursor == '\'' || **cursor == '"')
+        if (**cursor == '\'' || **cursor == '"' || **cursor == '\\')
         {
             handle_quoting(cursor, token_start);
         }
