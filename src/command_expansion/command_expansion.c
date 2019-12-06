@@ -100,25 +100,17 @@ static char *expand_variable(char **to_expand)
 
     char *beg = *to_expand;
     *to_expand = strpbrk(*to_expand, " $\'\"\\\n}{[]?!@`");
-    char save;
-    if (*to_expand != NULL)
-    {
-         save = **to_expand;
-         **to_expand = '\0';
-    }
+    if (*to_expand == NULL)
+        *to_expand = beg + strlen(beg); //if null go to end
 
-    if ((value = hash_find(g_env.variables, beg)) == NULL)
+    char *var_name = strndup(beg, *to_expand - beg);
+
+    if ((value = hash_find(g_env.variables, var_name)) == NULL)
         value = "";
-
-    if (*to_expand != NULL)
-        **to_expand = save;
-
-    //if null, want to go to end of line
-    if(*to_expand == NULL)
-        *to_expand = beg + strlen(beg);
 
     //case we jump to next char and ++ in scan will skip it so scan goes onto it
     (*to_expand)--;
+    free(var_name);
     return strdup(value);
 }
 
@@ -186,8 +178,7 @@ char *expand_quote(char **cursor, bool is_quote, int *was_quote)
             (*cursor)++;
             char *beg = *cursor;
             *cursor = get_delimiter(*cursor, "\'");
-            **cursor = '\0'; //set ' to 0
-            return strdup(beg);
+            return strndup(beg, *cursor - beg);
         }
         else
             return strdup("'");
@@ -206,8 +197,10 @@ char *expand_quote(char **cursor, bool is_quote, int *was_quote)
                 *cursor += 2;
             *cursor = get_delimiter(*cursor, "\"\\");
         }
-        **cursor = '\0'; //set " to 0
-        return scan_for_expand(beg, true, was_quote);
+        char *extracted_value = strndup(beg, *cursor - beg);
+        char *result = scan_for_expand(extracted_value, true, was_quote);
+        free(extracted_value);
+        return result;
     }
     else if (**cursor == '\\' && !is_quote)// \ handling outside quotes
     {
@@ -280,14 +273,14 @@ int handle_expand_command(struct instruction *command_i)
     struct array_list *expanded_parameters = array_list_init();
 
     char *expansion = scan_for_expand(command->command, false, NULL);
-    if (*expansion == '\0') //expand empty var
+    if (*expansion == '\0' || *expansion == '\n') //expand empty var
     {
         free(expansion);
         size_t i = 1;
         while (command->params[i] != NULL) //while empty var we remove
         {
             expansion = scan_for_expand(command->params[i], false, NULL);
-            if (*expansion == '\0')
+            if (*expansion == '\0' || *expansion == '\n')
             {
                 free(expansion);
                 i++;

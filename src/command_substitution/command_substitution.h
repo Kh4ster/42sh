@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 /**
 * @brief hat function used to expand $() and `
 * @param to_expand line to expand
@@ -37,9 +39,11 @@ char *custom_scan(char *line,
 * @param to_stop char to stop on ) or `
 * @param nb_to_skip skip 1 or to char if $( or `
 * @param inner_var var inside the $()
+* @param is_first to know if it's first call or resursiv call
 * @return result of the command expansion
 */
 char *expand_cmd(char *to_expand,
                 char to_stop,
                 int nb_to_skip,
-                struct hash_map *inner_var);
+                struct hash_map *inner_var,
+                bool is_first);
