@@ -45,7 +45,10 @@ static void hash_update(struct hash_map *set,
     }
 
     free(s->data);
-    s->data = strdup(data);
+    if (data == NULL)
+        s->data = strdup("");
+    else
+        s->data = strdup(data);
 }
 
 
@@ -222,6 +225,7 @@ void hash_init(struct hash_map *s, size_t size)
         s->slots[i].builtin = NULL;
     }
 }
+
 
 void hash_free(struct hash_map *s)
 {

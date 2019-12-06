@@ -114,8 +114,20 @@
     toto=papa
     echo $var
 
+- name: var="/\\fd\/\e5%vf#\-"; echo $var
+  stdin: var="/\\fd\/\e5%vf#\-"; echo $var
+- name: $abc=toto; echo $(echo ok $(echo ok) $(echo ok) '$''$abc' )
+  stdin: $abc=toto; echo $(echo ok $(echo ok) $(echo ok) '$''$abc' )
+  checks:
+    - has_stderr
+    - stdout
+    - returncode
+
 - name: echo $?
   stdin: cmd_notfnd; echo $?
+  checks:
+    - has_stderr
+    - stdout
 
 - name: echo $?toto
   stdin: echo $?toto
@@ -136,6 +148,22 @@
 
 - name: echo $SHELLOPTS
   stdin: echo $SHELLOPTS
+
+- name: echo $?toto
+  stdin: echo $?toto
+
+- name: echo $1tata
+  stdin: echo $1tata
+
+- name: echo $1 $2 $3toto
+  options:
+    - ../tests/week3_variables/test2.sh
+    - titi tata toto tutu
+
+- name: echo $0tata
+  options:
+    - ../tests/week3_variables/test3.sh
+    - tete
 
 - name: var=test; echo $(echo $var "jio" ' l' *)
   stdin: var=test; echo $(echo $var "jio" ' l' *)

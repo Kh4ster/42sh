@@ -16,7 +16,7 @@
 - name: echo "*"
   stdin: echo "*"
 
-- name: echo """
+- name: echo """ (chiant pour savoir la fin)
   stdin: echo """
 
 - name: echo ""
@@ -36,12 +36,18 @@
 
 - name: echo '
   stdin: echo '
+  checks:
+  - returncode
+  - has_stderr
 
 - name: echo ''
   stdin: echo ''
 
 - name: echo ${}
   stdin: echo ${}
+  checks:
+  - returncode
+  - has_stderr
 
 - name: echo ~$(echo ok)$
   stdin: echo ~$(echo ok)$
@@ -70,6 +76,12 @@
 - name: echo "ok""ok"/\"ok""
   stdin: echo "ok""ok"/\"ok""
 
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$""$abc" )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$""$abc" )
+
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$"'$abc' )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$"'$abc' )
+
 - name: complex quoting 1
   stdin: test= ;echo 'jio               y'
 
@@ -85,7 +97,7 @@
 
 - name: complex quoting 5
   options:
-    - ../tests/week3_quotes/test5.sh
+    - ../tests/week3_quotes/test2.sh
 
 - name: ls "./"
   stdin: ls "./"

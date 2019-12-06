@@ -101,10 +101,8 @@ static int print_with_backslash_escapes(char *arg)
                 if ((*c == 'x') || (*c == '0'))
                     return 0;
             }
-
         }
-
-        else
+        else if (*c != '\\')
             dprintf(STDOUT, "%c", *c);
     }
     return 0;
