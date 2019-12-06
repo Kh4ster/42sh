@@ -16,11 +16,8 @@
 - name: complex command substitution and execution 5
   stdin: echo $(echo $(echo ok))
 
-- name: complex command substitution and execution 6 (same chiant parce que quote viré)
+- name: complex command substitution and execution 6
   stdin: echo $(echo $(echo ")"))
-  checks:
-    - returncode
-    - has_stderr
 
 - name: complex command substitution and execution 7
   stdin: echo $( $(echo echo | $(echo cat) ))
@@ -87,9 +84,13 @@
 
 - name: complex command substitution mix back quote dollar (not handle triple imbrication)
   options:
-    - ../test/week3_subtitution/test7.sh
+    - ../test/week3_substitution/test7.sh
+
 - name: $(echo toto)/
   stdin: $(echo toto)/
+  checks:
+    - returncode
+    - has_stderr
 
 - name: $(echo toto)\
   stdin: $(echo toto)\
@@ -106,14 +107,20 @@
 - name: echo $(echo ok $(echo ok) $(echo ok) abc )
   stdin: echo $(echo ok $(echo ok) $(echo ok) abc )
 
+- name: echo $(echo $(echo ')'))
+  stdin: echo $(echo $(echo ')'))
+
 - name: $(echo $(echo ')'))
   stdin: $(echo $(echo ')'))
+  checks:
+    - returncode
+    - has_stderr
 
 - name: echo $(echo ok $(echo ok) $(echo ok) '$'\abc )
   stdin: echo $(echo ok $(echo ok) $(echo ok) '$'\abc )
 
-- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$$abc" )
-  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$$abc" )
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$1abc" )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$1abc" )
 
 - name: var=test; echo $(echo $(echo "$var"))
   stdin: var=test; echo $(echo $(echo "$var"))
@@ -122,10 +129,10 @@
   stdin: var=test; echo $(echo $(echo '$var'))
 
 - name: var=test; echo $(echo $(echo $var))
-  stdin: var=test; echo $(echo $; (echo $var))
+  stdin: var=test; echo $(echo $(echo $var))
 
 - name: var=test; echo $(var=toto; echo $(echo "$var"))
-  stdin: var=testecho $(var=toto; echo $(echo "$var"))
+  stdin: var=test; echo $(var=toto; echo $(echo "$var"))
 
 - name: var=test; echo $(var=toto; echo $(echo $var))
   stdin: var=test; echo $(var=toto; echo $(echo $var))
