@@ -5,10 +5,10 @@
 #include "../memory/memory.h"
 #include "../data_structures/hash_map.h"
 #include "../execution_handling/command_execution.h"
-#include "../command_expansion/command_expansion.h"
 #include "../data_structures/data_string.h"
 #include "command_substitution.h"
 #include "../lexer/token_lexer.h"
+#include "../parser/ast/ast.h"
 
 //to know where the variable start
 #define DELIMITERS " \\\n\t&|<>\"\'`$();#"

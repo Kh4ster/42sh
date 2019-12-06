@@ -57,10 +57,12 @@ set(SRC_FILES
     src/builtins/break.c
     src/builtins/exit.c
     src/builtins/export.c
+    src/builtins/alias/alias.c
+    src/builtins/alias/unalias.c
     src/path_expention/path_exepension.c
     src/special_variables/expand_special_variables.c
     src/command_substitution/command_substitution.c
-    src/command_expansion/command_expansion.c
+    src/input_output/prompt.c
 )
 
 # ---- List of test files (unit tests) ----

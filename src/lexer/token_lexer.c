@@ -502,14 +502,36 @@ struct queue *lexer(char *line, struct queue *token_queue)
 
     char *cursor = line;
     handle_comments(token_queue, &cursor, 1);
+    int is_first = 1;
+
     while (cursor != NULL && *cursor != '\0')
     {
         char *delim = get_delimiter(cursor, IFS);
+
+        if (is_first)
+        {
+            char *alias = xstrndup(cursor, delim - cursor);
+            char *alias_line;
+
+            if ((alias_line = hash_find(g_env.aliases, alias)) != NULL)
+            {
+                lexer(alias_line, token_queue);
+                cursor = delim;
+                free(alias);
+                is_first = 0;
+                continue;
+            }
+
+            free(alias);
+            free(alias_line);
+        }
+
         struct token_lexer *token_found = generate_token(token_queue, cursor,
                 &delim);
         if (token_found != NULL)
             queue_push(token_queue, token_found);
         cursor = delim;
+        is_first = 0;
     }
 
     queue_push(token_queue, create_newline_token(NULL));
@@ -527,7 +549,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
         free(g_env.current_line);
     char *next_line = get_next_line(g_env.prompt);
 
-    g_env.prompt = "> "; //change prompt to ps2 with lexing
+    g_env.prompt = 2; //change prompt to ps2 with lexing
 
     g_env.current_line = next_line;
 

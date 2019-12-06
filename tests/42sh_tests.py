@@ -86,9 +86,13 @@ def test(binary, test_case, timeout, args):
             assert ref_returncode == student.returncode, \
                 f"Exited with {student.returncode}, expected {ref_returncode}"
         elif check == "has_stderr":
+            assert ref.stderr != "", \
+                "Bash does not have an stderr (and you used has_stderr)"
             assert student.stderr != "", \
                 "The code should print an error message on stderr"
         elif check == "has_stdout":
+            assert ref.stdout != "", \
+                "Bash does not have an stdout (and you used has_stdout)"
             assert student.stdout != "", \
                 "The code should print a message on stdout"
 
