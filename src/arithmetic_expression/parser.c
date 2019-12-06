@@ -129,13 +129,13 @@ static void destroy_stacks(struct stack *operators, struct stack *out)
 static void *handle_error(char *error, struct token *token, struct stack *out,
                                             struct stack *op)
 {
-    warnx(error);
+    warnx("arithmetic expression: %s", error);
 
     if (token)
         token_free(&token);
 
     destroy_stacks(op, out);
-    
+
     return NULL;
 }
 
