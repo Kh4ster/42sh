@@ -69,10 +69,15 @@ static char *expand_tilde(char **str)
         }
     }
 
-    char *to_return = strdup(*str);
-    (*str) += strlen(*str) - 1;
+    char to_return[3] = "~";
+    if (*(*str + 1) == '+' || *(*str + 1) == '-')
+    {
+        (*str)++;
+        to_return[1] = **str;
+        to_return[2] = '\0';
+    }
 
-    return to_return; //never happens
+    return strdup(to_return); //never happens
 }
 
 
@@ -262,8 +267,7 @@ char *expand_quote(char **cursor, bool is_quote, int *was_quote)
 
 static bool is_tidle(char *str)
 {
-    return strcmp(str, "~") == 0 || strcmp(str, "~+") == 0
-                                                    || strcmp(str, "~-") == 0;
+    return *str == '~';
 }
 
 

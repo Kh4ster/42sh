@@ -108,8 +108,8 @@
 - name: ls "../"
   stdin: ls "../"
 
-- name: cd "-"
-  stdin: cd "-"
+- name: unset OLDPWD;cd "-"
+  stdin: unset OLDPWD;cd "-"
   checks:
     - returncode
     - has_stderr
