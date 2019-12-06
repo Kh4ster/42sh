@@ -788,7 +788,7 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 {
     for (size_t i = 0; i < patterns->nb_element; i++)
     {
-        char *expantion = scan_for_expand(patterns->content[i], false, NULL);
+        char *expantion = scan_for_expand(patterns->content[i], true, NULL);
 
         if (patterns->content[i] != expantion)
         {
@@ -806,7 +806,7 @@ static int check_patterns(char *pattern, struct array_list *patterns)
 static int handle_case(struct instruction *ast)
 {
     struct case_clause *case_clause = ast->data;
-    char *expantion = scan_for_expand(case_clause->pattern, false, NULL);
+    char *expantion = scan_for_expand(case_clause->pattern, true, NULL);
 
     if (case_clause->pattern != expantion)
     {
