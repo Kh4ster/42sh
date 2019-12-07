@@ -1,0 +1,44 @@
+- name: standard IFS
+  options:
+    - ../tests/week4_IFS/test2.sh
+
+- name: IFS=. 1
+  options:
+    - ../tests/week4_IFS/test1.sh
+
+- name: IFS=. 2
+  options:
+    - ../tests/week4_IFS/test3.sh
+
+- name: IFS=. 3 (w/ spaces)
+  options:
+    - ../tests/week4_IFS/test4.sh
+
+
+- name: IFS=. 4 (w/ spaces and \n)
+  options:
+    - ../tests/week4_IFS/test5.sh
+  checks:
+    - has_stderr
+    - returncode
+
+- name: IFS=. 5 (w/ spaces)
+  options:
+    - ../tests/week4_IFS/test6.sh
+
+- name: IFS=. 6
+  options:
+    - ../tests/week4_IFS/test7.sh
+
+- name: IFS=". "
+  options:
+    - ../tests/week4_IFS/test8.sh
+
+- name: IFS="."; echo $(echo "ok .."...okk )
+  stdin: IFS="."; echo $(echo "ok .."...okk )
+
+- name: IFS="."; toto="a $b"; echo a.b.c$toto
+  stdin: IFS="."; toto="a $b"; echo a.b.c$toto
+
+- name: IFS="."; toto="a $b"; echo $toto
+  stdin: IFS="."; toto="a $b"; echo $toto
