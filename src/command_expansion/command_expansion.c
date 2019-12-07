@@ -185,11 +185,11 @@ static bool is_to_expand(char c)
                                                                 || c == '~';
 }
 
-static bool contains_space(char *ifs)
+static bool contains(char *ifs, char c)
 {
     while (*ifs != '\0')
     {
-        if (*ifs == ' ')
+        if (*ifs == c)
             return true;
         ifs++;
     }
@@ -204,7 +204,9 @@ static void replace_ifs_with_mark(char *expansion)
         for (size_t j = 0; ifs[j] != '\0'; ++j)
         {
             //overide for the space case cause differ for default content
-            if (contains_space(ifs) && expansion[i] == ' ')
+            if ((contains(ifs, ' ') && expansion[i] == ' ')
+                || (contains(ifs, '\n') && expansion[i] == '\n')
+                || (contains(ifs, '\t') && expansion[i] == '\t'))
             {
                 expansion[i] = ' ';
                 break;
