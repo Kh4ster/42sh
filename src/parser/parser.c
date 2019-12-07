@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include "parser.h"
+#include "build_ast.h"
 #include "ast/ast.h"
 #include "ast/destroy_tree.h"
 #include "../lexer/token_lexer.h"
@@ -135,55 +136,7 @@ static bool next_is(struct queue *lexer, const char *to_match)
     return strcmp(token->data, to_match) == 0;
 }
 
-static struct redirection *build_redirection(int fd, char *file)
-{
-    struct redirection *redirect = xmalloc(sizeof(struct redirection));
-    redirect->to_redirect = NULL;
-    redirect->fd = fd;
-    redirect->file = file;
-    redirect->temp_file = NULL;
-    return redirect;
-}
 
-static struct instruction* build_funcdef_instruction(void)
-{
-    struct instruction *instruction = xmalloc(sizeof(*instruction));
-    instruction->data = NULL;
-    instruction->type = TOKEN_FUNC_DEF;
-    instruction->next = NULL;
-    return instruction;
-}
-
-struct instruction *build_instruction(enum token_parser_type type,
-                                                            void *input_instr
-)
-{
-    struct instruction *instruction = xmalloc(sizeof(*instruction));
-    instruction->data = input_instr;
-    instruction->type = type;
-    instruction->next = NULL;
-    return instruction;
-}
-
-static struct and_or_instruction* build_and_or(struct instruction *left,
-                                    struct instruction *right
-)
-{
-    struct and_or_instruction *and_or = xmalloc(sizeof(*and_or));
-    and_or->left = left;
-    and_or->right = right;
-    return and_or;
-}
-
-static struct pipe_instruction* build_pipe(struct instruction *left,
-                                    struct instruction *right
-)
-{
-    struct pipe_instruction *pipe = xmalloc(sizeof(*pipe));
-    pipe->left = left;
-    pipe->right = right;
-    return pipe;
-}
 
 static struct instruction *parse_if(struct queue *lexer);
 static struct instruction *parse_while_clause(struct queue *lexer);
@@ -437,15 +390,6 @@ static bool next_is_end_of_instruction(struct queue *lexer)
             || token->type == TOKEN_EOF
             || (token->type == TOKEN_OPERATOR && !is_redirection(lexer));
 }
-
-
-static struct command_container *build_simple_command(char *simple_command,
-                                                struct array_list *parameters
-)
-{
-    return command_create(simple_command, parameters);
-}
-
 
 static struct instruction *add_command_redirection(
                     struct instruction *redirection, struct instruction *cmd
@@ -710,32 +654,6 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     return and_or;
 }
 
-static struct for_instruction *build_for_instruction(
-                                            char *var_name,
-                                            struct array_list *var_values,
-                                            struct instruction *to_execute
-)
-{
-    struct for_instruction *new_for = xmalloc(sizeof(struct for_instruction));
-    new_for->var_name = var_name;
-    new_for->var_values = var_values;
-    new_for->to_execute = to_execute;
-    return new_for;
-}
-
-static struct while_instruction *build_while_instruction(
-                                            struct instruction *cond,
-                                            struct instruction *to_do
-)
-{
-    struct while_instruction *while_i =
-                        xmalloc(sizeof(struct while_instruction));
-    while_i->conditions = cond;
-    while_i->to_execute = to_do;
-    return while_i;
-}
-
-
 static struct instruction *parse_do_groupe(struct queue *lexer)
 {
     if (!NEXT_IS("do"))
@@ -827,7 +745,6 @@ static struct instruction *parse_while_clause(struct queue *lexer)
                 build_while_instruction(condition, to_execute));
 }
 
-
 static struct case_item *init_case_item(void)
 {
     struct case_item *item = xmalloc(sizeof(struct case_item));
@@ -835,16 +752,6 @@ static struct case_item *init_case_item(void)
     item->to_execute = NULL;
     return item;
 }
-
-
-static struct case_clause *build_case_clause(char *pattern)
-{
-    struct case_clause *case_clause = xmalloc(sizeof(struct case_clause));
-    case_clause->pattern = strdup(pattern);
-    case_clause->items = array_list_init();
-    return case_clause;
-}
-
 
 static void *destroy_case_item(struct case_item *item)
 {
@@ -1010,20 +917,6 @@ static struct instruction *parse_case_rule(struct queue *lexer)
 
     EAT();
     return case_rule;
-}
-
-
-static struct if_instruction *build_if_instruction(
-                                        struct instruction *conditions,
-                                        struct instruction *to_execute,
-                                        struct instruction *else_container
-)
-{
-    struct if_instruction *if_instruction = xmalloc(sizeof(*if_instruction));
-    if_instruction->conditions = conditions;
-    if_instruction->to_execute = to_execute;
-    if_instruction->else_container = else_container;
-    return if_instruction;
 }
 
 static struct instruction *parse_else_clause(struct queue *lexer)
