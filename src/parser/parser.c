@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include "parser.h"
+#include "parser_utils.h"
 #include "build_ast.h"
 #include "ast/ast.h"
 #include "ast/destroy_tree.h"
@@ -28,33 +29,6 @@
 
 #define IFS " \t\n"
 
-static bool next_is_assignement(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_ASSIGNEMENT;
-}
-
-static bool next_is_other(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_OTHER;
-}
-
-
-static bool next_is_number(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_IO_NUMBER;
-}
-
-
 // free all instructions passed and returns NULL
 static void *free_instructions(size_t nb_param, ...)
 {
@@ -72,71 +46,11 @@ static void *free_instructions(size_t nb_param, ...)
     return NULL;
 }
 
-static enum token_parser_type token_is_redirection (struct token_lexer *token)
-{
-    enum token_parser_type type = 0;
-
-    if (!strcmp(token->data, ">"))
-        type = TOKEN_REDIRECT_LEFT;
-
-    if (!strcmp(token->data, "<"))
-        type = TOKEN_REDIRECT_RIGHT;
-
-    if (!strcmp(token->data, ">>"))
-        type = TOKEN_REDIRECT_APPEND_LEFT;
-
-    if (!strcmp(token->data, ">&"))
-        type = TOKEN_REDIRECT_LEFT_TO_FD;
-
-    if (!strcmp(token->data, "<>"))
-        type = TOKEN_REDIRECT_READ_WRITE;
-
-    if (!strcmp(token->data, "<&"))
-        type = TOKEN_DUP_FD;
-
-    if (!strcmp(token->data, ">|"))
-        type = TOKEN_OVERWRITE;
-
-    if (!strcmp(token->data, "<<"))
-        type = TOKEN_HEREDOC;
-
-    if (!strcmp(token->data, "<<-"))
-        type = TOKEN_HEREDOC_MINUS;
-
-    return type;
-
-}
-
-static enum token_parser_type is_redirection(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-
-    return token_is_redirection(token);
-}
-
-static bool next_is_eof(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_EOF;
-}
-
 static void eat_token(struct queue *lexer)
 {
     struct token_lexer *to_free = token_lexer_pop(lexer);
     token_lexer_free(&to_free);
 }
-
-static bool next_is(struct queue *lexer, const char *to_match)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return strcmp(token->data, to_match) == 0;
-}
-
-
 
 static struct instruction *parse_if(struct queue *lexer);
 static struct instruction *parse_while_clause(struct queue *lexer);
@@ -159,26 +73,6 @@ static struct instruction *parse_control_structure(struct queue *lexer)
         return parse_case_rule(lexer);
 
     return NULL; //impossible
-}
-
-static bool next_is_control_structure(struct queue *lexer)
-{
-    static const char *shell_command[] =
-    {
-        "if",
-        "for",
-        "while",
-        "until",
-        "case"
-    };
-    size_t size_array = sizeof(shell_command) / sizeof(char *);
-
-    for (size_t i = 0; i < size_array; ++i)
-    {
-        if (NEXT_IS(shell_command[i]))
-            return true;
-    }
-    return false;
 }
 
 static struct instruction *parse_shell_command(struct queue *lexer)
@@ -255,29 +149,6 @@ static struct instruction *parse_funcdec(struct queue *lexer)
     return  build_funcdef_instruction();
 }
 
-static bool is_shell_command(struct queue *lexer)
-{
-    static const char *shell_command[] =
-    {
-        "if",
-        "for",
-        "while",
-        "until",
-        "case",
-        "{",
-        "("
-    };
-    size_t size_array = sizeof(shell_command) / sizeof(char *);
-
-    for (size_t i = 0; i < size_array; ++i)
-    {
-        if (NEXT_IS(shell_command[i]))
-            return true;
-    }
-    return false;
-}
-
-
 static int parse_io_number(struct queue *lexer)
 {
     if (!NEXT_IS_NUMBER())
@@ -291,8 +162,6 @@ static int parse_io_number(struct queue *lexer)
     free(cpy);
     return fd;
 }
-
-static bool next_is_end_of_instruction(struct queue *lexer);
 
 static struct instruction *__parse_redirection(struct queue *lexer)
 {
@@ -372,23 +241,6 @@ static struct instruction *parse_redirection(struct queue *lexer,
     }
 
     return tmp;
-}
-
-static bool next_is_end_of_instruction(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return true;
-
-    if (strcmp(token->data, "\n") == 0)
-        return true;
-
-    if (NEXT_IS("(") || NEXT_IS(")"))
-        return true;
-
-    return token->type == TOKEN_END_OF_INSTRUCTION
-            || token->type == TOKEN_EOF
-            || (token->type == TOKEN_OPERATOR && !is_redirection(lexer));
 }
 
 static struct instruction *add_command_redirection(
@@ -519,28 +371,10 @@ static struct instruction *parse_simple_command(struct queue *lexer)
     return command;
 }
 
-
 static bool redirection_not_valid(struct instruction *redirection)
 {
     struct redirection *redir = redirection->data;
     return redir->file == NULL;
-}
-
-static bool next_next_is(struct queue *lexer, const char *to_match)
-{
-    struct token_lexer *next_next = lexer_next_next(lexer);
-    if (next_next == NULL)
-        return false;
-    return strcmp(next_next->data, to_match) == 0;
-}
-
-static bool is_function(struct queue *lexer)
-{
-    if (NEXT_IS("function"))
-        return true;
-    else if (next_next_is(lexer, "("))
-        return true;
-    return false;
 }
 
 //only handle shell command and simple command
@@ -758,11 +592,6 @@ static void *destroy_case_item(struct case_item *item)
     array_list_destroy(item->patterns);
     free(item);
     return NULL;
-}
-
-static int next_is_end_of_case_item(struct queue *lexer)
-{
-    return NEXT_IS(";;") || NEXT_IS("(") || NEXT_IS(")") || NEXT_IS("esac");
 }
 
 static struct case_item *parse_case_item(struct queue *lexer, int *error)

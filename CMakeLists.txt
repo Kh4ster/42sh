@@ -68,6 +68,7 @@ set(SRC_FILES
     src/input_output/prompt.c
     src/command_expansion/command_expansion.c
     src/parser/build_ast.c
+    src/parser/parser_utils.c
 )
 
 # ---- List of test files (unit tests) ----
