@@ -430,8 +430,7 @@ static void insert_sub_var(struct array_list *expanded_parameters,
 
     //first call without NULL
     array_list_append(expanded_parameters, strdup(strtok_r(expansion,
-                                            " \n\t",
-                                                                &expansion)));
+                                            " \n\t", &expansion)));
 
     char *param;
     while ((param = strtok_r(NULL, " \n\t",&expansion)) != NULL)
