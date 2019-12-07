@@ -7,7 +7,7 @@
 - name: complex command substitution and execution 3 w/ arith expansion
   stdin: echo $(var=test; $(var=echo; echo $var) $var) $var + $((5+3))
 
-- name: complex command substitution and execution 4 (chiant parce que quote viré)
+- name: complex command substitution and execution 4
   stdin: $(echo $(echo ")"))
   checks:
     - returncode
@@ -82,7 +82,7 @@
 - name: complex command substitution and execution 20
   stdin: $(va=test; echo $var)
 
-- name: complex command substitution mix back quote dollar (not handle triple imbrication)
+- name: complex command substitution mix back quote dollar (triple imbrication not handled)
   options:
     - ../test/week3_substitution/test7.sh
 
