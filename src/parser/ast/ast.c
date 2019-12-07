@@ -33,7 +33,8 @@
 
 bool g_have_to_stop = 0; //to break in case of signal
 
-#define IFS " \t\n"
+// IFS " \t\n"
+#define MARK_IFS -5
 
 char *expand(char **to_expand, bool is_quote, int *was_quote);
 char *scan_for_expand(char *line, bool is_quote, int *was_quote);
@@ -109,12 +110,14 @@ static void fill_command_and_params(struct command_container *command,
 {
     char *beg = expansion;
     free(command->command);
-    command->command = strdup(strtok_r(expansion, IFS, &expansion));
+    command->command = strdup(strtok_r(expansion,
+                                hash_find(g_env.variables, "IFS"), &expansion));
     //first parameter is command
     array_list_append(parameters, strdup(command->command));
 
     char *param;
-    while ((param = strtok_r(NULL, IFS, &expansion)) != NULL)
+    while ((param = strtok_r(NULL,
+                        hash_find(g_env.variables, "IFS"), &expansion)) != NULL)
         array_list_append(parameters, strdup(param));
     free(beg);
 }
@@ -122,7 +125,7 @@ static void fill_command_and_params(struct command_container *command,
 
 static bool is_multiple_words(char *expansion)
 {
-    return strpbrk(expansion, IFS) != NULL;
+    return strpbrk(expansion, " \n\t") != NULL;
 }
 
 
@@ -186,6 +189,42 @@ static bool is_to_expand(char c)
                                                                 || c == '~';
 }
 
+static bool contains_space(char *ifs)
+{
+    while (*ifs != '\0')
+    {
+        if (*ifs == ' ')
+            return true;
+        ifs++;
+    }
+    return false;
+}
+
+static void replace_ifs_with_mark(char *expansion)
+{
+    char *ifs = hash_find(g_env.variables, "IFS");
+    for (size_t i = 0; expansion[i] != '\0'; ++i)
+    {
+        for (size_t j = 0; ifs[j] != '\0'; ++j)
+        {
+            //overide for the space case cause differ for default content
+            if (contains_space(ifs) && expansion[i] == ' ')
+            {
+                expansion[i] = ' ';
+                break;
+            }
+            if (expansion[i] == ifs[j])
+            {
+                if (expansion[i + 1] == 0) //last char
+                    expansion[i] = '\0';
+                else
+                    expansion[i] = MARK_IFS;
+                break;
+            }
+        }
+    }
+}
+
 char *scan_for_expand(char *line, bool is_quote, int *was_quote)
 {
     //first check if can be a path expansion
@@ -203,6 +242,7 @@ char *scan_for_expand(char *line, bool is_quote, int *was_quote)
         if (is_to_expand(*line))
         {
             char *expansion = expand(&line, is_quote, was_quote);
+            replace_ifs_with_mark(expansion);
             string_append(new_line, expansion);
             free(expansion);
         }
@@ -211,6 +251,16 @@ char *scan_for_expand(char *line, bool is_quote, int *was_quote)
     }
 
     return string_get_content(&new_line);
+}
+
+static char *replace_mark_with_space(char *expansion)
+{
+    for (size_t i = 0; expansion[i] != '\0'; ++i)
+    {
+        if (expansion[i] == MARK_IFS)
+            expansion[i] = ' ';
+    }
+    return expansion;
 }
 
 char *expand_quote(char **cursor, bool is_quote, int *was_quote)
@@ -271,8 +321,6 @@ static bool is_tidle(char *str)
 {
     return *str == '~';
 }
-
-
 
 static char *handle_expand_arithmetic(char **to_expand)
 {
@@ -381,15 +429,24 @@ static void insert_sub_var(struct array_list *expanded_parameters,
     }
 
     //first call without NULL
-    array_list_append(expanded_parameters, strdup(strtok_r(expansion, IFS,
-                                                                &expansion)));
+    array_list_append(expanded_parameters, strdup(strtok_r(expansion,
+                                            " \n\t", &expansion)));
 
     char *param;
-    while ((param = strtok_r(NULL, IFS, &expansion)) != NULL)
-        array_list_append(expanded_parameters, strdup(param));
+    while ((param = strtok_r(NULL, " \n\t",&expansion)) != NULL)
+                        array_list_append(expanded_parameters, strdup(param));
     free(beg);
 }
 
+static bool is_empty_var(char *expansion)
+{
+    char *save = strdup(expansion);
+    char *beg = save;
+    bool result = strtok_r(save,
+                    hash_find(g_env.variables, "IFS"), &save) == NULL;
+    free(beg);
+    return result;
+}
 
 static int handle_expand_command(struct instruction *command_i)
 {
@@ -397,14 +454,14 @@ static int handle_expand_command(struct instruction *command_i)
     struct array_list *expanded_parameters = array_list_init();
 
     char *expansion = scan_for_expand(command->command, false, NULL);
-    if (*expansion == '\0' || *expansion == '\n') //expand empty var
+    if (is_empty_var(expansion)) //expand empty var
     {
         free(expansion);
         size_t i = 1;
         while (command->params[i] != NULL) //while empty var we remove
         {
             expansion = scan_for_expand(command->params[i], false, NULL);
-            if (*expansion == '\0' || *expansion == '\n')
+            if (is_empty_var(expansion))
             {
                 free(expansion);
                 i++;
@@ -433,7 +490,7 @@ static int handle_expand_command(struct instruction *command_i)
     {
         int was_quote = 0;
         expansion = scan_for_expand(command->params[i], false, &was_quote);
-        if (*expansion == '\0') //empty var
+        if (is_empty_var(expansion)) //empty var
         {
             free(expansion);
             continue;
@@ -454,7 +511,8 @@ static int handle_expand_command(struct instruction *command_i)
     //fill it
     size_t i = 0;
     for (; i < expanded_parameters->nb_element; ++i)
-        new_param_list[i] = expanded_parameters->content[i];
+        new_param_list[i] = replace_mark_with_space(
+                                            expanded_parameters->content[i]);
     new_param_list[i] = NULL;
 
     //free old list
