@@ -101,6 +101,8 @@ static int width(const char *option)
         mod += n % 8;
         if (n == 6)
             mod++;
+        if (n == 7)
+            mod++;
     }
     if (n == 14)
         mod = 1;
