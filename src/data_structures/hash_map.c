@@ -127,6 +127,8 @@ void hash_insert_builtin(struct hash_map *set,
 
 static int free_slot(struct hash_slot *s)
 {
+    if (s == NULL)
+        return 1;
     free(s->key);
     if (s->data_type == AST)
         destroy_tree(s->data);
@@ -223,6 +225,7 @@ void hash_init(struct hash_map *s, size_t size)
         s->slots[i].next = NULL;
         s->slots[i].data = NULL;
         s->slots[i].builtin = NULL;
+        s->slots[i].data_type = 0;
     }
 }
 

@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "echo.h"
+#include "../input_output/get_next_line.h"
 #define STDOUT 1
 
 static void handle_options(char **args, int *index, int *opt_e, int *opt_n)
@@ -41,44 +42,87 @@ static void handle_options(char **args, int *index, int *opt_e, int *opt_n)
     }
 }
 
-static char handle_ascii(char *str, char c)
+static int is_hexa(char c)
+{
+    if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')
+            || (c >= 'A' && c <= 'F'))
+        return 1;
+    else
+        return 0;
+}
+
+static int is_octal(char c)
+{
+    return c >= '0' && c <= '7';
+}
+
+static char handle_ascii(char **str, char base)
 {
     int octal = 8;
     int hexa = 16;
-    str += 1;
-    char *error;
-    char value;
-    if (c == '0')
-        value = strtol(str, &error, octal);
-    else
-        value = strtol(str, &error, hexa);
-    return value;
+    int nb_digits = 0;
+    char result;
+    if (base == '0')
+    {
+        while(is_octal(*(*str + nb_digits + 1)) && nb_digits < 3)
+            nb_digits++;
+
+        if (nb_digits == 0)
+            return 0;
+
+        char *digit_to_convert = strndup(*str + 1, nb_digits);
+        result = strtol(digit_to_convert, NULL, octal);
+        free(digit_to_convert);
+
+        // put str at the end of the ascii digits
+        *str += nb_digits;
+    }
+    else // base == 'x'
+    {
+        while(is_hexa(*(*str + nb_digits + 1)) && nb_digits < 2)
+            nb_digits++;
+
+        if (nb_digits == 0)
+            return 0;
+
+        char *digit_to_convert = strndup(*str + 1, nb_digits);
+        result = strtol(digit_to_convert, NULL, hexa);
+        free(digit_to_convert);
+
+        // put str at the end of the ascii digits
+        *str += nb_digits;
+    }
+    return result;
 }
 
-static void handle_escape_aux(char *c)
+static void handle_escape_aux(char **c)
 {
-    if (*c == 'a')
+    if (**c == 'a')
         dprintf(STDOUT, "\a");
-    else if (*c == 'b')
+    else if (**c == 'b')
         dprintf(STDOUT, "\b");
-    else if (*c == 'e')
+    else if (**c == 'e')
         dprintf(STDOUT, "%c", 27);
-    else if (*c == 'f')
+    else if (**c == 'f')
         dprintf(STDOUT, "\f");
-    else if (*c == 'n')
+    else if (**c == 'n')
         dprintf(STDOUT, "\n");
-    else if (*c == 'r')
+    else if (**c == 'r')
         dprintf(STDOUT, "\r");
-    else if (*c == 't')
+    else if (**c == 't')
         dprintf(STDOUT, "\t");
-    else if (*c == 'v')
+    else if (**c == 'v')
         dprintf(STDOUT, "\v");
-    else if (*c == 'x')
-        dprintf(STDOUT, "%c", handle_ascii(c, *c)); //hexa
-    else if (*c == '0')
-        dprintf(STDOUT, "%c", handle_ascii(c, *c)); //octal
+    else if (**c == 'x' || **c == '0')
+    {
+        char new_char = handle_ascii(c, **c);
+        if (new_char == 0) // no corresponding ascii found
+            dprintf(STDOUT, "\\%c", **c); // print \\x or \\0
+        else
+            dprintf(STDOUT, "%c", new_char);
+    }
     else
-        dprintf(STDOUT, "\\%c", *c);
+        dprintf(STDOUT, "\\%c", **c);
 }
 
 static int print_with_backslash_escapes(char *arg)
@@ -97,9 +141,7 @@ static int print_with_backslash_escapes(char *arg)
             }
             else
             {
-                handle_escape_aux(c);
-                if ((*c == 'x') || (*c == '0'))
-                    return 0;
+                handle_escape_aux(&c);
             }
         }
         else // if (*c != '\\')
@@ -117,8 +159,11 @@ int echo(char **args)
     // set index of current arg
     int index = 1;
 
-    // Set options and put the index at the next arg to print
-    handle_options(args, &index, &opt_e, &opt_n);
+    if (! g_env.options.option_xpg_echo)
+        // Set options and put the index at the next arg to print
+        handle_options(args, &index, &opt_e, &opt_n);
+    else // if xpg_echo is activated
+        opt_e = 1;
 
     // print all args depending on set options
     while (args[index] != NULL)
