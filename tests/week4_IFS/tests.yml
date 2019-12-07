@@ -26,3 +26,10 @@
   options:
     - ../tests/week4_IFS/test6.sh
 
+- name: IFS=. 6
+  options:
+    - ../tests/week4_IFS/test7.sh
+
+- name: IFS=". "
+  options:
+    - ../tests/week4_IFS/test8.sh
