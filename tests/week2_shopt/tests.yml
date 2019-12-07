@@ -30,6 +30,19 @@
      - returncode
      - has_stderr
 
+- name: shopt -u multiple variables
+
+
+- name: -c shopt -u dotglob
+  options:
+     - "-c"
+     - "shopt -u dotglob"
+
+- name: -c shopt -s dotglob
+  options:
+     - "-c"
+     - "shopt -s dotglob; shopt dotglob"
+
 - name: ./42sh +O jiodsq
   stdin: ./42sh +O jiodsq
   checks:
