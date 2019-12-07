@@ -33,7 +33,7 @@
 
 bool g_have_to_stop = 0; //to break in case of signal
 
-#define IFS " \t\n"
+// #define hash_find(g_env.variables, "IFS") " \t\n"
 
 char *expand(char **to_expand, bool is_quote, int *was_quote);
 char *scan_for_expand(char *line, bool is_quote, int *was_quote);
@@ -109,12 +109,14 @@ static void fill_command_and_params(struct command_container *command,
 {
     char *beg = expansion;
     free(command->command);
-    command->command = strdup(strtok_r(expansion, IFS, &expansion));
+    command->command = strdup(strtok_r(expansion,
+                                hash_find(g_env.variables, "IFS"), &expansion));
     //first parameter is command
     array_list_append(parameters, strdup(command->command));
 
     char *param;
-    while ((param = strtok_r(NULL, IFS, &expansion)) != NULL)
+    while ((param = strtok_r(NULL,
+                        hash_find(g_env.variables, "IFS"), &expansion)) != NULL)
         array_list_append(parameters, strdup(param));
     free(beg);
 }
@@ -122,7 +124,7 @@ static void fill_command_and_params(struct command_container *command,
 
 static bool is_multiple_words(char *expansion)
 {
-    return strpbrk(expansion, IFS) != NULL;
+    return strpbrk(expansion, hash_find(g_env.variables, "IFS")) != NULL;
 }
 
 
@@ -381,11 +383,11 @@ static void insert_sub_var(struct array_list *expanded_parameters,
     }
 
     //first call without NULL
-    array_list_append(expanded_parameters, strdup(strtok_r(expansion, IFS,
+    array_list_append(expanded_parameters, strdup(strtok_r(expansion, hash_find(g_env.variables, "IFS"),
                                                                 &expansion)));
 
     char *param;
-    while ((param = strtok_r(NULL, IFS, &expansion)) != NULL)
+    while ((param = strtok_r(NULL, hash_find(g_env.variables, "IFS"), &expansion)) != NULL)
         array_list_append(expanded_parameters, strdup(param));
     free(beg);
 }
