@@ -125,7 +125,7 @@ static void fill_command_and_params(struct command_container *command,
 
 static bool is_multiple_words(char *expansion)
 {
-    return strpbrk(expansion, hash_find(g_env.variables, "IFS")) != NULL;
+    return strpbrk(expansion, " \n\t") != NULL;
 }
 
 
@@ -421,25 +421,33 @@ static void insert_sub_var(struct array_list *expanded_parameters,
                                             int *was_quote
 )
 {
-    char *beg = expansion; //cause strtok_r will make expansion move
+    /*char *beg = expansion; //cause strtok_r will make expansion move
     if (*was_quote || !is_multiple_words(expansion))
-    {
+    {*/
         array_list_append(expanded_parameters, expansion);
         return;
-    }
+    //}
 
     //first call without NULL
-    array_list_append(expanded_parameters, strdup(strtok_r(expansion,
-                                            hash_find(g_env.variables, "IFS"),
+    /*array_list_append(expanded_parameters, strdup(strtok_r(expansion,
+                                            " \n\t",
                                                                 &expansion)));
 
     char *param;
-    while ((param = strtok_r(NULL, hash_find(g_env.variables, "IFS"),
-                                                        &expansion)) != NULL)
+    while ((param = strtok_r(NULL, " \n\t",&expansion)) != NULL)
                         array_list_append(expanded_parameters, strdup(param));
-    free(beg);
+    free(beg);*/
 }
 
+static bool is_empty_var(char *expansion)
+{
+    char *save = strdup(expansion);
+    char *beg = save;
+    bool result = strtok_r(save,
+                    hash_find(g_env.variables, "IFS"), &save) == NULL;
+    free(beg);
+    return result;
+}
 
 static int handle_expand_command(struct instruction *command_i)
 {
@@ -447,14 +455,14 @@ static int handle_expand_command(struct instruction *command_i)
     struct array_list *expanded_parameters = array_list_init();
 
     char *expansion = scan_for_expand(command->command, false, NULL);
-    if (*expansion == '\0' || *expansion == '\n') //expand empty var
+    if (is_empty_var(expansion)) //expand empty var
     {
         free(expansion);
         size_t i = 1;
         while (command->params[i] != NULL) //while empty var we remove
         {
             expansion = scan_for_expand(command->params[i], false, NULL);
-            if (*expansion == '\0' || *expansion == '\n')
+            if (is_empty_var(expansion))
             {
                 free(expansion);
                 i++;
@@ -483,7 +491,7 @@ static int handle_expand_command(struct instruction *command_i)
     {
         int was_quote = 0;
         expansion = scan_for_expand(command->params[i], false, &was_quote);
-        if (*expansion == '\0') //empty var
+        if (is_empty_var(expansion)) //empty var
         {
             free(expansion);
             continue;
