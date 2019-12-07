@@ -9,7 +9,7 @@
 
 #include "parser.h"
 #include "parser_utils.h"
-#include "build_ast.h"
+#include "ast_build.h"
 #include "ast/ast.h"
 #include "ast/destroy_tree.h"
 #include "../lexer/token_lexer.h"
