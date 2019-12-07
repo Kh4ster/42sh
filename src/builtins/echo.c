@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "echo.h"
+#include "get_next_line.h"
 #define STDOUT 1
 
 static void handle_options(char **args, int *index, int *opt_e, int *opt_n)
@@ -117,8 +118,11 @@ int echo(char **args)
     // set index of current arg
     int index = 1;
 
-    // Set options and put the index at the next arg to print
-    handle_options(args, &index, &opt_e, &opt_n);
+    if (! g_env.options.option_xpg_echo)
+        // Set options and put the index at the next arg to print
+        handle_options(args, &index, &opt_e, &opt_n);
+    else // if xpg_echo is activated
+        opt_e = 1;
 
     // print all args depending on set options
     while (args[index] != NULL)
