@@ -67,7 +67,7 @@ set(SRC_FILES
     src/command_substitution/command_substitution.c
     src/input_output/prompt.c
     src/command_expansion/command_expansion.c
-    src/parser/build_ast.c
+    src/parser/ast_build.c
     src/parser/parser_utils.c
 )
 
