@@ -30,6 +30,19 @@
      - returncode
      - has_stderr
 
+- name: shopt -u multiple variables
+
+
+- name: -c shopt -u dotglob
+  options:
+     - "-c"
+     - "shopt -u dotglob"
+
+- name: -c shopt -s dotglob
+  options:
+     - "-c"
+     - "shopt -s dotglob; shopt dotglob"
+
 - name: ./42sh +O jiodsq
   stdin: ./42sh +O jiodsq
   checks:
@@ -48,10 +61,20 @@
      - stdout
      - returncode
 
-- name: shopt xpg_echo (red is the new green)
+- name: shopt xpg_echo
   stdin: shopt xpg_echo | grep xpg_echo
 
 - name: shopt xpg_echo (returncode)
   stdin: shopt xpg_echo
   checks:
     - returncode
+
+- name: shopt xpg_echo
+  stdin: shopt xpg_echo | grep xpg_echo
+
+- name: xpg_echo on
+  stdin: |
+      shopt -u xpg_echo
+      echo -e "Hello,world\a\n \\/\r/\\ "
+      shopt -s xpg_echo
+      echo -e "Hello,world\a\n \\/\r/\\ "
