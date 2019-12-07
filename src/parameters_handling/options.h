@@ -22,5 +22,5 @@ struct boot_params
     bool option_nullglob; /**< @brief option null glob */
     bool option_sourcepath; /**< @brief option source path */
     bool option_xpg_echo; /**< @brief option xpg echo */
-    bool option_noclobber;
+    bool option_noclobber; /**< @brief option noclobber */
 };

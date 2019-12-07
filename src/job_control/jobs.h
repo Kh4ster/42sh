@@ -3,7 +3,6 @@
 * @author Coder : cloe.lacombe
 * @author Tester :
 * @author Reviewer :
-* @author Integrator :
 */
 
 #pragma once
@@ -13,4 +12,3 @@
 struct job {
     pid_t pid;
 };
-

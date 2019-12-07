@@ -73,7 +73,6 @@ set(SRC_FILES
 set(TESTS_FILES
     tests/data_structures/test_string.c
     tests/input_output/test_read.c
-    tests/input_output/test_write.c
     #tests/builtins/test_redirector.c
     tests/builtins/test_shopt.c
     tests/parameters_handling/test_parameters_handler.c

@@ -25,19 +25,19 @@ struct shell_environment
     struct hash_map *functions; /**< @brief hashmap containing functions */
     struct hash_map *builtins; /**< @brief hashmap containing builtins */
     struct hash_map *variables; /**< @brief hashmap containing variables */
-    struct hash_map *aliases;
+    struct hash_map *aliases; /**< @brief hashmap containing aliases */
     char *current_line; /**< @brief last line took by readline */
-    int breaks;
-    int continues;
-    int is_in_loop;
+    int breaks; /**< @brief to deceremente in the case beak n */
+    int continues; /**< @brief to deceremente in the case continues n */
+    int is_in_loop; /**< @brief to know if we are in a loop */
     int noclobber_set; /**< @brief handle noclobber variable */
     char last_return_value; /**< @brief last returned value */
     char *path_to_binary; /**< @brief where the binary is executed */
     char **envvar; /**< @brief containing environment variables list*/
     char **old_envvar; /**< @brief containing old environment variables list*/
-    char *old_pwd;
-    int argc;
-    char **argv;
+    char *old_pwd; /**< @brief to know the old pwd and handle cd - */
+    int argc; /**< @brief to handle special variable $1 */
+    char **argv; /**< @brief to handle special variable $1 */
 };
 
 /**

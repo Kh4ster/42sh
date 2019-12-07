@@ -42,8 +42,18 @@ struct token_lexer
 */
 struct queue *lexer(char *line, struct queue *token_queue);
 
+/**
+* @brief return head of the lexer
+* @param token_queue current token queue to fill with line's tokens
+* @relates token_lexer
+*/
 struct token_lexer *token_lexer_head(struct queue *token_queue);
 
+/**
+* @brief pop head of the lexer
+* @param token_queue current token queue to fill with line's tokens
+* @relates token_lexer
+*/
 struct token_lexer *token_lexer_pop(struct queue *token_queue);
 
 /**
@@ -81,6 +91,16 @@ struct token_lexer *lexer_next_next(struct queue *token_queue);
 */
 void skip_quoting(char **cursor, char **start_of_token);
 
+/**
+* @brief performs strpbrk but put at the end of line if strpbrk returns NULL
+* @param line the line
+* @param delimiters the delimiters
+*/
 char *get_delimiter(char *line, char *delimiters);
 
+/**
+* @brief find the corresponding closing braces
+* @param cursor cursor to move
+* @param token_stat the start of the line
+*/
 char *find_corresponding_parenthesis(char **cursor, char **token_start);
