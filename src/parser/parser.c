@@ -8,6 +8,8 @@
 #include <stdbool.h>
 
 #include "parser.h"
+#include "parser_utils.h"
+#include "build_ast.h"
 #include "ast/ast.h"
 #include "ast/destroy_tree.h"
 #include "../lexer/token_lexer.h"
@@ -27,33 +29,6 @@
 
 #define IFS " \t\n"
 
-static bool next_is_assignement(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_ASSIGNEMENT;
-}
-
-static bool next_is_other(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_OTHER;
-}
-
-
-static bool next_is_number(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_IO_NUMBER;
-}
-
-
 // free all instructions passed and returns NULL
 static void *free_instructions(size_t nb_param, ...)
 {
@@ -71,118 +46,10 @@ static void *free_instructions(size_t nb_param, ...)
     return NULL;
 }
 
-static enum token_parser_type token_is_redirection (struct token_lexer *token)
-{
-    enum token_parser_type type = 0;
-
-    if (!strcmp(token->data, ">"))
-        type = TOKEN_REDIRECT_LEFT;
-
-    if (!strcmp(token->data, "<"))
-        type = TOKEN_REDIRECT_RIGHT;
-
-    if (!strcmp(token->data, ">>"))
-        type = TOKEN_REDIRECT_APPEND_LEFT;
-
-    if (!strcmp(token->data, ">&"))
-        type = TOKEN_REDIRECT_LEFT_TO_FD;
-
-    if (!strcmp(token->data, "<>"))
-        type = TOKEN_REDIRECT_READ_WRITE;
-
-    if (!strcmp(token->data, "<&"))
-        type = TOKEN_DUP_FD;
-
-    if (!strcmp(token->data, ">|"))
-        type = TOKEN_OVERWRITE;
-
-    if (!strcmp(token->data, "<<"))
-        type = TOKEN_HEREDOC;
-
-    if (!strcmp(token->data, "<<-"))
-        type = TOKEN_HEREDOC_MINUS;
-
-    return type;
-
-}
-
-static enum token_parser_type is_redirection(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-
-    return token_is_redirection(token);
-}
-
-static bool next_is_eof(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return token->type == TOKEN_EOF;
-}
-
 static void eat_token(struct queue *lexer)
 {
     struct token_lexer *to_free = token_lexer_pop(lexer);
     token_lexer_free(&to_free);
-}
-
-static bool next_is(struct queue *lexer, const char *to_match)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return false;
-    return strcmp(token->data, to_match) == 0;
-}
-
-static struct redirection *build_redirection(int fd, char *file)
-{
-    struct redirection *redirect = xmalloc(sizeof(struct redirection));
-    redirect->to_redirect = NULL;
-    redirect->fd = fd;
-    redirect->file = file;
-    redirect->temp_file = NULL;
-    return redirect;
-}
-
-static struct instruction* build_funcdef_instruction(void)
-{
-    struct instruction *instruction = xmalloc(sizeof(*instruction));
-    instruction->data = NULL;
-    instruction->type = TOKEN_FUNC_DEF;
-    instruction->next = NULL;
-    return instruction;
-}
-
-struct instruction *build_instruction(enum token_parser_type type,
-                                                            void *input_instr
-)
-{
-    struct instruction *instruction = xmalloc(sizeof(*instruction));
-    instruction->data = input_instr;
-    instruction->type = type;
-    instruction->next = NULL;
-    return instruction;
-}
-
-static struct and_or_instruction* build_and_or(struct instruction *left,
-                                    struct instruction *right
-)
-{
-    struct and_or_instruction *and_or = xmalloc(sizeof(*and_or));
-    and_or->left = left;
-    and_or->right = right;
-    return and_or;
-}
-
-static struct pipe_instruction* build_pipe(struct instruction *left,
-                                    struct instruction *right
-)
-{
-    struct pipe_instruction *pipe = xmalloc(sizeof(*pipe));
-    pipe->left = left;
-    pipe->right = right;
-    return pipe;
 }
 
 static struct instruction *parse_if(struct queue *lexer);
@@ -206,26 +73,6 @@ static struct instruction *parse_control_structure(struct queue *lexer)
         return parse_case_rule(lexer);
 
     return NULL; //impossible
-}
-
-static bool next_is_control_structure(struct queue *lexer)
-{
-    static const char *shell_command[] =
-    {
-        "if",
-        "for",
-        "while",
-        "until",
-        "case"
-    };
-    size_t size_array = sizeof(shell_command) / sizeof(char *);
-
-    for (size_t i = 0; i < size_array; ++i)
-    {
-        if (NEXT_IS(shell_command[i]))
-            return true;
-    }
-    return false;
 }
 
 static struct instruction *parse_shell_command(struct queue *lexer)
@@ -302,29 +149,6 @@ static struct instruction *parse_funcdec(struct queue *lexer)
     return  build_funcdef_instruction();
 }
 
-static bool is_shell_command(struct queue *lexer)
-{
-    static const char *shell_command[] =
-    {
-        "if",
-        "for",
-        "while",
-        "until",
-        "case",
-        "{",
-        "("
-    };
-    size_t size_array = sizeof(shell_command) / sizeof(char *);
-
-    for (size_t i = 0; i < size_array; ++i)
-    {
-        if (NEXT_IS(shell_command[i]))
-            return true;
-    }
-    return false;
-}
-
-
 static int parse_io_number(struct queue *lexer)
 {
     if (!NEXT_IS_NUMBER())
@@ -338,8 +162,6 @@ static int parse_io_number(struct queue *lexer)
     free(cpy);
     return fd;
 }
-
-static bool next_is_end_of_instruction(struct queue *lexer);
 
 static struct instruction *__parse_redirection(struct queue *lexer)
 {
@@ -420,32 +242,6 @@ static struct instruction *parse_redirection(struct queue *lexer,
 
     return tmp;
 }
-
-static bool next_is_end_of_instruction(struct queue *lexer)
-{
-    struct token_lexer *token = token_lexer_head(lexer);
-    if (token == NULL)
-        return true;
-
-    if (strcmp(token->data, "\n") == 0)
-        return true;
-
-    if (NEXT_IS("(") || NEXT_IS(")"))
-        return true;
-
-    return token->type == TOKEN_END_OF_INSTRUCTION
-            || token->type == TOKEN_EOF
-            || (token->type == TOKEN_OPERATOR && !is_redirection(lexer));
-}
-
-
-static struct command_container *build_simple_command(char *simple_command,
-                                                struct array_list *parameters
-)
-{
-    return command_create(simple_command, parameters);
-}
-
 
 static struct instruction *add_command_redirection(
                     struct instruction *redirection, struct instruction *cmd
@@ -575,28 +371,10 @@ static struct instruction *parse_simple_command(struct queue *lexer)
     return command;
 }
 
-
 static bool redirection_not_valid(struct instruction *redirection)
 {
     struct redirection *redir = redirection->data;
     return redir->file == NULL;
-}
-
-static bool next_next_is(struct queue *lexer, const char *to_match)
-{
-    struct token_lexer *next_next = lexer_next_next(lexer);
-    if (next_next == NULL)
-        return false;
-    return strcmp(next_next->data, to_match) == 0;
-}
-
-static bool is_function(struct queue *lexer)
-{
-    if (NEXT_IS("function"))
-        return true;
-    else if (next_next_is(lexer, "("))
-        return true;
-    return false;
 }
 
 //only handle shell command and simple command
@@ -710,32 +488,6 @@ static struct instruction *parse_compound_list_break(struct queue *lexer)
     return and_or;
 }
 
-static struct for_instruction *build_for_instruction(
-                                            char *var_name,
-                                            struct array_list *var_values,
-                                            struct instruction *to_execute
-)
-{
-    struct for_instruction *new_for = xmalloc(sizeof(struct for_instruction));
-    new_for->var_name = var_name;
-    new_for->var_values = var_values;
-    new_for->to_execute = to_execute;
-    return new_for;
-}
-
-static struct while_instruction *build_while_instruction(
-                                            struct instruction *cond,
-                                            struct instruction *to_do
-)
-{
-    struct while_instruction *while_i =
-                        xmalloc(sizeof(struct while_instruction));
-    while_i->conditions = cond;
-    while_i->to_execute = to_do;
-    return while_i;
-}
-
-
 static struct instruction *parse_do_groupe(struct queue *lexer)
 {
     if (!NEXT_IS("do"))
@@ -827,7 +579,6 @@ static struct instruction *parse_while_clause(struct queue *lexer)
                 build_while_instruction(condition, to_execute));
 }
 
-
 static struct case_item *init_case_item(void)
 {
     struct case_item *item = xmalloc(sizeof(struct case_item));
@@ -836,26 +587,11 @@ static struct case_item *init_case_item(void)
     return item;
 }
 
-
-static struct case_clause *build_case_clause(char *pattern)
-{
-    struct case_clause *case_clause = xmalloc(sizeof(struct case_clause));
-    case_clause->pattern = strdup(pattern);
-    case_clause->items = array_list_init();
-    return case_clause;
-}
-
-
 static void *destroy_case_item(struct case_item *item)
 {
     array_list_destroy(item->patterns);
     free(item);
     return NULL;
-}
-
-static int next_is_end_of_case_item(struct queue *lexer)
-{
-    return NEXT_IS(";;") || NEXT_IS("(") || NEXT_IS(")") || NEXT_IS("esac");
 }
 
 static struct case_item *parse_case_item(struct queue *lexer, int *error)
@@ -1010,20 +746,6 @@ static struct instruction *parse_case_rule(struct queue *lexer)
 
     EAT();
     return case_rule;
-}
-
-
-static struct if_instruction *build_if_instruction(
-                                        struct instruction *conditions,
-                                        struct instruction *to_execute,
-                                        struct instruction *else_container
-)
-{
-    struct if_instruction *if_instruction = xmalloc(sizeof(*if_instruction));
-    if_instruction->conditions = conditions;
-    if_instruction->to_execute = to_execute;
-    if_instruction->else_container = else_container;
-    return if_instruction;
 }
 
 static struct instruction *parse_else_clause(struct queue *lexer)
