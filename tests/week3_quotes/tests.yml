@@ -18,6 +18,9 @@
 
 - name: echo """
   stdin: echo """
+  checks:
+    - returncode
+    - has_stderr
 
 - name: echo ""
   stdin: echo ""
@@ -25,8 +28,8 @@
 - name: echo $
   stdin: echo $
 
-- name: echo $$
-  stdin: echo $$
+- name: echo $$ | grep [^0-9]
+  stdin: echo $$ | grep [^0-9]
 
 - name: echo $()
   stdin: echo $()
@@ -36,12 +39,18 @@
 
 - name: echo '
   stdin: echo '
+  checks:
+  - returncode
+  - has_stderr
 
 - name: echo ''
   stdin: echo ''
 
 - name: echo ${}
   stdin: echo ${}
+  checks:
+  - returncode
+  - has_stderr
 
 - name: echo ~$(echo ok)$
   stdin: echo ~$(echo ok)$
@@ -91,7 +100,7 @@
 
 - name: complex quoting 5
   options:
-    - ../tests/week3_quotes/test5.sh
+    - ../tests/week3_quotes/test2.sh
 
 - name: ls "./"
   stdin: ls "./"
@@ -99,8 +108,11 @@
 - name: ls "../"
   stdin: ls "../"
 
-- name: cd "-"
-  stdin: cd "-"
+- name: unset OLDPWD;cd "-"
+  stdin: unset OLDPWD;cd "-"
+  checks:
+    - returncode
+    - has_stderr
 
 - name : echo "ddc@///\\dcd%CC/'/#/%\ef'c*edc"
   stdin: echo "ddc@///\\dcd%CC/'/#/%\ef'c*edc"

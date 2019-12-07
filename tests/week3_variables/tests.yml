@@ -30,6 +30,9 @@
 
 - name: echo ${papa
   stdin: echo ${papa
+  checks:
+    - returncode
+    - has_stderr
 
 - name: papa=toto echo ${papa >}
   stdin: |
@@ -132,16 +135,16 @@
 - name: echo $?toto
   stdin: echo $?toto
 
-- name: echo $$
-  stdin: echo $$
+- name: echo $$ | grep [^0-9]
+  stdin: echo $$ | grep [^0-9]
 
 - name: echo $# $1 $2 $@
   options:
     - ../tests/week3_variables/test1.sh
     - 42 42 42
 
-- name: echo $RANDOM
-  stdin: echo $RANDOM
+- name: echo $RANDOM | grep [^0-9]
+  stdin: echo $RANDOM | grep [^0-9]
 
 - name: echo $UID
   stdin: echo $UID
