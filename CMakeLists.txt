@@ -36,7 +36,6 @@ set(SRC_FILES
     src/data_structures/queue.c
     src/data_structures/hash_map.c
     src/input_output/read.c
-    src/input_output/write.c
     src/execution_handling/command_container.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
