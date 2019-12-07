@@ -186,6 +186,7 @@ static void init_all(struct hash_map *functions,
     // Default Prompt
     hash_insert(variables, "PS1", "42sh$ ", STRING);
     hash_insert(variables, "PS2", "> ", STRING);
+    hash_insert(variables, "IFS", " \t\n", STRING);
 
     // History
     char *history_path = get_history_file_path();
