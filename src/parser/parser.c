@@ -470,9 +470,13 @@ static char *slice_expansion(char *var)
 
     char *beg = var;
     struct string *sliced_value = string_init();
-    string_append(sliced_value, strtok_r(var, IFS, &var));
     char *slice;
-    while ((slice = strtok_r(var, IFS, &var)) != NULL)
+    string_append(sliced_value, ((slice = strtok_r(var,
+            hash_find(g_env.variables, "IFS"), &var)) == NULL)
+                ? " " : slice);
+
+    while ((slice = strtok_r(var,
+                        hash_find(g_env.variables, "IFS"), &var)) != NULL)
     {
         slice--;
         *slice = ' '; //insert one space juste before

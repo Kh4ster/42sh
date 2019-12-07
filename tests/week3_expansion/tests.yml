@@ -60,7 +60,7 @@
 - name: echo ~
   stdin: echo ~
 
-- name: echo ~-
+- name: echo ~- //Normal que le test fail, OLDPWD n'est pas le meme
   stdin: echo ~-
 
 - name: echo ~+
