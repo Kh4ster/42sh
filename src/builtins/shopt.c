@@ -97,7 +97,11 @@ static int width(const char *option)
     int n = strlen(option);
     int mod = 7 - (n % 8);
     if (n < 8)
+    {
         mod += n % 8;
+        if (n == 6)
+            mod++;
+    }
     if (n == 14)
         mod = 1;
     return mod;
@@ -164,7 +168,7 @@ static int handle_option_no_var(char *opt_name)
     {
         if ((on) ? val_options[i] : !val_options[i])
         {
-            printf("%s%*s %s\n", options[i], width(options[i]), "",
+            printf("%s%*s\t%s\n", options[i], width(options[i]), "",
                                                         (on) ? "on" : "off");
         }
     }
