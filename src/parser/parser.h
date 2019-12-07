@@ -1,5 +1,5 @@
 /** @file
-* @brief
+* @brief module that will parse the token sent by the lexer
 * @author Coder : nicolas.blin cloe.lacombe pierrick.made
 * @author Tester : zakaria.ben-allal
 * @author Reviewer : nicolas.blin cloe.lacombe pierrick.made
@@ -26,13 +26,13 @@ enum token_parser_type
     TOKEN_REDIRECT_LEFT_TO_FD,
     TOKEN_REDIRECT_READ_WRITE,
     TOKEN_DUP_FD, /**< @brief token fd duplication */
-    TOKEN_OVERWRITE,
+    TOKEN_OVERWRITE, /**< @brief token overwrite */
     TOKEN_COMMAND, /**< @brief token command */
     TOKEN_ELSE, /**< @brief token else */
     TOKEN_CASE, /**< @brief token case */
     TOKEN_HEREDOC, /**< @brief token here doc */
     TOKEN_NOT, /**< @brief token not */
-    TOKEN_HEREDOC_MINUS,
+    TOKEN_HEREDOC_MINUS, /**< @brief token heredoc minux */
     TOKEN_WHILE, /**< @brief token while */
     TOKEN_UNTIL, /**< @brief token until */
     TOKEN_FOR, /**< @brief token for */
