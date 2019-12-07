@@ -116,7 +116,9 @@ static void add_string_to_glob(struct path_globbing *path_glob, char *s)
     path_glob->nb_matchs++;
 }
 
+
 static DIR *open_dir(char *dir_name);
+
 
 static int match_filesnames(char *path, DIR *current_dir,
                               struct path_globbing *path_glob, char *pattern)
@@ -166,7 +168,6 @@ static int match_filesnames(char *path, DIR *current_dir,
 }
 
 
-
 static struct path_globbing *init_path_glob(void)
 {
     struct path_globbing *p_glob = xmalloc(sizeof(struct path_globbing));
@@ -201,6 +202,7 @@ static void sort_matches(struct array_list *list)
     }
 }
 
+
 #if 0
 static int is_a_path(char *path)
 {
@@ -213,6 +215,7 @@ static int is_a_path(char *path)
     return 0;
 }
 #endif
+
 
 static char *get_dir_name(char *pattern)
 {
@@ -235,6 +238,7 @@ static char *get_dir_name(char *pattern)
     return current_path;
 }
 
+
 static void init_nb_recursions(char *pattern)
 {
     char *begin_pattern = strpbrk(pattern, "*?[");
@@ -242,11 +246,12 @@ static void init_nb_recursions(char *pattern)
     *begin_pattern = '\0';
     char *end_path = strrchr(pattern, '/');
     *begin_pattern = tmp;
+    int i = 0;
 
-    if (!end_path)
-        return;
+    if (end_path)
+        i = end_path - pattern + 1;
 
-    for (int i = end_path - pattern + 1; pattern[i]; i++)
+    for (; pattern[i]; i++)
     {
         if (pattern[i] == '/' && is_path_expansion(pattern + i))
             g_nb_recursion++;
@@ -269,6 +274,7 @@ static char *remove_slashs(char *dir_name)
 
     return dir_name;
 }
+
 
 static DIR *open_dir(char *dir_name)
 {

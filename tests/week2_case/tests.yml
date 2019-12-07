@@ -55,3 +55,7 @@
   options:
     - ../tests/week2_case/test5.sh
 
+- name: case with command expansion
+  options:
+    - ../tests/week2_case/test6.sh
+
