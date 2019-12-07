@@ -675,9 +675,45 @@ static struct command_container *dup_cmd(struct command_container *cmd)
 }
 
 
+struct array_list *update_for_values(struct array_list *for_values)
+{
+    struct array_list *new = array_list_init();
+
+    for (size_t i = 0; i < for_values->nb_element; i++)
+    {
+        char *to_expand = for_values->content[i];
+        char *expand = scan_for_expand(to_expand, false, NULL);
+        char *begin = expand;
+
+        while (begin)
+        {
+            char *end = strchr(begin, ' ');
+
+            if (end)
+            {
+                *end = '\0';
+            }
+
+            array_list_append(new, strdup(begin));
+
+            if (end)
+                begin = end + 1;
+            else
+                begin = NULL;
+        }
+
+        free(expand);
+    }
+
+    array_list_destroy(for_values);
+    return new;
+}
+
+
 static int handle_for(struct instruction *ast)
 {
     struct for_instruction *instruction_for = ast->data;
+    instruction_for->var_values = update_for_values(instruction_for->var_values);
     struct array_list *var_values = instruction_for->var_values;
     int return_value;
 
@@ -685,6 +721,7 @@ static int handle_for(struct instruction *ast)
 
     if (!var_values)
         return 0;
+
 
     for (size_t i = 0; i < var_values->nb_element && !g_have_to_stop; i++)
     {
