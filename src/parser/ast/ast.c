@@ -421,22 +421,22 @@ static void insert_sub_var(struct array_list *expanded_parameters,
                                             int *was_quote
 )
 {
-    /*char *beg = expansion; //cause strtok_r will make expansion move
+    char *beg = expansion; //cause strtok_r will make expansion move
     if (*was_quote || !is_multiple_words(expansion))
-    {*/
+    {
         array_list_append(expanded_parameters, expansion);
         return;
-    //}
+    }
 
     //first call without NULL
-    /*array_list_append(expanded_parameters, strdup(strtok_r(expansion,
+    array_list_append(expanded_parameters, strdup(strtok_r(expansion,
                                             " \n\t",
                                                                 &expansion)));
 
     char *param;
     while ((param = strtok_r(NULL, " \n\t",&expansion)) != NULL)
                         array_list_append(expanded_parameters, strdup(param));
-    free(beg);*/
+    free(beg);
 }
 
 static bool is_empty_var(char *expansion)
