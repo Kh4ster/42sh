@@ -1,0 +1,38 @@
+- name: a=$(($a+3))
+  stdin: a=$(($z+3)); echo $a
+
+- name: b=$((b+3))
+  stdin: b=$((z+3)); echo $b
+
+- name: many operations 1
+  stdin: c=$((c+3 / 5 -2 * 12244)); echo $c
+
+- name: many operations 2
+  stdin: d=$(($d+3/5-2*12244+d+6)); echo $d
+
+- name: echo $((3 + 1))$(echo ok)toto
+  stdin: echo $((3 + 1))$(echo ok)toto
+
+- name: echo $((3 + 1)) $(echo ok) toto
+  stdin: echo $((3 + 1)) $(echo ok) toto
+
+- name: echo $((3 + 1 - 4))
+  stdin: echo $((3 + 1 - 4));
+
+- name: echo $((3 * 5 - 4 + 1))
+  stdin: echo $((3 * 5 - 4 + 1))
+
+- name: echo $((3 | 1 & 4 ^ 12 | 56 & 4 && 0))
+  stdin: echo $((3 | 1 & 4 ^ 12 | 56 & 4 && 0))
+
+- name: echo $(((3 + 2) * -2))
+  stdin: echo $(((3 + 2) * -2))
+
+- name: echo $((3 + 4 && 0))
+  stdin: echo $((3 + 4 && 0))
+
+- name: echo $((3 | 4 & 11))
+  stdin: echo $((3 | 4 ^ 11))
+
+- name: echo $((3 ** 4 ^ 11))
+  stdin: echo $((3 ** 4 ^ 11))

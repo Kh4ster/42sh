@@ -12,15 +12,19 @@
 
 typedef int (*builtin)(char*[]);
 
+/**
+* @enum data_type
+* @brief to know which type is in the hashmap, change the way we free it
+*/
 enum data_type
 {
-    STRING = 0,
-    AST
+    STRING = 0, /**< @brief string type */
+    AST /**< @brief ast type for builtin and functions */
 };
 
 /**
-* @struct hash_slot, can contain ast, string and builtins
-* @brief a slot in the hashmap
+* @struct hash_slot
+* @brief a slot in the hashmap, can contain ast, string and builtins
 */
 struct hash_slot
 {
@@ -37,8 +41,8 @@ struct hash_slot
 */
 struct hash_map
 {
-    struct hash_slot slots[NB_SLOTS];
-    size_t size;
+    struct hash_slot slots[NB_SLOTS]; /**< @brief array of slots */
+    size_t size; /**< @brief current size of hashmap */
 };
 
 /**
@@ -92,9 +96,17 @@ builtin hash_find_builtin(struct hash_map *set, char *key);
 
 /**
 * @brief free content of hashmap (hashmap declared on the stack)
-* @param set the hash_map
+* @param s the hash_map
 * @details ONLY TO BE CALLED ON THE FUNCTION HASH_MAP
 * @details IN THE BUILTIN HASH_MAP NOTHING IS TO BE FREED
 * @relates hash_map
 */
 void hash_free(struct hash_map *s);
+
+/**
+* @brief remove an element from the hashèmap
+* @param set the hash_map
+* @param key the key
+* @relates hash_map
+*/
+int hash_remove(struct hash_map *set, char *key);

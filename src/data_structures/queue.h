@@ -7,7 +7,7 @@
 
 #pragma once
 
-# include <stddef.h>
+#include <stddef.h>
 
 /**
 * @struct queue_item

@@ -29,3 +29,7 @@
 - name: complex function 6
   options:
     - ../tests/week2_functions/test7.sh
+
+- name: function with arg
+  options:
+    - ../tests/week2_functions/test8.sh

@@ -72,6 +72,34 @@ static int is_number(char *data)
     return 1;
 }
 
+static int add_next_line_to_current_ending_with_backslash(char **cursor,
+        char **second_cursor)
+{
+    char *next_line = get_next_line(g_env.prompt);
+    if (next_line == NULL)
+    {
+        **cursor = '\0';
+        return 0;
+    }
+    char *new_line = xcalloc(strlen(g_env.current_line)
+                        + strlen(next_line) + 2, sizeof(char));
+
+    // handle backslash as last char or add newline
+    **cursor = '\0';
+    strcat(new_line, g_env.current_line);
+
+    // put cursor back where it was
+    *cursor = *cursor - g_env.current_line + new_line;
+    if (second_cursor != NULL)
+        *second_cursor = *second_cursor - g_env.current_line + new_line;
+
+    strcat(new_line, next_line);
+    free(next_line);
+    free(g_env.current_line);
+    g_env.current_line = new_line;
+    return 1;
+}
+
 static void handle_quoting(char **cursor, char **start_of_token)
 {
     if (**cursor == '\'')
@@ -103,6 +131,18 @@ static void handle_quoting(char **cursor, char **start_of_token)
             *cursor = get_delimiter(*cursor, "\"\\\0");
         }
         (*cursor)++;
+    }
+    else if (**cursor == '\\')
+    {
+        if (*(*cursor + 1) == '\0') // if backslash at end of line
+        {
+            add_next_line_to_current_ending_with_backslash(cursor,
+                    start_of_token);
+        }
+        else
+        {
+            *cursor += 2; // skip backslash and next char
+        }
     }
 }
 
@@ -213,6 +253,18 @@ void skip_quoting(char **cursor, char **start_of_token)
         }
         (*cursor)++;
     }
+    else if (**cursor == '\\')
+    {
+        if (*(*cursor + 1) == '\0') // if backslash at end of line
+        {
+            add_next_line_to_current_ending_with_backslash(cursor,
+                    start_of_token);
+        }
+        else
+        {
+            *cursor += 2; // skip backslash and next char
+        }
+    }
 }
 
 char *find_corresponding_parenthesis(char **cursor, char **token_start)
@@ -222,8 +274,11 @@ char *find_corresponding_parenthesis(char **cursor, char **token_start)
     {
         while (**cursor != '\0' && counter_bracket != 0)
         {
-            if (**cursor == '\'' || **cursor == '"')
+            if (**cursor == '\'' || **cursor == '"' || **cursor == '\\')
+            {
                 skip_quoting(cursor, token_start);
+                continue;
+            }
             else if (**cursor == '(')
                 counter_bracket++;
             else if (**cursor == ')')
@@ -264,7 +319,14 @@ static void handle_dollar(char **cursor, char **token_start)
     }
     else if (**cursor == '{')
     {
-        (*cursor)++;
+        (*cursor)++; //skip {
+        if (**cursor == '}')
+        {
+            if (is_interactive())
+                warnx("Bad substitution");
+            else
+                errx(1, "Bad substitution");
+        }
         while (**cursor != '\0' && **cursor != '}')
             (*cursor)++;
         if (**cursor == '\0')
@@ -311,7 +373,7 @@ static enum token_lexer_type scan_token(char **cursor, char **token_start)
 {
     while (!is_ifs(**cursor))
     {
-        if (**cursor == '\'' || **cursor == '"')
+        if (**cursor == '\'' || **cursor == '"' || **cursor == '\\')
         {
             handle_quoting(cursor, token_start);
         }
@@ -492,14 +554,36 @@ struct queue *lexer(char *line, struct queue *token_queue)
 
     char *cursor = line;
     handle_comments(token_queue, &cursor, 1);
+    int is_first = 1;
+
     while (cursor != NULL && *cursor != '\0')
     {
         char *delim = get_delimiter(cursor, IFS);
+
+        if (is_first)
+        {
+            char *alias = xstrndup(cursor, delim - cursor);
+            char *alias_line;
+
+            if ((alias_line = hash_find(g_env.aliases, alias)) != NULL)
+            {
+                lexer(alias_line, token_queue);
+                cursor = delim;
+                free(alias);
+                is_first = 0;
+                continue;
+            }
+
+            free(alias);
+            free(alias_line);
+        }
+
         struct token_lexer *token_found = generate_token(token_queue, cursor,
                 &delim);
         if (token_found != NULL)
             queue_push(token_queue, token_found);
         cursor = delim;
+        is_first = 0;
     }
 
     queue_push(token_queue, create_newline_token(NULL));
@@ -517,7 +601,7 @@ struct token_lexer *token_lexer_head(struct queue *token_queue)
         free(g_env.current_line);
     char *next_line = get_next_line(g_env.prompt);
 
-    g_env.prompt = "> "; //change prompt to ps2 with lexing
+    g_env.prompt = 2; //change prompt to ps2 with lexing
 
     g_env.current_line = next_line;
 

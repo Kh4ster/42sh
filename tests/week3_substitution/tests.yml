@@ -19,13 +19,13 @@
 - name: complex command substitution and execution 6
   stdin: echo $(echo $(echo ")"))
 
-- name: complex command substitution and execution 7
-  stdin: echo $( $(echo echo | $(echo cat) '())'))
+- name: complex command substitution and execution 7 (triple imbrique)
+  stdin: echo $( $(echo echo | $(echo cat) ))
 
 - name: complex command substitution and execution 8
   stdin: echo $(ls)
 
-- name: complex command substitution and execution error 1
+- name: complex command substitution and execution error 1 (same)
   options:
     - ../tests/week3_substitution/test1.sh
 
@@ -82,6 +82,60 @@
 - name: complex command substitution and execution 20
   stdin: $(va=test; echo $var)
 
-- name: complex command substitution mix back quote dollard
+- name: complex command substitution mix back quote dollar (triple imbrication not handled)
   options:
-    - ../test/week3_subtitution/test7.sh
+    - ../test/week3_substitution/test7.sh
+
+- name: $(echo toto)/
+  stdin: $(echo toto)/
+  checks:
+    - returncode
+    - has_stderr
+
+- name: $(echo toto)\
+  stdin: $(echo toto)\
+  checks:
+    - returncode
+    - has_stderr
+
+- name: echo ok\
+  stdin: echo ok\
+
+- name: echo \
+  stdin: echo \
+
+- name: echo $(echo ok $(echo ok) $(echo ok) abc )
+  stdin: echo $(echo ok $(echo ok) $(echo ok) abc )
+
+- name: echo $(echo $(echo ')'))
+  stdin: echo $(echo $(echo ')'))
+
+- name: $(echo $(echo ')'))
+  stdin: $(echo $(echo ')'))
+  checks:
+    - returncode
+    - has_stderr
+
+- name: echo $(echo ok $(echo ok) $(echo ok) '$'\abc )
+  stdin: echo $(echo ok $(echo ok) $(echo ok) '$'\abc )
+
+- name: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$1abc" )
+  stdin: abc=toto; echo $(echo ok $(echo ok) $(echo ok) "$1abc" )
+
+- name: var=test; echo $(echo $(echo "$var"))
+  stdin: var=test; echo $(echo $(echo "$var"))
+
+- name: var=test; echo $(echo $(echo '$var'))
+  stdin: var=test; echo $(echo $(echo '$var'))
+
+- name: var=test; echo $(echo $(echo $var))
+  stdin: var=test; echo $(echo $(echo $var))
+
+- name: var=test; echo $(var=toto; echo $(echo "$var"))
+  stdin: var=test; echo $(var=toto; echo $(echo "$var"))
+
+- name: var=test; echo $(var=toto; echo $(echo $var))
+  stdin: var=test; echo $(var=toto; echo $(echo $var))
+
+- name: var=test; echo $(var=toto; echo $(echo '$var'))
+  stdin: var=test; echo $(var=toto; echo $(echo '$var'))

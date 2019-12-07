@@ -60,5 +60,10 @@
 - name: for do if else fi command; done
   stdin: for i in 1 2 3 4 5; do if true; then echo ok; for toto in ecole; do echo toto in ecole; done else echo papa; fi; echo true; done
 
+- name: for i in `echo toto`; do echo toto; done
+  stdin: for i in `echo toto`; do echo toto; done
+
+- name: for i in `cat script`; do echo $i; done
+  stdin: for i in `cat ../tests/week2_for/script`; do echo $i; done
 
 

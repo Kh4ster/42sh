@@ -36,7 +36,6 @@ set(SRC_FILES
     src/data_structures/queue.c
     src/data_structures/hash_map.c
     src/input_output/read.c
-    src/input_output/write.c
     src/execution_handling/command_container.c
     src/data_structures/array_list.c
     src/parameters_handling/parameters_handler.c
@@ -57,15 +56,25 @@ set(SRC_FILES
     src/builtins/break.c
     src/builtins/exit.c
     src/builtins/export.c
+    src/builtins/alias/alias.c
+    src/builtins/alias/unalias.c
     src/path_expention/path_exepension.c
-    src/variables/expand_special_variables.c
+    src/arithmetic_expression/parser.c
+    src/arithmetic_expression/lexer.c
+    src/arithmetic_expression/tree.c
+    src/data_structures/stack.c
+    src/special_variables/expand_special_variables.c
+    src/command_substitution/command_substitution.c
+    src/input_output/prompt.c
+    src/command_expansion/command_expansion.c
+    src/parser/build_ast.c
+    src/parser/parser_utils.c
 )
 
 # ---- List of test files (unit tests) ----
 set(TESTS_FILES
     tests/data_structures/test_string.c
     tests/input_output/test_read.c
-    tests/input_output/test_write.c
     #tests/builtins/test_redirector.c
     tests/builtins/test_shopt.c
     tests/parameters_handling/test_parameters_handler.c
@@ -106,6 +115,7 @@ target_compile_options(common_options INTERFACE
 target_link_libraries(common_options INTERFACE
     $<$<NOT:$<CONFIG:Release>>:-fsanitize=address>
     ${READLINE_LIB}
+    "-lm"
 )
 
 

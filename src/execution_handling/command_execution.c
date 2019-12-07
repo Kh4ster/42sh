@@ -15,6 +15,7 @@
 #include "../input_output/read.h"
 #include "../data_structures/data_string.h"
 #include "../input_output/get_next_line.h"
+#include "../command_substitution/command_substitution.h"
 
 int exec_cmd(struct instruction *cmd_container)
 {
@@ -40,8 +41,25 @@ int exec_cmd(struct instruction *cmd_container)
     return WEXITSTATUS(wstatus);
 }
 
-char *get_result_from_42sh(char *command)
+static void trim_return_line(char *str)
 {
+    char *beg = str;
+    str += strlen(str) - 1;
+    //- 1 cause we can remove the char beg but not dereference the char before
+    while (str != beg - 1 && *str == '\n')
+    {
+        *str = '\0';
+        str--;
+    }
+}
+
+char *get_result_from_42sh(char *command,
+                            struct hash_map *inner_var,
+                            bool is_first)
+{
+    int was_quoted = 0;
+    command = custom_scan(command, false, &was_quoted, inner_var);
+
     int tube[2];
     if (pipe(tube) == -1)
         errx(-1, "Bad pipe"); //-1 ?
@@ -67,12 +85,28 @@ char *get_result_from_42sh(char *command)
     if (xread(str, tube[0]) == -1)
         errx(-1, "Bad read"); //-1 ?
 
-    if (str->content[0] != '\0') //else go to index -1
-        str->content[strlen(str->content) - 1] = 0; //! dunno why has to rm \n
+    trim_return_line(str->content);
 
     dup2(save_stdout, 1); //put back stdout
     close(tube[0]);     //close read side
     close(save_stdout);
+    free(command);
+
+    if (was_quoted && !is_first) //if not first quote result
+    {
+        char *quoted_result = xcalloc(str->index + 3, sizeof(char));
+        if (was_quoted == 2)
+            strcat(quoted_result, "\"");
+        else //single quote
+            strcat(quoted_result, "'");
+        strcat(quoted_result, str->content);
+        if (was_quoted == 2)
+            strcat(quoted_result, "\"");
+        else //single quote
+            strcat(quoted_result, "'");
+        string_free(&str);
+        return quoted_result;
+    }
 
     return string_get_content(&str);
 }
