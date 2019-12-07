@@ -64,6 +64,30 @@
 - name: echo -e "\0NNN"
   stdin: echo -e "\0176"
 
+- name: echo -e "hey\0130hey"
+  stdin: echo -e "hey\0130hey"
+
+- name: echo -e "hey\x41hey"
+  stdin: echo -e "hey\x41hey"
+
+- name: echo -e "hey\x4hey"
+  stdin: echo -e "hey\x4hey"
+
+- name: echo -e "hey\xFhey"
+  stdin: echo -e "hey\xFhey"
+
+- name: echo -e "hey\oFhey"
+  stdin: echo -e "hey\oFhey"
+
+- name: echo -e "hey\o60hey"
+  stdin: echo -e "hey\o60hey"
+
+- name: echo -e "hey\060hey"
+  stdin: echo -e "hey\060hey"
+
+- name: echo -e "hey\0Fhey"
+  stdin: echo -e "hey\0Fhey"
+
 - name: echo -E "test\tLinux"
   stdin: echo -E "test\tLinux"
 

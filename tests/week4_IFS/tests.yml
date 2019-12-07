@@ -33,3 +33,12 @@
 - name: IFS=". "
   options:
     - ../tests/week4_IFS/test8.sh
+
+- name: IFS="."; echo $(echo "ok .."...okk )
+  stdin: IFS="."; echo $(echo "ok .."...okk )
+
+- name: IFS="."; toto="a $b"; echo a.b.c$toto
+  stdin: IFS="."; toto="a $b"; echo a.b.c$toto
+
+- name: IFS="."; toto="a $b"; echo $toto
+  stdin: IFS="."; toto="a $b"; echo $toto
