@@ -735,6 +735,10 @@ static struct command_container *dup_cmd(struct command_container *cmd)
 
 struct array_list *update_for_values(struct array_list *for_values)
 {
+    if (!for_values)
+        return NULL;
+
+
     struct array_list *new = array_list_init();
 
     for (size_t i = 0; i < for_values->nb_element; i++)
