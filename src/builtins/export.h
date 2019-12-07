@@ -1,5 +1,5 @@
 /** @file
-* @brief EXIT builtin
+* @brief Export builtin
 * @author Coder : zakaria.ben-allal
 * @author Tester : zakaria.ben-allal
 * @author Reviewer : nicolas.blin & pierrick.made
